@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+</head>
+<body>
+<!-- 关联单据链面板：以报价单为根展示 PI 等下游单据，可点击跳转 -->
+<div class="card mb-4" th:fragment="chainPanel(chain, current)">
+    <div class="card-header"><h5>关联单据</h5></div>
+    <div class="card-body">
+        <div class="doc-chain">
+            <a class="doc-node" th:classappend="${current == 'quotation'} ? 'current'"
+               th:href="@{/crm/quotations/{id}/view(id=${chain.quotation.id})}">
+                <div class="doc-node-tag">报价单</div>
+                <div class="doc-node-title" th:text="'#' + ${chain.quotation.id}">#1</div>
+                <div class="doc-node-sub"
+                     th:text="|${chain.quotation.quoteDate} · ${#messages.msg(chain.quotation.status.code)}|">2026-01-01 · 草稿</div>
+            </a>
+
+            <span class="doc-chain-arrow"><i class="bi bi-arrow-right"></i></span>
+
+            <a th:if="${chain.proformaInvoice != null}" class="doc-node"
+               th:classappend="${current == 'proformaInvoice'} ? 'current'"
+               th:href="@{/crm/proforma-invoices/{id}/view(id=${chain.proformaInvoice.id})}">
+                <div class="doc-node-tag">Proforma Invoice</div>
+                <div class="doc-node-title" th:text="${chain.proformaInvoice.invoiceNumber}">YHPI-2026-001</div>
+                <div class="doc-node-sub"
+                     th:text="|${chain.proformaInvoice.invoiceDate} · ${#messages.msg(chain.proformaInvoice.status.code)}|">2026-01-01 · 待生成</div>
+            </a>
+            <div th:if="${chain.proformaInvoice == null}" class="doc-node">
+                <div class="doc-node-tag">Proforma Invoice</div>
+                <div class="doc-node-title" style="color: var(--text-muted)">未生成</div>
+            </div>
+
+            <span class="doc-chain-arrow"><i class="bi bi-arrow-right"></i></span>
+
+            <a th:if="${chain.salesOrder != null}" class="doc-node"
+               th:classappend="${current == 'salesOrder'} ? 'current'"
+               th:href="@{/crm/sales-orders/{id}/view(id=${chain.salesOrder.id})}">
+                <div class="doc-node-tag">订单</div>
+                <div class="doc-node-title" th:text="${chain.salesOrder.orderNo}">YHSO-2026-001</div>
+                <div class="doc-node-sub"
+                     th:text="|${chain.salesOrder.orderDate} · ${#messages.msg(chain.salesOrder.status.code)}|">2026-01-01 · 草稿</div>
+            </a>
+            <div th:if="${chain.salesOrder == null}" class="doc-node">
+                <div class="doc-node-tag">订单</div>
+                <div class="doc-node-title" style="color: var(--text-muted)">未生成</div>
+            </div>
+
+            <span class="doc-chain-arrow"><i class="bi bi-arrow-right"></i></span>
+
+            <a th:if="${chain.commercialInvoice != null}" class="doc-node"
+               th:classappend="${current == 'commercialInvoice'} ? 'current'"
+               th:href="@{/crm/commercial-invoices/{id}/view(id=${chain.commercialInvoice.id})}">
+                <div class="doc-node-tag">商业发票</div>
+                <div class="doc-node-title" th:text="${chain.commercialInvoice.invoiceNo}">YHINV-2026-001</div>
+                <div class="doc-node-sub"
+                     th:text="|${chain.commercialInvoice.invoiceDate} · ${#messages.msg(chain.commercialInvoice.status.code)}|">2026-01-01 · 待生成</div>
+            </a>
+            <div th:if="${chain.commercialInvoice == null}" class="doc-node">
+                <div class="doc-node-tag">商业发票</div>
+                <div class="doc-node-title" style="color: var(--text-muted)">未生成</div>
+            </div>
+
+            <span class="doc-chain-arrow"><i class="bi bi-arrow-right"></i></span>
+
+            <a th:if="${chain.packingList != null}" class="doc-node"
+               th:classappend="${current == 'packingList'} ? 'current'"
+               th:href="@{/crm/packing-lists/{id}/view(id=${chain.packingList.id})}">
+                <div class="doc-node-tag">装箱单</div>
+                <div class="doc-node-title" th:text="${chain.packingList.packingNo}">YHPL-2026-001</div>
+                <div class="doc-node-sub"
+                     th:text="|${chain.packingList.packingDate} · ${#messages.msg(chain.packingList.status.code)}|">2026-01-01 · 待生成</div>
+            </a>
+            <div th:if="${chain.packingList == null}" class="doc-node">
+                <div class="doc-node-tag">装箱单</div>
+                <div class="doc-node-title" style="color: var(--text-muted)">未生成</div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

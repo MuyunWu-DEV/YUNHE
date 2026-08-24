@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('权限管理')}"></head>
+<body th:replace="~{fragments/layout :: layout('权限管理', ~{::content})}">
+<div th:fragment="content">
+    <div class="card" style="max-width: 1440px;">
+        <div class="card-header">
+            <h5 th:text="${isEdit} ? '编辑权限' : '新增权限'">权限</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <form th:action="${isEdit} ? @{/admin/permissions/{id}(id=${permissionForm.id})} : @{/admin/permissions}"
+                  th:object="${permissionForm}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="code">权限编码 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="code" th:field="*{code}"
+                               placeholder="如 user:create"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('code')}" th:errors="*{code}"></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="module">所属模块 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="module" th:field="*{module}"
+                               placeholder="如 user"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('module')}" th:errors="*{module}"></div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="name">名称（英文） <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" th:field="*{name}" placeholder="如 create"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="nameZh">名称（中文） <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="nameZh" th:field="*{nameZh}" placeholder="如 新增用户"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('nameZh')}" th:errors="*{nameZh}"></div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="resource">资源标识</label>
+                        <input type="text" class="form-control" id="resource" th:field="*{resource}"
+                               placeholder="如 /admin/users"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="action">动作标识</label>
+                        <input type="text" class="form-control" id="action" th:field="*{action}"
+                               placeholder="如 create / read / update / delete"/>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label" for="description">描述</label>
+                        <input type="text" class="form-control" id="description" th:field="*{description}"/>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="sortOrder">排序值</label>
+                        <input type="number" class="form-control" id="sortOrder" th:field="*{sortOrder}"/>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+                    <a th:href="@{/admin/permissions}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> 返回</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

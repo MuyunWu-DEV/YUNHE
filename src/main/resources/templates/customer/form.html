@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('客户档案')}"></head>
+<body th:replace="~{fragments/layout :: layout('客户档案', ~{::content})}">
+<div th:fragment="content">
+    <div class="card" style="max-width: 1440px;">
+        <div class="card-header">
+            <h5 th:text="${isEdit} ? '编辑客户' : '新增客户'">客户</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <form th:action="${isEdit} ? @{/crm/customers/{id}(id=${customerForm.id})} : @{/crm/customers}"
+                  th:object="${customerForm}" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:field="*{id}"/>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="name">客户姓名 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" th:field="*{name}" placeholder="请输入姓名"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="phone">手机号 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="phone" th:field="*{phone}" placeholder="请输入手机号"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="company">公司</label>
+                        <input type="text" class="form-control" id="company" th:field="*{company}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="registrationNo">注册号</label>
+                        <input type="text" class="form-control" id="registrationNo" th:field="*{registrationNo}"/>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="address">地址</label>
+                        <textarea class="form-control" id="address" th:field="*{address}" rows="3"></textarea>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="priority">优先级</label>
+                        <select class="form-select" id="priority" th:field="*{priority}">
+                            <option th:each="p : ${T(com.yunhe.website.crm.entity.CustomerPriority).values()}"
+                                    th:value="${p}" th:text="#{${p.code}}">中</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">客户标签</label>
+                        <div class="dropdown" data-bs-auto-close="outside">
+                            <button class="form-control text-start d-flex justify-content-between align-items-center gap-2"
+                                    type="button" id="tagsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span id="tagsSelectedText" class="text-truncate">请选择标签</span>
+                                <i class="bi bi-chevron-down text-muted flex-shrink-0"></i>
+                            </button>
+                            <ul class="dropdown-menu w-100 p-2" aria-labelledby="tagsDropdown">
+                                <li th:each="t : ${T(com.yunhe.website.crm.entity.CustomerTag).values()}">
+                                    <label class="dropdown-item rounded d-flex align-items-center gap-2 mb-1"
+                                           style="cursor:pointer;">
+                                        <input class="form-check-input mt-0 flex-shrink-0 tag-check" type="checkbox"
+                                               name="tags" th:value="${t}"
+                                               th:checked="${customerForm.tags != null and customerForm.tags.contains(t)}"/>
+                                        <span th:text="#{${t.code}}">标签</span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="nextFollowUpAt">下次跟进时间</label>
+                        <input type="date" class="form-control" id="nextFollowUpAt" th:field="*{nextFollowUpAt}"/>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">上传文件留档 <span class="text-muted small">（可多选）</span></label>
+                    <input type="file" class="form-control" name="files" multiple/>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+                    <a th:href="@{/crm/customers}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> 返回</a>
+                </div>
+            </form>
+
+            <!-- 已留档文件：独立于外层表单，避免嵌套 form 导致删除失效 -->
+            <div th:if="${isEdit and files != null and !files.isEmpty()}" class="mt-4">
+                <label class="form-label">已留档文件</label>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                        th:each="file : ${files}">
+                        <span>
+                            <i class="bi bi-paperclip"></i>
+                            <span th:text="${file.originalName}">文件</span>
+                            <span class="text-muted small ms-2"
+                                  th:text="${#numbers.formatDecimal(file.size / 1024.0, 1, 1) + ' KB'}">0 KB</span>
+                        </span>
+                        <div class="d-flex gap-2">
+                            <a th:href="@{/crm/customers/{id}/files/{fileId}/download(id=${customerForm.id}, fileId=${file.id})}"
+                               class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-download"></i> 下载</a>
+                            <form th:action="@{/crm/customers/{id}/files/{fileId}/delete(id=${customerForm.id}, fileId=${file.id})}"
+                                  method="post" onsubmit="return confirm('确定删除该附件吗？');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> 删除</button>
+                            </form>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var checks = document.querySelectorAll('.tag-check');
+            var textEl = document.getElementById('tagsSelectedText');
+            function refresh() {
+                var labels = [];
+                checks.forEach(function (c) {
+                    if (c.checked) {
+                        labels.push(c.parentElement.querySelector('span').textContent.trim());
+                    }
+                });
+                if (textEl) {
+                    textEl.textContent = labels.length ? labels.join('、') : '请选择标签';
+                }
+            }
+            checks.forEach(function (c) { c.addEventListener('change', refresh); });
+            refresh();
+        })();
+    </script>
+</div>
+</body>
+</html>

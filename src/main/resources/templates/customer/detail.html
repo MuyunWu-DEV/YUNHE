@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('客户详情')}"></head>
+<body th:replace="~{fragments/layout :: layout('客户详情', ~{::content})}">
+<div th:fragment="content">
+    <div class="card" style="max-width: 1440px;">
+        <div class="card-header">
+            <h5>客户详情</h5>
+            <a th:href="@{/crm/customers}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> 返回</a>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-4">
+                <dt class="col-sm-2">客户姓名</dt>
+                <dd class="col-sm-4" th:text="${customer.name}">姓名</dd>
+                <dt class="col-sm-2">手机号</dt>
+                <dd class="col-sm-4" th:text="${customer.phone}">手机号</dd>
+            </dl>
+            <dl class="row mb-4">
+                <dt class="col-sm-2">公司</dt>
+                <dd class="col-sm-4" th:text="${customer.company} ?: '-'">-</dd>
+                <dt class="col-sm-2">注册号</dt>
+                <dd class="col-sm-4" th:text="${customer.registrationNo} ?: '-'">-</dd>
+            </dl>
+            <dl class="row mb-4">
+                <dt class="col-sm-2">地址</dt>
+                <dd class="col-sm-10" th:text="${customer.address} ?: '-'">-</dd>
+            </dl>
+            <dl class="row mb-4">
+                <dt class="col-sm-2">客户标签</dt>
+                <dd class="col-sm-4">
+                    <span class="badge badge-soft badge-info me-1"
+                          th:each="tag : ${customer.tags}" th:text="#{${tag.code}}">标签</span>
+                    <span th:if="${customer.tags == null or customer.tags.isEmpty()}" class="text-muted">-</span>
+                </dd>
+                <dt class="col-sm-2">优先级</dt>
+                <dd class="col-sm-4" th:text="${customer.priority != null ? #messages.msg(customer.priority.code) : '-'}">中</dd>
+            </dl>
+            <dl class="row mb-4">
+                <dt class="col-sm-2">下次跟进时间</dt>
+                <dd class="col-sm-4" th:text="${customer.nextFollowUpAt} ?: '-'">-</dd>
+                <dt class="col-sm-2">创建时间</dt>
+                <dd class="col-sm-4"
+                    th:text="${customer.createdAt != null ? #temporals.format(customer.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">-</dd>
+            </dl>
+
+            <h6 class="mb-3">附件留档</h6>
+            <div th:if="${customer.files != null and !customer.files.isEmpty()}">
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                        th:each="file : ${customer.files}">
+                        <span>
+                            <i class="bi bi-paperclip"></i>
+                            <span th:text="${file.originalName}">文件</span>
+                            <span class="text-muted small ms-2"
+                                  th:text="${#numbers.formatDecimal(file.size / 1024.0, 1, 1) + ' KB'}">0 KB</span>
+                        </span>
+                        <a th:href="@{/crm/customers/{id}/files/{fileId}/download(id=${customer.id}, fileId=${file.id})}"
+                           class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-download"></i> 下载</a>
+                    </li>
+                </ul>
+            </div>
+            <div th:if="${customer.files == null or customer.files.isEmpty()}" class="text-muted">暂无附件</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

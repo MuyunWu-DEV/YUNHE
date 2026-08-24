@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('报价管理')}"></head>
+<body th:replace="~{fragments/layout :: layout('报价管理', ~{::content})}">
+<div th:fragment="content">
+    <div class="card" style="max-width: 1440px;">
+        <div class="card-header">
+            <h5 th:text="${isChange} ? '发起变更' : (${isEdit} ? '编辑报价单' : '新增报价单')">报价单</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <form th:action="${isChange} ? @{/crm/quotations/{id}/revise(id=${quotationForm.id})} : (${isEdit} ? @{/crm/quotations/{id}(id=${quotationForm.id})} : @{/crm/quotations})"
+                  th:object="${quotationForm}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="quoteDate">报价日期 <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="quoteDate" th:field="*{quoteDate}"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('quoteDate')}" th:errors="*{quoteDate}"></div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="customerId">客户</label>
+                        <select class="form-select" id="customerId" th:field="*{customerId}">
+                            <option value="">-- 选择客户 --</option>
+                            <option th:each="c : ${customers}" th:value="${c.id}"
+                                    th:text="${c.name + (!#strings.isEmpty(c.company) ? ' (' + c.company + ')' : '')}">客户</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="remark">备注</label>
+                    <textarea class="form-control" id="remark" th:field="*{remark}" rows="2"></textarea>
+                </div>
+
+                <div class="mb-3" th:if="${isChange}">
+                    <label class="form-label" for="changeReason">变更原因 <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="changeReason" th:field="*{changeReason}" rows="3"></textarea>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('changeReason')}" th:errors="*{changeReason}"></div>
+                </div>
+
+                <!-- 明细动态表单 -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label mb-0">明细（品名 → 货物描述/单价/数量）</label>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="addGroupBtn">
+                            <i class="bi bi-plus-lg"></i> 添加产品
+                        </button>
+                    </div>
+
+                    <div id="detailGroups">
+                        <div class="detail-group border rounded p-3 mb-3" th:each="group : ${quotationForm.details}">
+                            <div class="d-flex gap-2 mb-2">
+                                <input type="text" class="form-control form-control-sm product-name"
+                                       placeholder="品名" data-field="productName"
+                                       th:value="${group.productName}"/>
+                                <input type="text" class="form-control form-control-sm hs-code"
+                                       placeholder="HS Code" data-field="hsCode" style="max-width:160px"
+                                       th:value="${group.hsCode}"/>
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-group"
+                                        title="删除品名"><i class="bi bi-x-lg"></i></button>
+                            </div>
+
+                            <div class="detail-items">
+                                <div class="detail-item border rounded p-2 mb-2" th:each="item : ${group.items}">
+                                    <div class="mb-2">
+                                        <textarea class="form-control" data-field="description" rows="10"
+                                                  placeholder="货物描述" th:text="${item.description}"></textarea>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <div class="input-group input-group-sm" style="width:140px">
+                                            <span class="input-group-text">单价</span>
+                                            <input type="number" min="1" class="form-control" data-field="unitPrice"
+                                                   placeholder="0" th:value="${item.unitPrice}"/>
+                                        </div>
+                                        <div class="input-group input-group-sm" style="width:130px">
+                                            <span class="input-group-text">数量</span>
+                                            <input type="number" min="1" class="form-control" data-field="quantity"
+                                                   placeholder="0" th:value="${item.quantity}"/>
+                                        </div>
+                                        <div class="input-group input-group-sm" style="width:130px">
+                                            <span class="input-group-text">单位</span>
+                                            <input type="text" class="form-control" data-field="unit"
+                                                   placeholder="SETS" th:value="${item.unit}"/>
+                                        </div>
+                                        <div class="input-group input-group-sm" style="width:130px">
+                                            <span class="input-group-text">币种</span>
+                                            <input type="text" class="form-control" data-field="currency"
+                                                   placeholder="USD" th:value="${item.currency}"/>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-item"
+                                                title="删除明细"><i class="bi bi-x"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-sm btn-outline-secondary add-item">
+                                <i class="bi bi-plus"></i> 新增货物
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i>
+                        <span th:text="${isChange} ? '保存变更' : '保存'">保存</span></button>
+                    <a th:href="@{/crm/quotations}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> 返回</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        var groupsBox = document.getElementById('detailGroups');
+        var addGroupBtn = document.getElementById('addGroupBtn');
+
+        function renumber() {
+            groupsBox.querySelectorAll('.detail-group').forEach(function (group, gi) {
+                group.querySelectorAll('.product-name').forEach(function (input) {
+                    input.name = 'details[' + gi + '].productName';
+                });
+                group.querySelectorAll('.hs-code').forEach(function (input) {
+                    input.name = 'details[' + gi + '].hsCode';
+                });
+                group.querySelectorAll('.detail-item').forEach(function (item, ii) {
+                    item.querySelectorAll('[data-field]').forEach(function (el) {
+                        el.name = 'details[' + gi + '].items[' + ii + '].' + el.dataset.field;
+                    });
+                });
+            });
+        }
+
+        function itemRowHtml() {
+            return '<div class="detail-item border rounded p-2 mb-2">' +
+                '<div class="mb-2">' +
+                '<textarea class="form-control" data-field="description" rows="10" placeholder="货物描述"></textarea>' +
+                '</div>' +
+                '<div class="d-flex align-items-center gap-2 flex-wrap">' +
+                '<div class="input-group input-group-sm" style="width:140px"><span class="input-group-text">单价</span><input type="number" min="1" class="form-control" data-field="unitPrice" placeholder="0"/></div>' +
+                '<div class="input-group input-group-sm" style="width:130px"><span class="input-group-text">数量</span><input type="number" min="1" class="form-control" data-field="quantity" placeholder="0"/></div>' +
+                '<div class="input-group input-group-sm" style="width:130px"><span class="input-group-text">单位</span><input type="text" class="form-control" data-field="unit" placeholder="SETS"/></div>' +
+                '<div class="input-group input-group-sm" style="width:130px"><span class="input-group-text">币种</span><input type="text" class="form-control" data-field="currency" placeholder="USD"/></div>' +
+                '<button type="button" class="btn btn-sm btn-outline-danger remove-item" title="删除明细"><i class="bi bi-x"></i></button>' +
+                '</div>' +
+                '</div>';
+        }
+
+        function addGroup() {
+            var group = document.createElement('div');
+            group.className = 'detail-group border rounded p-3 mb-3';
+            group.innerHTML = '<div class="d-flex gap-2 mb-2">' +
+                '<input type="text" class="form-control form-control-sm product-name" data-field="productName" placeholder="品名（如：服务器）"/>' +
+                '<input type="text" class="form-control form-control-sm hs-code" data-field="hsCode" placeholder="HS Code" style="max-width:160px"/>' +
+                '<button type="button" class="btn btn-sm btn-outline-danger remove-group" title="删除品名"><i class="bi bi-x-lg"></i></button>' +
+                '</div>' +
+                '<div class="detail-items">' + itemRowHtml() + '</div>' +
+                '<button type="button" class="btn btn-sm btn-outline-secondary add-item"><i class="bi bi-plus"></i> 新增货物</button>';
+            groupsBox.appendChild(group);
+            renumber();
+        }
+
+        function addItem(group) {
+            var box = group.querySelector('.detail-items');
+            var tmp = document.createElement('div');
+            tmp.innerHTML = itemRowHtml();
+            box.appendChild(tmp.firstChild);
+            renumber();
+        }
+
+        addGroupBtn.addEventListener('click', addGroup);
+
+        groupsBox.addEventListener('click', function (e) {
+            var btn = e.target.closest('button');
+            if (!btn) {
+                return;
+            }
+            var group = btn.closest('.detail-group');
+            if (btn.classList.contains('add-item')) {
+                addItem(group);
+            } else if (btn.classList.contains('remove-item')) {
+                var item = btn.closest('.detail-item');
+                if (group.querySelectorAll('.detail-item').length > 1) {
+                    item.remove();
+                } else {
+                    item.querySelectorAll('input, textarea').forEach(function (el) { el.value = ''; });
+                }
+                renumber();
+            } else if (btn.classList.contains('remove-group')) {
+                group.remove();
+                renumber();
+            }
+        });
+
+        renumber();
+    })();
+    </script>
+</div>
+</body>
+</html>

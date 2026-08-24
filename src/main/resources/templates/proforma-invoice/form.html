@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('形式发票')}"></head>
+<body th:replace="~{fragments/layout :: layout('形式发票', ~{::content})}">
+<div th:fragment="content">
+    <div class="card" style="max-width: 1440px;">
+        <div class="card-header">
+            <h5 th:text="${isChange} ? '发起变更' : (${isEdit} ? '编辑形式发票' : '新增形式发票')">形式发票</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <form th:action="${isChange} ? @{/crm/proforma-invoices/{id}/revise(id=${proformaInvoiceForm.id})} : (${isEdit} ? @{/crm/proforma-invoices/{id}(id=${proformaInvoiceForm.id})} : @{/crm/proforma-invoices})"
+                  th:object="${proformaInvoiceForm}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+                <input type="hidden" th:field="*{customerId}"/>
+                <input type="hidden" th:field="*{quotationId}"/>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="invoiceNumber">发票号</label>
+                        <input type="text" class="form-control" id="invoiceNumber" th:field="*{invoiceNumber}"
+                               readonly th:placeholder="${isEdit} ? '' : '保存后自动生成'"/>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="invoiceDate">发票日期 <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="invoiceDate" th:field="*{invoiceDate}"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('invoiceDate')}" th:errors="*{invoiceDate}"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <label class="form-label mb-0">Seller（卖方）</label>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="importBtn"
+                                th:attr="data-seller=${settings != null ? settings.seller : ''},
+                                         data-incoterms=${settings != null ? settings.incoterms : ''},
+                                         data-terms=${settings != null ? settings.terms : ''},
+                                         data-bank=${settings != null ? settings.bankAccountInformation : ''}">
+                            <i class="bi bi-box-arrow-in-down"></i> 一键导入
+                        </button>
+                    </div>
+                    <textarea class="form-control mt-2" id="seller" th:field="*{seller}" rows="4"
+                              placeholder="卖方名称、地址、联系方式等"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Buyer（买方）</label>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <input type="text" class="form-control" th:field="*{buyerCompanyName}" placeholder="公司名"/>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <input type="text" class="form-control" th:field="*{buyerRegistrationNo}" placeholder="注册号"/>
+                        </div>
+                    </div>
+                    <textarea class="form-control" th:field="*{buyerAddress}" rows="2" placeholder="地址"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="incoterms">Incoterms（贸易条款）</label>
+                    <input type="text" class="form-control" id="incoterms" th:field="*{incoterms}"
+                           placeholder="如：FOB QINGDAO PORT"/>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="terms">Terms（条款）</label>
+                    <textarea class="form-control" id="terms" th:field="*{terms}" rows="3"
+                              placeholder="付款条款、交货条款等"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" for="bankAccountInformation">Bank Account Information（银行账户信息）</label>
+                    <textarea class="form-control" id="bankAccountInformation" th:field="*{bankAccountInformation}"
+                              rows="3" placeholder="开户行、账号、SWIFT 等"></textarea>
+                </div>
+
+                <div class="mb-3" th:if="${isChange}">
+                    <label class="form-label" for="changeReason">变更原因 <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="changeReason" th:field="*{changeReason}" rows="3"
+                              placeholder="说明本次变更原因"></textarea>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('changeReason')}" th:errors="*{changeReason}"></div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i>
+                        <span th:text="${isChange} ? '保存变更' : '保存'">保存</span></button>
+                    <a th:href="@{/crm/proforma-invoices}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> 返回</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('importBtn').addEventListener('click', function () {
+            document.getElementById('seller').value = this.dataset.seller || '';
+            document.getElementById('incoterms').value = this.dataset.incoterms || '';
+            document.getElementById('terms').value = this.dataset.terms || '';
+            document.getElementById('bankAccountInformation').value = this.dataset.bank || '';
+        });
+    </script>
+</div>
+</body>
+</html>

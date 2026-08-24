@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('编辑订单')}"></head>
+<body th:replace="~{fragments/layout :: layout('编辑订单', ~{::content})}">
+<div th:fragment="content">
+    <div class="card" style="max-width: 1440px;">
+        <div class="card-header">
+            <h5>编辑订单</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <form th:action="@{/crm/sales-orders/{id}(id=${salesOrderForm.id})}"
+                  th:object="${salesOrderForm}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="orderDate">订单日期 <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="orderDate" th:field="*{orderDate}"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('orderDate')}" th:errors="*{orderDate}"></div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="status">状态</label>
+                        <select class="form-select" id="status" th:field="*{status}">
+                            <option th:each="s : ${T(com.yunhe.website.crm.entity.OrderStatus).values()}"
+                                    th:value="${s}" th:text="#{${s.code}}">草稿</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="remark">备注</label>
+                    <textarea class="form-control" id="remark" th:field="*{remark}" rows="3"></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+                    <a th:href="@{/crm/sales-orders}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> 返回</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

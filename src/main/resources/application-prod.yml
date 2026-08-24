@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/yunhe?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+  # 生产环境缓存模板，提升渲染性能
+  thymeleaf:
+    cache: true
+  jpa:
+    hibernate:
+      # 生产只校验表结构，不自动改表（避免误改线上库）
+      ddl-auto: validate
+    show-sql: false
+
+# 生产不泄露异常细节（不把堆栈/内部消息暴露给用户）
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+
+logging:
+  level:
+    root: info

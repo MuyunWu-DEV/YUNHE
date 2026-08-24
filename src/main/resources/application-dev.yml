@@ -1,0 +1,41 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/yunhe?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+  # 模板不缓存，改页面后刷新即可生效，无需重启
+  thymeleaf:
+    cache: false
+  # 静态资源（css/js）不缓存，改样式/脚本后刷新即生效
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          no-cache: true
+  jpa:
+    hibernate:
+      # 开发期自动建表/加列（只加不删）
+      ddl-auto: update
+    # 打印 SQL，便于排查查询问题（不需要时可改为 false）
+    show-sql: true
+    properties:
+      hibernate:
+        # SQL 加注释，便于定位是哪段代码触发的查询
+        use_sql_comments: true
+
+# 开发调试：接口/页面出错时返回完整异常消息与堆栈（生产用 never，见 application-prod.yml）
+server:
+  error:
+    include-message: always
+    include-stacktrace: always
+
+logging:
+  level:
+    # 打印 SQL 绑定参数（配合 show-sql 查看实际入参值，排查"查不到数据"类问题）
+    org.hibernate.orm.jdbc.bind: trace
+    # 应用自身 debug 日志
+    com.yunhe: debug

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('仪表盘')}"></head>
+<body th:replace="~{fragments/layout :: layout('仪表盘', ~{::content})}">
+<div th:fragment="content">
+    <div class="row g-3 mb-4">
+        <div class="col-sm-4">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#eff6ff;color:#2563eb;">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div>
+                    <div class="stat-value" th:text="${userCount}">0</div>
+                    <div class="stat-label">用户总数</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#ecfdf5;color:#059669;">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <div>
+                    <div class="stat-value" th:text="${roleCount}">0</div>
+                    <div class="stat-label">角色总数</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#fffbeb;color:#d97706;">
+                    <i class="bi bi-key-fill"></i>
+                </div>
+                <div>
+                    <div class="stat-value" th:text="${permissionCount}">0</div>
+                    <div class="stat-label">权限总数</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h5>欢迎回来</h5></div>
+        <div class="card-body">
+            <p class="text-muted mb-0">
+                您好，<strong th:text="${#authentication.principal.displayName}">用户</strong>！
+                欢迎使用 YUNHE 后台管理系统。请从左侧导航进入「用户管理」「角色管理」「权限管理」进行系统配置。
+            </p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

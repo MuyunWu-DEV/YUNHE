@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('商业发票')}"></head>
+<body th:replace="~{fragments/layout :: layout('商业发票', ~{::content})}">
+<div th:fragment="content">
+    <div class="card">
+        <div class="card-header">
+            <h5>商业发票列表</h5>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>发票号</th>
+                        <th>发票日期</th>
+                        <th>客户</th>
+                        <th>状态</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="c : ${invoices.content}">
+                        <td th:text="${c.id}">1</td>
+                        <td th:text="${c.invoiceNo}">YHINV-2026-001</td>
+                        <td th:text="${c.invoiceDate}">2026-01-01</td>
+                        <td th:text="${c.customer != null ? c.customer.name + (!#strings.isEmpty(c.customer.company) ? ' (' + c.customer.company + ')' : '') : '-'}">客户</td>
+                        <td>
+                            <span class="badge badge-soft"
+                                  th:classappend="${c.status.name() == 'GENERATED'} ? 'badge-success' : (${c.status.name() == 'PENDING_REGENERATION'} ? 'badge-warning' : 'badge-muted')"
+                                  th:text="#{${c.status.code}}">待生成</span>
+                        </td>
+                        <td th:text="${c.remark} ?: '-'">-</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a sec:authorize="hasAuthority('commercial-invoice:list')"
+                                   th:href="@{/crm/commercial-invoices/{id}/view(id=${c.id})}"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i> 查看</a>
+                                <a sec:authorize="hasAuthority('commercial-invoice:update')"
+                                   th:href="@{/crm/commercial-invoices/{id}/edit(id=${c.id})}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> 编辑</a>
+                                <form sec:authorize="hasAuthority('commercial-invoice:delete')"
+                                      th:action="@{/crm/commercial-invoices/{id}/delete(id=${c.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('确定删除该商业发票吗？');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 删除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:if="${invoices.content.isEmpty()}" class="empty-state">暂无商业发票数据</div>
+        </div>
+
+        <div class="card-header" th:if="${invoices.totalPages > 1}">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${invoices.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/crm/commercial-invoices(page=${invoices.number - 1})}">上一页</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${pageNumbers}"
+                        th:classappend="${i == invoices.number} ? 'active'">
+                        <a class="page-link" th:href="@{/crm/commercial-invoices(page=${i})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${invoices.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/crm/commercial-invoices(page=${invoices.number + 1})}">下一页</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

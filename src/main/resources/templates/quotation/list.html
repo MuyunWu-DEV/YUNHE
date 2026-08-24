@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('报价管理')}"></head>
+<body th:replace="~{fragments/layout :: layout('报价管理', ~{::content})}">
+<div th:fragment="content">
+    <div class="card">
+        <div class="card-header">
+            <h5>报价单列表</h5>
+            <a sec:authorize="hasAuthority('quotation:create')" th:href="@{/crm/quotations/new}"
+               class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> 新增报价单</a>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>报价日期</th>
+                        <th>客户</th>
+                        <th>状态</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="q : ${quotations.content}">
+                        <td th:text="${q.id}">1</td>
+                        <td th:text="${q.quoteDate}">2026-01-01</td>
+                        <td th:text="${q.customer != null ? q.customer.name + (!#strings.isEmpty(q.customer.company) ? ' (' + q.customer.company + ')' : '') : '-'}">客户</td>
+                        <td>
+                            <span class="badge badge-soft"
+                                  th:classappend="${q.status.name() == 'CONFIRMED'} ? 'badge-success' : (${q.status.name() == 'SENT'} ? 'badge-info' : 'badge-muted')"
+                                  th:text="#{${q.status.code}}">草稿</span>
+                        </td>
+                        <td th:text="${q.remark} ?: '-'">-</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <form sec:authorize="hasAuthority('quotation:update')"
+                                      th:action="@{/crm/quotations/{id}/send(id=${q.id})}"
+                                      method="post" class="d-inline m-0">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="下载报价单">
+                                        <i class="bi bi-download"></i> 下载报价单</button>
+                                </form>
+                                <a th:if="${q.status.name() == 'SENT'}"
+                                   sec:authorize="hasAuthority('proforma-invoice:create')"
+                                   th:href="@{/crm/proforma-invoices/new(quotationId=${q.id})}"
+                                   class="btn btn-sm btn-success">
+                                    <i class="bi bi-file-earmark-plus"></i> 创建 Proforma Invoice</a>
+                                <a th:if="${q.status.name() == 'CONFIRMED'}"
+                                   sec:authorize="hasAuthority('proforma-invoice:list')"
+                                   th:href="@{/crm/proforma-invoices/{id}/view(id=${q.proformaInvoiceId})}"
+                                   class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-file-earmark-text"></i> 查看 Proforma Invoice</a>
+                                <a sec:authorize="hasAuthority('quotation:list')"
+                                   th:href="@{/crm/quotations/{id}/view(id=${q.id})}"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i> 查看</a>
+                                <a th:if="${q.status.name() != 'CONFIRMED'}"
+                                   sec:authorize="hasAuthority('quotation:update')"
+                                   th:href="@{/crm/quotations/{id}/edit(id=${q.id})}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> 编辑</a>
+                                <a th:if="${q.status.name() == 'CONFIRMED'}"
+                                   sec:authorize="hasAuthority('quotation:update')"
+                                   th:href="@{/crm/quotations/{id}/revise(id=${q.id})}"
+                                   class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-arrow-repeat"></i> 发起变更</a>
+                                <form sec:authorize="hasAuthority('quotation:delete')"
+                                      th:action="@{/crm/quotations/{id}/delete(id=${q.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('确定删除该报价单吗？');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 删除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:if="${quotations.content.isEmpty()}" class="empty-state">暂无报价单数据</div>
+        </div>
+
+        <div class="card-header" th:if="${quotations.totalPages > 1}">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${quotations.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/crm/quotations(page=${quotations.number - 1})}">上一页</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${pageNumbers}"
+                        th:classappend="${i == quotations.number} ? 'active'">
+                        <a class="page-link" th:href="@{/crm/quotations(page=${i})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${quotations.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/crm/quotations(page=${quotations.number + 1})}">下一页</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

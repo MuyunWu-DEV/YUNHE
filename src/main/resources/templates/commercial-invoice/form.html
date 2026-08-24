@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('编辑商业发票')}"></head>
+<body th:replace="~{fragments/layout :: layout('编辑商业发票', ~{::content})}">
+<div th:fragment="content">
+    <div class="card" style="max-width: 1440px;">
+        <div class="card-header">
+            <h5 th:text="${isChange} ? '发起变更' : '编辑商业发票'">编辑商业发票</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <form th:action="${isChange} ? @{/crm/commercial-invoices/{id}/revise(id=${commercialInvoiceForm.id})} : @{/crm/commercial-invoices/{id}(id=${commercialInvoiceForm.id})}"
+                  th:object="${commercialInvoiceForm}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="invoiceDate">发票日期 <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="invoiceDate" th:field="*{invoiceDate}"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('invoiceDate')}" th:errors="*{invoiceDate}"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="remark">备注</label>
+                    <textarea class="form-control" id="remark" th:field="*{remark}" rows="3"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="depositPercentage">定金百分比（%）</label>
+                    <div class="d-flex align-items-center gap-3">
+                        <input type="number" class="form-control" id="depositPercentage" th:field="*{depositPercentage}"
+                               min="0" max="100" step="0.01" style="max-width: 160px;"/>
+                        <span class="text-muted">尾款比例：<span id="balancePercentage" class="fw-bold">0</span>%</span>
+                    </div>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('depositPercentage')}" th:errors="*{depositPercentage}"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="depositPaymentMethod">定金付款方式</label>
+                        <select class="form-select" id="depositPaymentMethod" th:field="*{depositPaymentMethod}">
+                            <option value="">-- 选择付款方式 --</option>
+                            <option value="T/T">T/T</option>
+                            <option value="L/C">L/C</option>
+                            <option value="D/P">D/P</option>
+                            <option value="Cash">Cash</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="balancePaymentMethod">尾款付款方式</label>
+                        <select class="form-select" id="balancePaymentMethod" th:field="*{balancePaymentMethod}">
+                            <option value="">-- 选择付款方式 --</option>
+                            <option value="T/T">T/T</option>
+                            <option value="L/C">L/C</option>
+                            <option value="D/P">D/P</option>
+                            <option value="Cash">Cash</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3" th:if="${isChange}">
+                    <label class="form-label" for="changeReason">变更原因 <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="changeReason" th:field="*{changeReason}" rows="3"
+                              placeholder="说明本次变更原因"></textarea>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('changeReason')}" th:errors="*{changeReason}"></div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i>
+                        <span th:text="${isChange} ? '保存变更' : '保存'">保存</span></button>
+                    <a th:href="@{/crm/commercial-invoices}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> 返回</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var depositInput = document.getElementById('depositPercentage');
+            var balanceSpan = document.getElementById('balancePercentage');
+
+            function syncBalance() {
+                var deposit = parseFloat(depositInput.value);
+                if (isNaN(deposit)) {
+                    deposit = 0;
+                }
+                if (deposit < 0) {
+                    deposit = 0;
+                }
+                if (deposit > 100) {
+                    deposit = 100;
+                }
+                balanceSpan.textContent = (100 - deposit).toFixed(2);
+            }
+
+            depositInput.addEventListener('input', syncBalance);
+            syncBalance();
+        })();
+    </script>
+</div>
+</body>
+</html>

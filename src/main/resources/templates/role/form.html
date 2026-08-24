@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('角色管理')}"></head>
+<body th:replace="~{fragments/layout :: layout('角色管理', ~{::content})}">
+<div th:fragment="content">
+    <div class="card" style="max-width: 1440px;">
+        <div class="card-header">
+            <h5 th:text="${isEdit} ? '编辑角色' : '新增角色'">角色</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <form th:action="${isEdit} ? @{/admin/roles/{id}(id=${roleForm.id})} : @{/admin/roles}"
+                  th:object="${roleForm}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="code">角色编码 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="code" th:field="*{code}"
+                               placeholder="如 ADMIN"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('code')}" th:errors="*{code}"></div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="name">名称（英文） <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" th:field="*{name}" placeholder="如 Admin"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="nameZh">名称（中文） <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="nameZh" th:field="*{nameZh}" placeholder="如 管理员"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('nameZh')}" th:errors="*{nameZh}"></div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label" for="description">描述</label>
+                        <input type="text" class="form-control" id="description" th:field="*{description}"/>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="sortOrder">排序值</label>
+                        <input type="number" class="form-control" id="sortOrder" th:field="*{sortOrder}"/>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="enabled" th:field="*{enabled}"/>
+                        <label class="form-check-label" for="enabled">启用该角色</label>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">分配权限</label>
+                    <div th:each="entry : ${permissionGroups}">
+                        <div class="permission-group">
+                            <div class="pg-header" th:text="${entry.key}">模块</div>
+                            <div class="pg-body">
+                                <label class="permission-item" th:each="perm : ${entry.value}">
+                                    <input type="checkbox" class="form-check-input" th:field="*{permissionIds}"
+                                           th:value="${perm.id}"/>
+                                    <span th:text="${perm.nameZh}">权限</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+                    <a th:href="@{/admin/roles}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> 返回</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

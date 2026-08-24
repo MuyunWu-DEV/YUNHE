@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('角色详情')}"></head>
+<body th:replace="~{fragments/layout :: layout('角色详情', ~{::content})}">
+<div th:fragment="content">
+    <div class="card" style="max-width: 1440px;">
+        <div class="card-header">
+            <h5>角色详情</h5>
+            <a th:href="@{/admin/roles}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> 返回</a>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-4">
+                <dt class="col-sm-2">角色编码</dt>
+                <dd class="col-sm-4"><code th:text="${role.code}">ROLE</code></dd>
+                <dt class="col-sm-2">角色名称</dt>
+                <dd class="col-sm-4" th:text="${role.nameZh} ?: '-'">-</dd>
+            </dl>
+            <dl class="row mb-4">
+                <dt class="col-sm-2">描述</dt>
+                <dd class="col-sm-10" th:text="${role.description} ?: '-'">-</dd>
+            </dl>
+            <dl class="row mb-4">
+                <dt class="col-sm-2">状态</dt>
+                <dd class="col-sm-4">
+                    <span class="badge badge-soft badge-success" th:if="${role.enabled}">启用</span>
+                    <span class="badge badge-soft badge-danger" th:unless="${role.enabled}">禁用</span>
+                </dd>
+                <dt class="col-sm-2">内置</dt>
+                <dd class="col-sm-4" th:text="${role.builtIn} ? '是' : '否'">否</dd>
+            </dl>
+            <dl class="row mb-4">
+                <dt class="col-sm-2">用户数</dt>
+                <dd class="col-sm-4" th:text="${role.userCount}">0</dd>
+                <dt class="col-sm-2">创建时间</dt>
+                <dd class="col-sm-4"
+                    th:text="${role.createdAt != null ? #temporals.format(role.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">-</dd>
+            </dl>
+
+            <h6 class="mb-3">权限列表（<span th:text="${role.permissionCodes != null ? role.permissionCodes.size() : 0}">0</span>）</h6>
+            <div th:if="${role.permissionCodes != null and !role.permissionCodes.isEmpty()}">
+                <span class="badge badge-soft badge-muted me-1"
+                      th:each="code : ${role.permissionCodes}" th:text="${code}">权限</span>
+            </div>
+            <div th:if="${role.permissionCodes == null or role.permissionCodes.isEmpty()}" class="text-muted">暂无权限</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

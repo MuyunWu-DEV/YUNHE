@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('形式发票')}"></head>
+<body th:replace="~{fragments/layout :: layout('形式发票', ~{::content})}">
+<div th:fragment="content">
+    <div class="card">
+        <div class="card-header">
+            <h5>形式发票列表</h5>
+            <a sec:authorize="hasAuthority('proforma-invoice:create')" th:href="@{/crm/proforma-invoices/new}"
+               class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> 新增发票</a>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>发票号</th>
+                        <th>发票日期</th>
+                        <th>客户</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="inv : ${invoices.content}">
+                        <td th:text="${inv.id}">1</td>
+                        <td><strong th:text="${inv.invoiceNumber}">YHPI-2026-001</strong></td>
+                        <td th:text="${inv.invoiceDate}">2026-01-01</td>
+                        <td th:text="${inv.customer != null ? inv.customer.name + (!#strings.isEmpty(inv.customer.company) ? ' (' + inv.customer.company + ')' : '') : '-'}">客户</td>
+                        <td>
+                            <span class="badge badge-soft"
+                                  th:classappend="${inv.status.name() == 'GENERATED'} ? 'badge-success' : (${inv.status.name() == 'PENDING_REGENERATION'} ? 'badge-warning' : 'badge-muted')"
+                                  th:text="#{${inv.status.code}}">待生成</span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a sec:authorize="hasAuthority('proforma-invoice:list')"
+                                   th:href="@{/crm/proforma-invoices/{id}/view(id=${inv.id})}"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i> 查看</a>
+                                <a sec:authorize="hasAuthority('proforma-invoice:update')"
+                                   th:href="@{/crm/proforma-invoices/{id}/edit(id=${inv.id})}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> 编辑</a>
+                                <form sec:authorize="hasAuthority('proforma-invoice:delete')"
+                                      th:action="@{/crm/proforma-invoices/{id}/delete(id=${inv.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('确定删除该发票吗？');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 删除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:if="${invoices.content.isEmpty()}" class="empty-state">暂无形式发票</div>
+        </div>
+
+        <div class="card-header" th:if="${invoices.totalPages > 1}">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${invoices.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/crm/proforma-invoices(page=${invoices.number - 1})}">上一页</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${pageNumbers}"
+                        th:classappend="${i == invoices.number} ? 'active'">
+                        <a class="page-link" th:href="@{/crm/proforma-invoices(page=${i})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${invoices.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/crm/proforma-invoices(page=${invoices.number + 1})}">下一页</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

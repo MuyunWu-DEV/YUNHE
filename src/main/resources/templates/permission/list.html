@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('权限管理')}"></head>
+<body th:replace="~{fragments/layout :: layout('权限管理', ~{::content})}">
+<div th:fragment="content">
+    <div class="page-head">
+        <p class="text-muted mb-0">权限按模块分组展示，用于给角色分配操作粒度。</p>
+        <a sec:authorize="hasAuthority('permission:create')" th:href="@{/admin/permissions/new}"
+           class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> 新增权限</a>
+    </div>
+
+    <div class="card mb-3" th:each="entry : ${permissionGroups}">
+        <div class="card-header">
+            <h5 th:text="${entry.key}">模块</h5>
+            <span class="text-muted small" th:text="${entry.value.size() + ' 项'}">0 项</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>权限编码</th>
+                        <th>名称</th>
+                        <th>资源</th>
+                        <th>动作</th>
+                        <th>排序</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="perm : ${entry.value}">
+                        <td th:text="${perm.id}">1</td>
+                        <td><code th:text="${perm.code}">perm</code></td>
+                        <td th:text="${perm.nameZh}">名称</td>
+                        <td><code th:text="${perm.resource} ?: '-'">/</code></td>
+                        <td><span class="badge badge-soft badge-muted" th:text="${perm.action} ?: '-'">-</span></td>
+                        <td th:text="${perm.sortOrder} ?: '-'">-</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a sec:authorize="hasAuthority('permission:list')"
+                                   th:href="@{/admin/permissions/{id}/view(id=${perm.id})}"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i> 查看</a>
+                                <a sec:authorize="hasAuthority('permission:update')"
+                                   th:href="@{/admin/permissions/{id}/edit(id=${perm.id})}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> 编辑</a>
+                                <form sec:authorize="hasAuthority('permission:delete')"
+                                      th:action="@{/admin/permissions/{id}/delete(id=${perm.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('确定删除该权限吗？将从相关角色中移除。');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 删除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${permissionGroups.isEmpty()}" class="card"><div class="empty-state">暂无权限数据</div></div>
+</div>
+</body>
+</html>

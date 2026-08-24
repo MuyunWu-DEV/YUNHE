@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('角色管理')}"></head>
+<body th:replace="~{fragments/layout :: layout('角色管理', ~{::content})}">
+<div th:fragment="content">
+    <div class="card">
+        <div class="card-header">
+            <h5>角色列表</h5>
+            <a sec:authorize="hasAuthority('role:create')" th:href="@{/admin/roles/new}"
+               class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> 新增角色</a>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>编码</th>
+                        <th>名称</th>
+                        <th>描述</th>
+                        <th>权限数</th>
+                        <th>用户数</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="role : ${roles}">
+                        <td th:text="${role.id}">1</td>
+                        <td>
+                            <code th:text="${role.code}">ROLE</code>
+                            <span class="badge badge-soft badge-muted ms-1" th:if="${role.builtIn}">内置</span>
+                        </td>
+                        <td th:text="${role.nameZh}">角色名</td>
+                        <td th:text="${role.description} ?: '-'">-</td>
+                        <td th:text="${role.permissionIds == null ? 0 : role.permissionIds.size()}">0</td>
+                        <td th:text="${role.userCount}">0</td>
+                        <td>
+                            <span class="badge badge-soft badge-success" th:if="${role.enabled}">启用</span>
+                            <span class="badge badge-soft badge-danger" th:unless="${role.enabled}">禁用</span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a sec:authorize="hasAuthority('role:list')"
+                                   th:href="@{/admin/roles/{id}/view(id=${role.id})}"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i> 查看</a>
+                                <a sec:authorize="hasAuthority('role:update')"
+                                   th:href="@{/admin/roles/{id}/edit(id=${role.id})}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> 编辑</a>
+                                <form sec:authorize="hasAuthority('role:delete')"
+                                      th:if="${!role.builtIn and role.userCount == 0}"
+                                      th:action="@{/admin/roles/{id}/delete(id=${role.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('确定删除该角色吗？');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 删除</button>
+                                </form>
+                                <span th:if="${role.builtIn or role.userCount > 0}"
+                                      class="text-muted small align-self-center">不可删除</span>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:if="${roles.isEmpty()}" class="empty-state">暂无角色数据</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

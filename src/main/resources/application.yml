@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: yunhe-website
+  profiles:
+    active: dev
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 40MB
+  thymeleaf:
+    mode: HTML
+    encoding: UTF-8
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+  jackson:
+    default-property-inclusion: non_null
+    time-zone: Asia/Shanghai
+
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 30m
+
+logging:
+  level:
+    org.hibernate.SQL: warn

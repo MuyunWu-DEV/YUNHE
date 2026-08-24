@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('用户管理')}"></head>
+<body th:replace="~{fragments/layout :: layout('用户管理', ~{::content})}">
+<div th:fragment="content">
+    <div class="card">
+        <div class="card-header">
+            <h5>用户列表</h5>
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <form th:action="@{/admin/users}" method="get" class="d-flex gap-2">
+                    <input type="text" name="keyword" class="form-control form-control-sm"
+                           th:value="${keyword}" placeholder="搜索用户名 / 姓名 / 邮箱"
+                           style="min-width: 200px;"/>
+                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="搜索">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+                <a sec:authorize="hasAuthority('user:create')" th:href="@{/admin/users/new}"
+                   class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> 新增用户</a>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>用户名</th>
+                        <th>姓名</th>
+                        <th>邮箱</th>
+                        <th>角色</th>
+                        <th>状态</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="user : ${users.content}">
+                        <td th:text="${user.id}">1</td>
+                        <td><strong th:text="${user.username}">admin</strong></td>
+                        <td th:text="${user.fullName} ?: '-'">-</td>
+                        <td th:text="${user.email} ?: '-'">-</td>
+                        <td>
+                            <span class="badge badge-soft badge-info me-1"
+                                  th:each="role : ${user.roles}"
+                                  th:text="${role.nameZh}">角色</span>
+                            <span th:if="${user.roles == null or user.roles.isEmpty()}"
+                                  class="text-muted">-</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-soft badge-success" th:if="${user.enabled}">正常</span>
+                            <span class="badge badge-soft badge-danger" th:unless="${user.enabled}">禁用</span>
+                        </td>
+                        <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}">-</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a sec:authorize="hasAuthority('user:list')"
+                                   th:href="@{/admin/users/{id}/view(id=${user.id})}"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i> 查看</a>
+                                <a sec:authorize="hasAuthority('user:update')"
+                                   th:href="@{/admin/users/{id}/edit(id=${user.id})}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> 编辑</a>
+                                <form sec:authorize="hasAuthority('user:delete')"
+                                      th:action="@{/admin/users/{id}/delete(id=${user.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('确定删除该用户吗？');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 删除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:if="${users.content.isEmpty()}" class="empty-state">暂无用户数据</div>
+        </div>
+
+        <!-- 分页 -->
+        <div class="card-header" th:if="${users.totalPages > 1}">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${users.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/users(page=${users.number - 1}, keyword=${keyword})}">上一页</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${pageNumbers}"
+                        th:classappend="${i == users.number} ? 'active'">
+                        <a class="page-link" th:href="@{/admin/users(page=${i}, keyword=${keyword})}"
+                           th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${users.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/users(page=${users.number + 1}, keyword=${keyword})}">下一页</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

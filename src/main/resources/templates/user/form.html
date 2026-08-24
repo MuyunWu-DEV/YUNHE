@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${isEdit} ? '编辑用户' : '新增用户')}"></head>
+<body th:replace="~{fragments/layout :: layout(${isEdit} ? '用户管理' : '用户管理', ~{::content})}">
+<div th:fragment="content">
+    <div class="card" style="max-width: 1440px;">
+        <div class="card-header">
+            <h5 th:text="${isEdit} ? '编辑用户' : '新增用户'">用户</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <form th:action="${isEdit} ? @{/admin/users/{id}(id=${userForm.id})} : @{/admin/users}"
+                  th:object="${userForm}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="username">用户名 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username"
+                               th:field="*{username}" placeholder="登录账号"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('username')}"
+                             th:errors="*{username}"></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="password">
+                            密码 <span th:if="${!isEdit}" class="text-danger">*</span>
+                            <span th:if="${isEdit}" class="text-muted small">（留空则不修改）</span>
+                        </label>
+                        <input type="password" class="form-control" id="password"
+                               th:field="*{password}" placeholder="至少 6 位"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('password')}"
+                             th:errors="*{password}"></div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="fullName">姓名</label>
+                        <input type="text" class="form-control" id="fullName" th:field="*{fullName}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="email">邮箱</label>
+                        <input type="text" class="form-control" id="email" th:field="*{email}"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('email')}"
+                             th:errors="*{email}"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="phone">手机号</label>
+                    <input type="text" class="form-control" id="phone" th:field="*{phone}"/>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">分配角色</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <label class="permission-item" th:each="role : ${roles}">
+                            <input type="checkbox" class="form-check-input" th:field="*{roleIds}"
+                                   th:value="${role.id}"/>
+                            <span th:text="${role.nameZh}">角色</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-4 d-flex gap-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="enabled" th:field="*{enabled}"/>
+                        <label class="form-check-label" for="enabled">启用账号</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="accountLocked"
+                               th:field="*{accountLocked}"/>
+                        <label class="form-check-label" for="accountLocked">锁定账号</label>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+                    <a th:href="@{/admin/users}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> 返回</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

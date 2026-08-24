@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('客户档案')}"></head>
+<body th:replace="~{fragments/layout :: layout('客户档案', ~{::content})}">
+<div th:fragment="content">
+    <div class="card">
+        <div class="card-header">
+            <h5>客户列表</h5>
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <form th:action="@{/crm/customers}" method="get" class="d-flex gap-2">
+                    <input type="text" name="keyword" class="form-control form-control-sm"
+                           th:value="${keyword}" placeholder="搜索姓名 / 手机号 / 公司"
+                           style="min-width: 200px;"/>
+                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="搜索">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+                <a sec:authorize="hasAuthority('customer:create')" th:href="@{/crm/customers/new}"
+                   class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> 新增客户</a>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>姓名</th>
+                        <th>手机号</th>
+                        <th>公司</th>
+                        <th>注册号</th>
+                        <th>标签</th>
+                        <th>优先级</th>
+                        <th>下次跟进</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="customer : ${customers.content}">
+                        <td th:text="${customer.id}">1</td>
+                        <td><strong th:text="${customer.name}">姓名</strong></td>
+                        <td th:text="${customer.phone}">-</td>
+                        <td th:text="${customer.company} ?: '-'">-</td>
+                        <td th:text="${customer.registrationNo} ?: '-'">-</td>
+                        <td>
+                            <span class="badge badge-soft badge-info me-1"
+                                  th:each="tag : ${customer.tags}" th:text="#{${tag.code}}">标签</span>
+                            <span th:if="${customer.tags == null or customer.tags.isEmpty()}"
+                                  class="text-muted">-</span>
+                        </td>
+                        <td>
+                            <span th:if="${customer.priority != null}"
+                                  th:text="#{${customer.priority.code}}">中</span>
+                            <span th:if="${customer.priority == null}" class="text-muted">-</span>
+                        </td>
+                        <td th:text="${customer.nextFollowUpAt != null ? #temporals.format(customer.nextFollowUpAt, 'yyyy-MM-dd') : '-'}">-</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a sec:authorize="hasAuthority('customer:list')"
+                                   th:href="@{/crm/customers/{id}/view(id=${customer.id})}"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i> 查看</a>
+                                <a sec:authorize="hasAuthority('customer:update')"
+                                   th:href="@{/crm/customers/{id}/edit(id=${customer.id})}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> 编辑</a>
+                                <form sec:authorize="hasAuthority('customer:delete')"
+                                      th:action="@{/crm/customers/{id}/delete(id=${customer.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('确定删除该客户吗？附件将一并删除。');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 删除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:if="${customers.content.isEmpty()}" class="empty-state">暂无客户数据</div>
+        </div>
+
+        <div class="card-header" th:if="${customers.totalPages > 1}">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${customers.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/crm/customers(page=${customers.number - 1}, keyword=${keyword})}">上一页</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${pageNumbers}"
+                        th:classappend="${i == customers.number} ? 'active'">
+                        <a class="page-link" th:href="@{/crm/customers(page=${i}, keyword=${keyword})}"
+                           th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${customers.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/crm/customers(page=${customers.number + 1}, keyword=${keyword})}">下一页</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('订单管理')}"></head>
+<body th:replace="~{fragments/layout :: layout('订单管理', ~{::content})}">
+<div th:fragment="content">
+    <div class="card">
+        <div class="card-header">
+            <h5>订单列表</h5>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>订单号</th>
+                        <th>订单日期</th>
+                        <th>客户</th>
+                        <th>状态</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="o : ${orders.content}">
+                        <td th:text="${o.id}">1</td>
+                        <td th:text="${o.orderNo}">YHSO-2026-001</td>
+                        <td th:text="${o.orderDate}">2026-01-01</td>
+                        <td th:text="${o.customer != null ? o.customer.name + (!#strings.isEmpty(o.customer.company) ? ' (' + o.customer.company + ')' : '') : '-'}">客户</td>
+                        <td>
+                            <span class="badge badge-soft"
+                                  th:classappend="${o.status.name() == 'SHIPPED'} ? 'badge-success' : (${o.status.name() == 'CONFIRMED'} ? 'badge-info' : 'badge-muted')"
+                                  th:text="#{${o.status.code}}">草稿</span>
+                        </td>
+                        <td th:text="${o.remark} ?: '-'">-</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a sec:authorize="hasAuthority('sales-order:list')"
+                                   th:href="@{/crm/sales-orders/{id}/view(id=${o.id})}"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i> 查看</a>
+                                <a sec:authorize="hasAuthority('sales-order:update')"
+                                   th:href="@{/crm/sales-orders/{id}/edit(id=${o.id})}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> 编辑</a>
+                                <form sec:authorize="hasAuthority('sales-order:delete')"
+                                      th:action="@{/crm/sales-orders/{id}/delete(id=${o.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('确定删除该订单吗？');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 删除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:if="${orders.content.isEmpty()}" class="empty-state">暂无订单数据</div>
+        </div>
+
+        <div class="card-header" th:if="${orders.totalPages > 1}">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${orders.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/crm/sales-orders(page=${orders.number - 1})}">上一页</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${pageNumbers}"
+                        th:classappend="${i == orders.number} ? 'active'">
+                        <a class="page-link" th:href="@{/crm/sales-orders(page=${i})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${orders.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/crm/sales-orders(page=${orders.number + 1})}">下一页</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

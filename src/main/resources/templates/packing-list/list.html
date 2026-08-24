@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('装箱单')}"></head>
+<body th:replace="~{fragments/layout :: layout('装箱单', ~{::content})}">
+<div th:fragment="content">
+    <div class="card">
+        <div class="card-header">
+            <h5>装箱单列表</h5>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>装箱单号</th>
+                        <th>装箱日期</th>
+                        <th>客户</th>
+                        <th>件数</th>
+                        <th>状态</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${packingLists.content}">
+                        <td th:text="${p.id}">1</td>
+                        <td th:text="${p.packingNo}">YHPL-2026-001</td>
+                        <td th:text="${p.packingDate}">2026-01-01</td>
+                        <td th:text="${p.customer != null ? p.customer.name + (!#strings.isEmpty(p.customer.company) ? ' (' + p.customer.company + ')' : '') : '-'}">客户</td>
+                        <td th:text="${p.numberOfPackages} ?: '-'">-</td>
+                        <td>
+                            <span class="badge badge-soft"
+                                  th:classappend="${p.status.name() == 'GENERATED'} ? 'badge-success' : (${p.status.name() == 'PENDING_REGENERATION'} ? 'badge-warning' : 'badge-muted')"
+                                  th:text="#{${p.status.code}}">待生成</span>
+                        </td>
+                        <td th:text="${p.remark} ?: '-'">-</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a sec:authorize="hasAuthority('packing-list:list')"
+                                   th:href="@{/crm/packing-lists/{id}/view(id=${p.id})}"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i> 查看</a>
+                                <a sec:authorize="hasAuthority('packing-list:update')"
+                                   th:href="@{/crm/packing-lists/{id}/edit(id=${p.id})}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> 编辑</a>
+                                <form sec:authorize="hasAuthority('packing-list:delete')"
+                                      th:action="@{/crm/packing-lists/{id}/delete(id=${p.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('确定删除该装箱单吗？');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 删除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:if="${packingLists.content.isEmpty()}" class="empty-state">暂无装箱单数据</div>
+        </div>
+
+        <div class="card-header" th:if="${packingLists.totalPages > 1}">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${packingLists.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/crm/packing-lists(page=${packingLists.number - 1})}">上一页</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${pageNumbers}"
+                        th:classappend="${i == packingLists.number} ? 'active'">
+                        <a class="page-link" th:href="@{/crm/packing-lists(page=${i})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${packingLists.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/crm/packing-lists(page=${packingLists.number + 1})}">下一页</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('用户详情')}"></head>
+<body th:replace="~{fragments/layout :: layout('用户详情', ~{::content})}">
+<div th:fragment="content">
+    <div class="card" style="max-width: 1440px;">
+        <div class="card-header">
+            <h5>用户详情</h5>
+            <a th:href="@{/admin/users}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> 返回</a>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-4">
+                <dt class="col-sm-2">用户名</dt>
+                <dd class="col-sm-4" th:text="${user.username}">admin</dd>
+                <dt class="col-sm-2">姓名</dt>
+                <dd class="col-sm-4" th:text="${user.fullName} ?: '-'">-</dd>
+            </dl>
+            <dl class="row mb-4">
+                <dt class="col-sm-2">邮箱</dt>
+                <dd class="col-sm-4" th:text="${user.email} ?: '-'">-</dd>
+                <dt class="col-sm-2">手机号</dt>
+                <dd class="col-sm-4" th:text="${user.phone} ?: '-'">-</dd>
+            </dl>
+            <dl class="row mb-4">
+                <dt class="col-sm-2">角色</dt>
+                <dd class="col-sm-4">
+                    <span class="badge badge-soft badge-info me-1"
+                          th:each="role : ${user.roles}" th:text="${role.nameZh}">角色</span>
+                    <span th:if="${user.roles == null or user.roles.isEmpty()}" class="text-muted">-</span>
+                </dd>
+                <dt class="col-sm-2">状态</dt>
+                <dd class="col-sm-4">
+                    <span class="badge badge-soft badge-success" th:if="${user.enabled}">正常</span>
+                    <span class="badge badge-soft badge-danger" th:unless="${user.enabled}">禁用</span>
+                </dd>
+            </dl>
+            <dl class="row mb-4">
+                <dt class="col-sm-2">是否锁定</dt>
+                <dd class="col-sm-4" th:text="${user.accountLocked} ? '已锁定' : '未锁定'">未锁定</dd>
+                <dt class="col-sm-2">创建时间</dt>
+                <dd class="col-sm-4"
+                    th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">-</dd>
+            </dl>
+            <dl class="row mb-4">
+                <dt class="col-sm-2">最后登录时间</dt>
+                <dd class="col-sm-4"
+                    th:text="${user.lastLoginAt != null ? #temporals.format(user.lastLoginAt, 'yyyy-MM-dd HH:mm') : '-'}">-</dd>
+                <dt class="col-sm-2">最后登录 IP</dt>
+                <dd class="col-sm-4" th:text="${user.lastLoginIp} ?: '-'">-</dd>
+            </dl>
+        </div>
+    </div>
+</div>
+</body>
+</html>

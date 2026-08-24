@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('权限详情')}"></head>
+<body th:replace="~{fragments/layout :: layout('权限详情', ~{::content})}">
+<div th:fragment="content">
+    <div class="card" style="max-width: 1440px;">
+        <div class="card-header">
+            <h5>权限详情</h5>
+            <a th:href="@{/admin/permissions}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> 返回</a>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-4">
+                <dt class="col-sm-2">权限编码</dt>
+                <dd class="col-sm-4"><code th:text="${permission.code}">perm</code></dd>
+                <dt class="col-sm-2">权限名称</dt>
+                <dd class="col-sm-4" th:text="${permission.nameZh} ?: '-'">-</dd>
+            </dl>
+            <dl class="row mb-4">
+                <dt class="col-sm-2">模块</dt>
+                <dd class="col-sm-4" th:text="${permission.module} ?: '-'">-</dd>
+                <dt class="col-sm-2">排序</dt>
+                <dd class="col-sm-4" th:text="${permission.sortOrder} ?: '-'">-</dd>
+            </dl>
+            <dl class="row mb-4">
+                <dt class="col-sm-2">资源</dt>
+                <dd class="col-sm-4"><code th:text="${permission.resource} ?: '-'">/</code></dd>
+                <dt class="col-sm-2">动作</dt>
+                <dd class="col-sm-4" th:text="${permission.action} ?: '-'">-</dd>
+            </dl>
+            <dl class="row mb-4">
+                <dt class="col-sm-2">描述</dt>
+                <dd class="col-sm-10" th:text="${permission.description} ?: '-'">-</dd>
+            </dl>
+        </div>
+    </div>
+</div>
+</body>
+</html>

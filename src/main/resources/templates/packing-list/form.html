@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('编辑装箱单')}"></head>
+<body th:replace="~{fragments/layout :: layout('编辑装箱单', ~{::content})}">
+<div th:fragment="content">
+    <div class="card" style="max-width: 1440px;">
+        <div class="card-header">
+            <h5 th:text="${isChange} ? '发起变更' : '编辑装箱单'">编辑装箱单</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <form th:action="${isChange} ? @{/crm/packing-lists/{id}/revise(id=${packingListForm.id})} : @{/crm/packing-lists/{id}(id=${packingListForm.id})}"
+                  th:object="${packingListForm}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="packingDate">装箱日期 <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="packingDate" th:field="*{packingDate}"/>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('packingDate')}" th:errors="*{packingDate}"></div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="numberOfPackages">件数 / 箱数</label>
+                        <input type="number" min="1" class="form-control" id="numberOfPackages" th:field="*{numberOfPackages}"/>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="grossWeight">毛重 (kg)</label>
+                        <input type="number" step="any" class="form-control" id="grossWeight" th:field="*{grossWeight}"/>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="netWeight">净重 (kg)</label>
+                        <input type="number" step="any" class="form-control" id="netWeight" th:field="*{netWeight}"/>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="volume">体积 (m³)</label>
+                        <input type="number" step="any" class="form-control" id="volume" th:field="*{volume}"/>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="marks">唛头（Marks）</label>
+                    <textarea class="form-control" id="marks" th:field="*{marks}" rows="3"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="remark">备注</label>
+                    <textarea class="form-control" id="remark" th:field="*{remark}" rows="2"></textarea>
+                </div>
+
+                <div class="mb-3" th:if="${isChange}">
+                    <label class="form-label" for="changeReason">变更原因 <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="changeReason" th:field="*{changeReason}" rows="3"
+                              placeholder="说明本次变更原因"></textarea>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('changeReason')}" th:errors="*{changeReason}"></div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i>
+                        <span th:text="${isChange} ? '保存变更' : '保存'">保存</span></button>
+                    <a th:href="@{/crm/packing-lists}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> 返回</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
