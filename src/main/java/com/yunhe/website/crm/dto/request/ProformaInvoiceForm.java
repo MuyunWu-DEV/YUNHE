@@ -28,8 +28,20 @@ public class ProformaInvoiceForm {
     /** 来源报价单 ID */
     private Long quotationId;
 
-    /** Seller（卖方，长文本） */
-    private String seller;
+    /** 选中的条款库 ID（一键导入的数据来源，默认第一条） */
+    private Long termsLibId;
+
+    /** Seller - 公司名 */
+    private String sellerCompanyName;
+
+    /** Seller - 地址 */
+    private String sellerAddress;
+
+    /** Seller - 电话 */
+    private String sellerPhone;
+
+    /** Seller - 邮箱 */
+    private String sellerEmail;
 
     /** Buyer - 公司名 */
     private String buyerCompanyName;
@@ -48,6 +60,9 @@ public class ProformaInvoiceForm {
 
     /** Bank Account Information（银行账户信息） */
     private String bankAccountInformation;
+
+    /** Warranty（质保单行短文本，用于 PDF WARRANTY 行） */
+    private String warranty;
 
     /** 变更原因（仅「发起变更」时必填，由 ReviseGroup 分组校验） */
     @NotBlank(groups = ReviseGroup.class, message = "变更原因不能为空")

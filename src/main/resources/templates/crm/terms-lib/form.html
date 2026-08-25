@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('条款库')}"></head>
+<body th:replace="~{fragments/layout :: layout('条款库', ~{::content})}">
+<div th:fragment="content">
+    <div class="card" style="max-width: 1440px;">
+        <div class="card-header">
+            <h5 th:text="${isEdit} ? '编辑条款库' : '新增条款库'">条款库</h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">维护形式发票默认的卖方、银行账户、条款等信息，生成发票时可一键导入（默认取第一条）。</p>
+
+            <form th:action="${isEdit} ? @{/crm/terms-lib/{id}(id=${termsLibForm.id})} : @{/crm/terms-lib}"
+                  th:object="${termsLibForm}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+
+                <h6 class="mt-4 mb-3 text-primary border-bottom pb-2">公司信息</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="companyNameChinese">公司中文名</label>
+                        <input type="text" class="form-control" id="companyNameChinese" th:field="*{companyNameChinese}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="companyNameEnglish">公司英文名</label>
+                        <input type="text" class="form-control" id="companyNameEnglish" th:field="*{companyNameEnglish}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="phone">电话</label>
+                        <input type="text" class="form-control" id="phone" th:field="*{phone}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="email">邮箱</label>
+                        <input type="text" class="form-control" id="email" th:field="*{email}"/>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label class="form-label" for="address">地址</label>
+                        <input type="text" class="form-control" id="address" th:field="*{address}"/>
+                    </div>
+                </div>
+
+                <h6 class="mt-4 mb-3 text-primary border-bottom pb-2">银行账户</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="beneficiaryName">收款人名称</label>
+                        <input type="text" class="form-control" id="beneficiaryName" th:field="*{beneficiaryName}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="beneficiaryAddress">收款人地址</label>
+                        <input type="text" class="form-control" id="beneficiaryAddress" th:field="*{beneficiaryAddress}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="bankName">银行名称</label>
+                        <input type="text" class="form-control" id="bankName" th:field="*{bankName}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="bankAddress">银行地址</label>
+                        <input type="text" class="form-control" id="bankAddress" th:field="*{bankAddress}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="accountNo">账号</label>
+                        <input type="text" class="form-control" id="accountNo" th:field="*{accountNo}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="swiftCode">SWIFT 代码</label>
+                        <input type="text" class="form-control" id="swiftCode" th:field="*{swiftCode}"/>
+                    </div>
+                </div>
+
+                <h6 class="mt-4 mb-3 text-primary border-bottom pb-2">条款</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="countryOfOrigin">原产国</label>
+                        <input type="text" class="form-control" id="countryOfOrigin" th:field="*{countryOfOrigin}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="portOfDelivery">交货港</label>
+                        <input type="text" class="form-control" id="portOfDelivery" th:field="*{portOfDelivery}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="timeOfDelivery">交货时间</label>
+                        <input type="text" class="form-control" id="timeOfDelivery" th:field="*{timeOfDelivery}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="paymentTerm">付款条款</label>
+                        <input type="text" class="form-control" id="paymentTerm" th:field="*{paymentTerm}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="packing">包装</label>
+                        <input type="text" class="form-control" id="packing" th:field="*{packing}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="note">备注</label>
+                        <textarea class="form-control" id="note" th:field="*{note}" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <h6 class="mt-4 mb-3 text-primary border-bottom pb-2">其他</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="incoterms">Incoterms（贸易条款）</label>
+                        <input type="text" class="form-control" id="incoterms" th:field="*{incoterms}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="warranty">质保</label>
+                        <textarea class="form-control" id="warranty" th:field="*{warranty}" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+                    <a th:href="@{/crm/terms-lib}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> 返回</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

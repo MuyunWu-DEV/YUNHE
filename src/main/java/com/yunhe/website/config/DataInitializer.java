@@ -7,8 +7,8 @@ import com.yunhe.website.security.entity.SysUser;
 import com.yunhe.website.security.repository.SysPermissionRepository;
 import com.yunhe.website.security.repository.SysRoleRepository;
 import com.yunhe.website.security.repository.SysUserRepository;
-import com.yunhe.website.system.entity.SystemSettings;
-import com.yunhe.website.system.repository.SystemSettingsRepository;
+import com.yunhe.website.crm.entity.CrmTermsLib;
+import com.yunhe.website.crm.repository.CrmTermsLibRepository;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,7 +35,7 @@ public class DataInitializer implements CommandLineRunner {
     private final SysUserRepository userRepository;
     private final SysRoleRepository roleRepository;
     private final SysPermissionRepository permissionRepository;
-    private final SystemSettingsRepository systemSettingsRepository;
+    private final CrmTermsLibRepository termsLibRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -44,7 +44,7 @@ public class DataInitializer implements CommandLineRunner {
         initPermissions();
         initRoles();
         initAdminUser();
-        initSystemSettings();
+        initTermsLib();
     }
 
     private void initPermissions() {
@@ -72,7 +72,6 @@ public class DataInitializer implements CommandLineRunner {
         createPermissionIfAbsent(Permissions.PROFORMA_INVOICE_CREATE, Permissions.PROFORMA_INVOICE_CREATE, "新增形式发票", "proforma-invoice", "/crm/proforma-invoices", "create", 22);
         createPermissionIfAbsent(Permissions.PROFORMA_INVOICE_UPDATE, Permissions.PROFORMA_INVOICE_UPDATE, "编辑形式发票", "proforma-invoice", "/crm/proforma-invoices", "update", 23);
         createPermissionIfAbsent(Permissions.PROFORMA_INVOICE_DELETE, Permissions.PROFORMA_INVOICE_DELETE, "删除形式发票", "proforma-invoice", "/crm/proforma-invoices", "delete", 24);
-        createPermissionIfAbsent(Permissions.SYSTEM_SETTINGS_UPDATE, Permissions.SYSTEM_SETTINGS_UPDATE, "维护系统设置", "system", "/system/settings", "update", 25);
         createPermissionIfAbsent(Permissions.SALES_ORDER_LIST, Permissions.SALES_ORDER_LIST, "查看订单", "sales-order", "/crm/sales-orders", "list", 26);
         createPermissionIfAbsent(Permissions.SALES_ORDER_CREATE, Permissions.SALES_ORDER_CREATE, "新增订单", "sales-order", "/crm/sales-orders", "create", 27);
         createPermissionIfAbsent(Permissions.SALES_ORDER_UPDATE, Permissions.SALES_ORDER_UPDATE, "编辑订单", "sales-order", "/crm/sales-orders", "update", 28);
@@ -85,6 +84,10 @@ public class DataInitializer implements CommandLineRunner {
         createPermissionIfAbsent(Permissions.PACKING_LIST_CREATE, Permissions.PACKING_LIST_CREATE, "新增装箱单", "packing-list", "/crm/packing-lists", "create", 35);
         createPermissionIfAbsent(Permissions.PACKING_LIST_UPDATE, Permissions.PACKING_LIST_UPDATE, "编辑装箱单", "packing-list", "/crm/packing-lists", "update", 36);
         createPermissionIfAbsent(Permissions.PACKING_LIST_DELETE, Permissions.PACKING_LIST_DELETE, "删除装箱单", "packing-list", "/crm/packing-lists", "delete", 37);
+        createPermissionIfAbsent(Permissions.TERMS_LIB_LIST, Permissions.TERMS_LIB_LIST, "查看条款库", "terms-lib", "/crm/terms-lib", "list", 38);
+        createPermissionIfAbsent(Permissions.TERMS_LIB_CREATE, Permissions.TERMS_LIB_CREATE, "新增条款库", "terms-lib", "/crm/terms-lib", "create", 39);
+        createPermissionIfAbsent(Permissions.TERMS_LIB_UPDATE, Permissions.TERMS_LIB_UPDATE, "编辑条款库", "terms-lib", "/crm/terms-lib", "update", 40);
+        createPermissionIfAbsent(Permissions.TERMS_LIB_DELETE, Permissions.TERMS_LIB_DELETE, "删除条款库", "terms-lib", "/crm/terms-lib", "delete", 41);
     }
 
     private void initRoles() {
@@ -107,7 +110,7 @@ public class DataInitializer implements CommandLineRunner {
                 Permissions.SALES_ORDER_LIST, Permissions.SALES_ORDER_CREATE, Permissions.SALES_ORDER_UPDATE, Permissions.SALES_ORDER_DELETE,
                 Permissions.COMMERCIAL_INVOICE_LIST, Permissions.COMMERCIAL_INVOICE_CREATE, Permissions.COMMERCIAL_INVOICE_UPDATE, Permissions.COMMERCIAL_INVOICE_DELETE,
                 Permissions.PACKING_LIST_LIST, Permissions.PACKING_LIST_CREATE, Permissions.PACKING_LIST_UPDATE, Permissions.PACKING_LIST_DELETE,
-                Permissions.SYSTEM_SETTINGS_UPDATE));
+                Permissions.TERMS_LIB_LIST, Permissions.TERMS_LIB_CREATE, Permissions.TERMS_LIB_UPDATE, Permissions.TERMS_LIB_DELETE));
 
         createRoleIfAbsent("USER", "User", "普通用户", "仅可登录查看", true, 3);
     }
@@ -128,12 +131,12 @@ public class DataInitializer implements CommandLineRunner {
         log.info("已创建默认管理员账号：{} / {}（请登录后及时修改密码）", ADMIN_USERNAME, ADMIN_PASSWORD);
     }
 
-    /** 初始化系统设置单例记录（存在则跳过） */
-    private void initSystemSettings() {
-        if (systemSettingsRepository.findFirstByOrderByIdAsc().isPresent()) {
+    /** 初始化条款库单例记录（存在则跳过） */
+    private void initTermsLib() {
+        if (termsLibRepository.findFirstByOrderByIdAsc().isPresent()) {
             return;
         }
-        systemSettingsRepository.save(new SystemSettings());
+        termsLibRepository.save(new CrmTermsLib());
     }
 
     private void createPermissionIfAbsent(String code, String name, String nameZh,

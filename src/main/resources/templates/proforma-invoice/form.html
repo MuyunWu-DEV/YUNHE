@@ -27,21 +27,37 @@
                         <input type="date" class="form-control" id="invoiceDate" th:field="*{invoiceDate}"/>
                         <div class="text-danger small" th:if="${#fields.hasErrors('invoiceDate')}" th:errors="*{invoiceDate}"></div>
                     </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="termsLibId">条款库</label>
+                        <select class="form-select" id="termsLibId" th:field="*{termsLibId}">
+                            <option value="">-- 无 --</option>
+                            <option th:each="lib : ${termsLibs}" th:value="${lib.id}"
+                                    th:text="${lib.companyNameEnglish} ?: (${lib.companyNameChinese} ?: '条款库 #' + ${lib.id})"></option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label mb-0">Seller（卖方）</label>
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="importBtn"
-                                th:attr="data-seller=${settings != null ? settings.seller : ''},
-                                         data-incoterms=${settings != null ? settings.incoterms : ''},
-                                         data-terms=${settings != null ? settings.terms : ''},
-                                         data-bank=${settings != null ? settings.bankAccountInformation : ''}">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="importBtn">
                             <i class="bi bi-box-arrow-in-down"></i> 一键导入
                         </button>
                     </div>
-                    <textarea class="form-control mt-2" id="seller" th:field="*{seller}" rows="4"
-                              placeholder="卖方名称、地址、联系方式等"></textarea>
+                    <div class="row mt-2">
+                        <div class="col-md-6 mb-2">
+                            <input type="text" class="form-control" th:field="*{sellerCompanyName}" placeholder="公司名"/>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <input type="text" class="form-control" th:field="*{sellerPhone}" placeholder="电话"/>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <input type="text" class="form-control" th:field="*{sellerEmail}" placeholder="邮箱"/>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <input type="text" class="form-control" th:field="*{sellerAddress}" placeholder="地址"/>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mb-3">
@@ -93,7 +109,10 @@
 
     <script>
         document.getElementById('importBtn').addEventListener('click', function () {
-            document.getElementById('seller').value = this.dataset.seller || '';
+            document.getElementById('sellerCompanyName').value = this.dataset.sellerCompany || '';
+            document.getElementById('sellerAddress').value = this.dataset.sellerAddress || '';
+            document.getElementById('sellerPhone').value = this.dataset.sellerPhone || '';
+            document.getElementById('sellerEmail').value = this.dataset.sellerEmail || '';
             document.getElementById('incoterms').value = this.dataset.incoterms || '';
             document.getElementById('terms').value = this.dataset.terms || '';
             document.getElementById('bankAccountInformation').value = this.dataset.bank || '';

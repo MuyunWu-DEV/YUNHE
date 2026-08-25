@@ -9,15 +9,18 @@ import com.yunhe.website.crm.dto.QuotationDto;
 import com.yunhe.website.crm.dto.VersionFileDto;
 import com.yunhe.website.crm.dto.request.ProformaInvoiceForm;
 import com.yunhe.website.crm.entity.ProformaDetails;
+import com.yunhe.website.crm.entity.CrmTermsLib;
 import com.yunhe.website.crm.service.CustomerService;
 import com.yunhe.website.crm.service.DocumentChainService;
 import com.yunhe.website.crm.service.ProformaInvoiceService;
 import com.yunhe.website.crm.service.QuotationService;
-import com.yunhe.website.system.entity.SystemSettings;
-import com.yunhe.website.system.service.SystemSettingsService;
+import com.yunhe.website.crm.service.CrmTermsLibService;
 import jakarta.validation.Valid;
 import jakarta.validation.groups.Default;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
@@ -47,7 +50,7 @@ public class ProformaInvoiceController {
     private final ProformaInvoiceService invoiceService;
     private final QuotationService quotationService;
     private final CustomerService customerService;
-    private final SystemSettingsService systemSettingsService;
+    private final CrmTermsLibService termsLibService;
     private final DocumentChainService documentChainService;
 
     @GetMapping
@@ -215,7 +218,13 @@ public class ProformaInvoiceController {
     }
 
     private void prepareFormModel(Model model, boolean isEdit) {
-        model.addAttribute("settings", systemSettingsService.get());
+        List<CrmTermsLib> termsLibs = termsLibService.list();
+        model.addAttribute("termsLibs", termsLibs);
+        Map<Long, Map<String, String>> prefills = new LinkedHashMap<>();
+        for (CrmTermsLib lib : termsLibs) {
+            prefills.put(lib.getId(), termsLibService.prefillMapOf(lib));
+        }
+        model.addAttribute("termsLibPrefills", prefills);
         model.addAttribute("isEdit", isEdit);
     }
 
@@ -225,10 +234,14 @@ public class ProformaInvoiceController {
     }
 
     private void prefillFromSettings(ProformaInvoiceForm form) {
-        SystemSettings settings = systemSettingsService.get();
-        form.setSeller(settings.getSeller());
-        form.setTerms(settings.getTerms());
-        form.setBankAccountInformation(settings.getBankAccountInformation());
+        CrmTermsLib lib = termsLibService.get();
+        form.setTermsLibId(lib.getId());
+        form.setSellerCompanyName(lib.getCompanyNameEnglish());
+        form.setSellerAddress(lib.getAddress());
+        form.setSellerPhone(lib.getPhone());
+        form.setSellerEmail(lib.getEmail());
+        form.setTerms(termsLibService.getTerms());
+        form.setBankAccountInformation(termsLibService.getBankAccountInformation());
     }
 
     private ProformaInvoiceForm toForm(ProformaInvoiceDto dto) {
@@ -240,7 +253,12 @@ public class ProformaInvoiceController {
         form.setQuotationId(dto.quotationId());
         ProformaDetails details = dto.details();
         if (details != null) {
-            form.setSeller(details.seller());
+            if (details.seller() != null) {
+                form.setSellerCompanyName(details.seller().companyName());
+                form.setSellerAddress(details.seller().address());
+                form.setSellerPhone(details.seller().phone());
+                form.setSellerEmail(details.seller().email());
+            }
             if (details.buyer() != null) {
                 form.setBuyerCompanyName(details.buyer().companyName());
                 form.setBuyerRegistrationNo(details.buyer().registrationNo());
@@ -249,6 +267,7 @@ public class ProformaInvoiceController {
             form.setIncoterms(details.incoterms());
             form.setTerms(details.terms());
             form.setBankAccountInformation(details.bankAccountInformation());
+            form.setWarranty(details.warranty());
         }
         return form;
     }

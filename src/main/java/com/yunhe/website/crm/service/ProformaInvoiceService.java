@@ -19,6 +19,7 @@ import com.yunhe.website.crm.repository.ProformaInvoiceRepository;
 import com.yunhe.website.crm.repository.ProformaInvoiceVersionRepository;
 import com.yunhe.website.crm.repository.QuotationRepository;
 import com.yunhe.website.crm.support.DocNumberGenerator;
+import com.yunhe.website.crm.support.PiPdfRenderer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.LinkedHashMap;
@@ -47,6 +48,7 @@ public class ProformaInvoiceService {
     private final PackingListService packingListService;
     private final ObjectMapper objectMapper;
     private final SequenceStore sequenceStore;
+    private final PiPdfRenderer piPdfRenderer;
 
     /** 分页查询发票 */
     @Transactional(readOnly = true)
@@ -246,9 +248,9 @@ public class ProformaInvoiceService {
         return new VersionFileDto(version.getPdf(), filename);
     }
 
-    /** PDF 生成（OpenPDF，暂未实现，留空函数） */
+    /** 生成 PI PDF（OpenPDF 渲染：按参考模板「整体相同 + 灰度版合理优化」） */
     private byte[] generatePdf(ProformaInvoice invoice) {
-        return null;
+        return piPdfRenderer.render(invoice);
     }
 
     private void applyForm(ProformaInvoice invoice, ProformaInvoiceForm form) {
@@ -257,14 +259,19 @@ public class ProformaInvoiceService {
         invoice.setQuotation(resolveQuotation(form.getQuotationId()));
 
         ProformaDetails details = new ProformaDetails(
-                form.getSeller(),
+                new ProformaDetails.SellerInfo(
+                        form.getSellerCompanyName(),
+                        form.getSellerAddress(),
+                        form.getSellerPhone(),
+                        form.getSellerEmail()),
                 new ProformaDetails.BuyerInfo(
                         form.getBuyerCompanyName(),
                         form.getBuyerRegistrationNo(),
                         form.getBuyerAddress()),
                 form.getIncoterms(),
                 form.getTerms(),
-                form.getBankAccountInformation());
+                form.getBankAccountInformation(),
+                form.getWarranty());
         invoice.setDetails(details);
 
         // 保存时把 buyer 信息回写到客户档案

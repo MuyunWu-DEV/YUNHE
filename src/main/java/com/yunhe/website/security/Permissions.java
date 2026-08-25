@@ -70,6 +70,9 @@ public final class Permissions {
     public static final String PACKING_LIST_UPDATE = "packing-list:update";
     public static final String PACKING_LIST_DELETE = "packing-list:delete";
 
-    // ===== 系统设置 =====
-    public static final String SYSTEM_SETTINGS_UPDATE = "system:settings:update";
+    // ===== 条款库 =====
+    public static final String TERMS_LIB_LIST = "crm:terms-lib:list";
+    public static final String TERMS_LIB_CREATE = "crm:terms-lib:create";
+    public static final String TERMS_LIB_UPDATE = "crm:terms-lib:update";
+    public static final String TERMS_LIB_DELETE = "crm:terms-lib:delete";
 }

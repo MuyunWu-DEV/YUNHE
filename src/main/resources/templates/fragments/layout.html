@@ -53,6 +53,10 @@
                         <a class="nav-link" th:href="@{/crm/packing-lists}" sec:authorize="hasAuthority('packing-list:list')"
                            th:classappend="${#strings.startsWith(currentUri, '/crm/packing-lists')} ? 'active'">
                             <i class="bi bi-box-seam"></i>装箱单</a>
+
+                        <a class="nav-link" th:href="@{/crm/terms-lib}" sec:authorize="hasAuthority('crm:terms-lib:list')"
+                           th:classappend="${#strings.startsWith(currentUri, '/crm/terms-lib')} ? 'active'">
+                            <i class="bi bi-journal-text"></i>条款库</a>
                     </div>
                 </div>
             </div>
@@ -91,21 +95,6 @@
                         <a class="nav-link" th:href="@{/crm/customers}" sec:authorize="hasAuthority('customer:list')"
                            th:classappend="${#strings.startsWith(currentUri, '/crm/customers')} ? 'active'">
                             <i class="bi bi-person-vcard"></i>客户档案</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="menu-group">
-                <button class="menu-group-title" type="button" aria-expanded="false">
-                    <i class="bi bi-gear"></i>
-                    <span>System Management</span>
-                    <i class="bi bi-chevron-down menu-group-arrow"></i>
-                </button>
-                <div class="menu-group-body">
-                    <div class="menu-group-inner">
-                        <a class="nav-link" th:href="@{/system/settings/edit}" sec:authorize="hasAuthority('system:settings:update')"
-                           th:classappend="${#strings.startsWith(currentUri, '/system/settings')} ? 'active'">
-                            <i class="bi bi-sliders"></i>系统设置</a>
                     </div>
                 </div>
             </div>

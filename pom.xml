@@ -96,6 +96,13 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- PDF 生成：OpenPDF（中文支持需在 src/main/resources/fonts/ 放入字体文件） -->
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>1.3.34</version>
+        </dependency>
     </dependencies>
 
     <build>

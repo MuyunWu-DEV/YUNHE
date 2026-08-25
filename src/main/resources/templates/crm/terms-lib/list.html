@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('条款库')}"></head>
+<body th:replace="~{fragments/layout :: layout('条款库', ~{::content})}">
+<div th:fragment="content">
+    <div class="card">
+        <div class="card-header">
+            <h5>条款库</h5>
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <a sec:authorize="hasAuthority('crm:terms-lib:create')" th:href="@{/crm/terms-lib/new}"
+                   class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> 新增条款库</a>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>公司中文名</th>
+                        <th>公司英文名</th>
+                        <th>电话</th>
+                        <th>邮箱</th>
+                        <th>地址</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="lib : ${termsLibs}">
+                        <td th:text="${lib.id}">1</td>
+                        <td><strong th:text="${lib.companyNameChinese} ?: '-'">-</strong></td>
+                        <td th:text="${lib.companyNameEnglish} ?: '-'">-</td>
+                        <td th:text="${lib.phone} ?: '-'">-</td>
+                        <td th:text="${lib.email} ?: '-'">-</td>
+                        <td th:text="${lib.address} ?: '-'">-</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a sec:authorize="hasAuthority('crm:terms-lib:update')"
+                                   th:href="@{/crm/terms-lib/{id}/edit(id=${lib.id})}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> 编辑</a>
+                                <form sec:authorize="hasAuthority('crm:terms-lib:delete')"
+                                      th:action="@{/crm/terms-lib/{id}/delete(id=${lib.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('确定删除该条款库吗？');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 删除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:if="${termsLibs.isEmpty()}" class="empty-state">暂无条款库数据</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
