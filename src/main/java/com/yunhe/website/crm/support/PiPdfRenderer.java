@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -33,9 +34,9 @@ import org.springframework.stereotype.Component;
 /**
  * Proforma Invoice PDF 渲染器（严格对齐参考模板 Proforma Invoice - V1.0 的实测样式）。
  *
- * <p>字体规范（全部英文文本只用这 3 种 Calibri 字体，靠字体名加粗/斜体，不靠 weight 位）：
+ * <p>字体规范（全部英文文本只用这 4 种 Calibri 字体，靠字体名加粗/斜体，不靠 weight 位）：
  * <ul>
- *   <li>Calibri（常规）/ Calibri-Bold（加粗）/ Calibri-Italic（斜体）</li>
+ *   <li>Calibri（常规）/ Calibri-Bold（加粗）/ Calibri-Italic（斜体）/ Calibri-BoldItalic（粗斜体）</li>
  *   <li>中文文本采用微软雅黑（msyh / msyhbd），由 {@link #textFont} 按是否含 CJK 自动切换</li>
  * </ul>
  *
@@ -63,23 +64,37 @@ public class PiPdfRenderer {
     private static final Color TXT = new Color(26, 26, 26);        // #1A1A1A 近黑
     private static final Color TXT2 = new Color(68, 68, 68);       // #444444 灰度主体
     private static final Color TXT3 = new Color(102, 102, 102);    // #666666 三级灰
-    private static final Color LINE_STRONG = new Color(74, 107, 138);
     private static final Color LINE_LIGHT = new Color(138, 164, 190);
     private static final Color ZONE = new Color(234, 241, 248);    // #EAF1F8 TERMS 标签列
     private static final Color CARD = new Color(245, 248, 252);    // #F5F8FC 浅底
     private static final Color LIGHT_BLUE = new Color(184, 196, 208); // #B8C4D0 抬头中文名
 
-    // ===================== 字号档（原模板实测） =====================
+    // ===================== 字号档（语义分组，避免裸写魔法值） =====================
+    // —— 标注 / 页脚 ——
     private static final float FS_MICRO = 6.5f;  // 页脚 / 单位标签 / 签名说明
-    private static final float FS_XS = 7.0f;     // 商品描述 / 签名标签
-    private static final float FS_S = 7.6f;      // SELLER/BUYER 标签 / WARRANTY / 银行标签
-    private static final float FS_BODY = 8.0f;   // 地址电话邮箱 / 表头 / TERMS / 银行值
-    private static final float FS_BL = 8.5f;     // Seller/Buyer 公司名 / TOTAL 标签
-    private static final float FS_MID = 9.0f;    // Name:/HS Code: / TERMS·BANK 标题
-    private static final float FS_REF = 9.5f;    // DATE / REF
+    // —— 小字 / 标签 ——
+    private static final float FS_S = 7.6f;      // 商品描述 / 签名标签 / SELLER·BUYER 标签 / WARRANTY / 银行标签
+    // —— 主体正文 ——
+    private static final float FS_BODY = 8.0f;   // 地址电话邮箱 / 表头 / TERMS / 银行值 / Seller·Buyer 公司名 / TOTAL 标签
+    // —— 区块标题 / 编号 ——
+    private static final float FS_MID = 9.0f;    // Name:/HS Code: / TERMS·BANK 标题 / DATE·REF
+    // —— 抬头 / 金额 / 数量 ——
     private static final float FS_TITLE = 11.0f; // 公司抬头 / 金额
     private static final float FS_QTY = 13.0f;   // 数量数字
-    private static final float FS_H1 = 16.0f;    // 大标题
+    // —— 大标题 ——
+    private static final float FS_H1 = 16.0f;     // 大标题 PROFORMA INVOICE
+
+    // ===================== 布局常量（与原模板核对，避免裸写魔法值） =====================
+    private static final float BORDER_WIDTH = 0.6f;     // 表格/卡片边框宽度（NAVY，+20%）
+    private static final float PAGE_MARGIN = 36f;       // A4 页边距（四边）
+    private static final float SIGNATURE_GAP = 80f;     // 签名区公司名与签名线之间的留白
+    private static final float FOOTER_DECL_GAP = 4f;    // 页脚声明句距底边
+    private static final float FOOTER_LINE_GAP = 11f;   // 页脚横线距底边
+    private static final float FOOTER_PAGE_GAP = 18f;   // 页脚「公司名 | Page」距底边
+    private static final float FOOTER_TPL_W = 30f;      // 总页数占位模板宽
+    private static final float FOOTER_TPL_H = 12f;      // 总页数占位模板高
+    private static final float[] ITEM_COL_WIDTHS = {1.1f, 4.5f, 1f, 1.4f, 1.6f}; // 货物表/金额表列宽
+    private static final String DEFAULT_CCY = "USD";    // 缺省币种
 
     // ===================== 字体（静态注册） =====================
     private static final BaseFont CALIBRI = initCalibri("C:/Windows/Fonts/calibri.ttf");
@@ -167,6 +182,27 @@ public class PiPdfRenderer {
         return sep;
     }
 
+    /** 带 NAVY 边框 + 固定内边距的卡片单元格（Seller/Buyer/签名区复用，避免四处重复 setBorder/Padding） */
+    private static PdfPCell borderedCardCell() {
+        PdfPCell c = new PdfPCell();
+        c.setBorderWidth(BORDER_WIDTH);
+        c.setBorderColor(NAVY);
+        c.setPaddingLeft(10);
+        c.setPaddingRight(4);
+        c.setPaddingTop(2);
+        c.setPaddingBottom(4);
+        return c;
+    }
+
+    /** 统一包裹 doc.add，消除各 render 方法重复的 try/catch 样板 */
+    private static void add(Document doc, Element e) {
+        try {
+            doc.add(e);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
     // =====================================================================
     //  主流程
     // =====================================================================
@@ -175,7 +211,7 @@ public class PiPdfRenderer {
         ProformaDetails details = invoice.getDetails();
         ProformaDetails.BuyerInfo buyer = details != null ? details.buyer() : null;
 
-        Document doc = new Document(PageSize.A4, 36, 36, 36, 36);
+        Document doc = new Document(PageSize.A4, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             PdfWriter writer = PdfWriter.getInstance(doc, baos);
@@ -224,11 +260,7 @@ public class PiPdfRenderer {
         if (!chineseName.isEmpty()) {
             table.addCell(cell(chineseName, FS_BODY, Font.ITALIC, LIGHT_BLUE, NAVY, Element.ALIGN_CENTER, 4, 0));
         }
-        try {
-            doc.add(table);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        add(doc, table);
     }
 
     /** 2. 大标题：PROFORMA INVOICE，金色背景 + 深蓝加粗字 */
@@ -236,15 +268,11 @@ public class PiPdfRenderer {
         PdfPTable table = new PdfPTable(1);
         table.setWidthPercentage(100);
         PdfPCell c = cell("P R O F O R M A   I N V O I C E",
-                FS_H1, Font.BOLD, NAVY, GOLD, Element.ALIGN_CENTER, 8, 0.6f);
+                FS_H1, Font.BOLD, NAVY, GOLD, Element.ALIGN_CENTER, 8, BORDER_WIDTH);
         c.setBorder(0);
         c.setLeading(0, 1.0f);
         table.addCell(c);
-        try {
-            doc.add(table);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        add(doc, table);
     }
 
     /** 3. DATE / REF. No. 双列（标签深蓝加粗 + 值近黑常规，均 9.5pt） */
@@ -255,13 +283,9 @@ public class PiPdfRenderer {
 
         Phrase datePhrase = kvPhrase("DATE:  ", invoice.getInvoiceDate() != null ? invoice.getInvoiceDate().toString() : "");
         Phrase refPhrase = kvPhrase("REF. No.:  ", safe(invoice.getInvoiceNumber()));
-        table.addCell(phraseCell(datePhrase, Element.ALIGN_LEFT, 6, 0.6f, WHITE));
-        table.addCell(phraseCell(refPhrase, Element.ALIGN_RIGHT, 6, 0.6f, WHITE));
-        try {
-            doc.add(table);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        table.addCell(phraseCell(datePhrase, Element.ALIGN_LEFT, 6, BORDER_WIDTH, WHITE));
+        table.addCell(phraseCell(refPhrase, Element.ALIGN_RIGHT, 6, BORDER_WIDTH, WHITE));
+        add(doc, table);
     }
 
     /** 4. SELLER / BUYER 双列（浅底卡片 + 弱边框；标签金色；公司名深蓝加粗；联系值标签深蓝加粗+值灰度） */
@@ -273,17 +297,11 @@ public class PiPdfRenderer {
         ProformaDetails.SellerInfo seller = details != null ? details.seller() : null;
 
         // 左：SELLER
-        PdfPCell sellerCell = new PdfPCell();
-        sellerCell.setBorderWidth(0.6f);
-        sellerCell.setBorderColor(NAVY);
-        sellerCell.setPaddingLeft(10);
-        sellerCell.setPaddingRight(4);
-        sellerCell.setPaddingTop(2f);
-        sellerCell.setPaddingBottom(4);
+        PdfPCell sellerCell = borderedCardCell();
         sellerCell.addElement(labelParagraph("S E L L E R"));
         if (seller != null) {
             if (seller.companyName() != null && !seller.companyName().isBlank()) {
-                sellerCell.addElement(boldParagraph(seller.companyName(), FS_BL, 2, NAVY));
+                sellerCell.addElement(boldParagraph(seller.companyName(), FS_BODY, 2, NAVY));
             }
             if (seller.address() != null && !seller.address().isBlank())
                 sellerCell.addElement(kvLineParagraph("Add: ", seller.address()));
@@ -295,16 +313,10 @@ public class PiPdfRenderer {
         table.addCell(sellerCell);
 
         // 右：BUYER
-        PdfPCell buyerCell = new PdfPCell();
-        buyerCell.setBorderWidth(0.6f);
-        buyerCell.setBorderColor(NAVY);
-        buyerCell.setPaddingLeft(10);
-        buyerCell.setPaddingRight(4);
-        buyerCell.setPaddingTop(2);
-        buyerCell.setPaddingBottom(4);
+        PdfPCell buyerCell = borderedCardCell();
         buyerCell.addElement(labelParagraph("B U Y E R"));
         if (buyer != null) {
-            buyerCell.addElement(boldParagraph(safe(buyer.companyName()), FS_BL, 2, NAVY));
+            buyerCell.addElement(boldParagraph(safe(buyer.companyName()), FS_BODY, 2, NAVY));
             if (buyer.registrationNo() != null && !buyer.registrationNo().isBlank())
                 buyerCell.addElement(kvLineParagraph("Registration No.: ", buyer.registrationNo()));
             if (buyer.address() != null && !buyer.address().isBlank())
@@ -312,18 +324,14 @@ public class PiPdfRenderer {
         }
         table.addCell(buyerCell);
 
-        try {
-            doc.add(table);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        add(doc, table);
     }
 
     /** 5. ITEM 表格：深蓝表头白字（8pt），浅底表体；Name 加粗斜体深蓝；描述灰度；数量13pt；金额11pt */
     private void renderItemTable(Document doc, ProformaInvoice invoice) {
         PdfPTable table = new PdfPTable(5);
         table.setWidthPercentage(100);
-        table.setWidths(new float[]{1.1f, 4.5f, 1f, 1.4f, 1.6f});
+        table.setWidths(ITEM_COL_WIDTHS);
 
         table.addCell(headerCell("I T E M"));
         table.addCell(headerCell("C O M M O D I T Y  N A M E"));
@@ -333,11 +341,11 @@ public class PiPdfRenderer {
 
         List<QuoteDetailGroup> groups = resolveDetailGroups(invoice);
         if (groups == null || groups.isEmpty()) {
-            table.addCell(cell("—", FS_BODY, Font.NORMAL, TXT3, WHITE, Element.ALIGN_CENTER, 6, 0.6f));
-            table.addCell(cell("(无明细)", FS_XS, Font.ITALIC, TXT3, WHITE, Element.ALIGN_LEFT, 6, 0.6f));
-            table.addCell(cell("", FS_BODY, Font.NORMAL, TXT3, WHITE, Element.ALIGN_CENTER, 6, 0.6f));
-            table.addCell(cell("", FS_BODY, Font.NORMAL, TXT3, WHITE, Element.ALIGN_CENTER, 6, 0.6f));
-            table.addCell(cell("", FS_BODY, Font.NORMAL, TXT3, WHITE, Element.ALIGN_CENTER, 6, 0.6f));
+            table.addCell(cell("—", FS_BODY, Font.NORMAL, TXT3, WHITE, Element.ALIGN_CENTER, 6, BORDER_WIDTH));
+            table.addCell(cell("(无明细)", FS_S, Font.ITALIC, TXT3, WHITE, Element.ALIGN_LEFT, 6, BORDER_WIDTH));
+            table.addCell(cell("", FS_BODY, Font.NORMAL, TXT3, WHITE, Element.ALIGN_CENTER, 6, BORDER_WIDTH));
+            table.addCell(cell("", FS_BODY, Font.NORMAL, TXT3, WHITE, Element.ALIGN_CENTER, 6, BORDER_WIDTH));
+            table.addCell(cell("", FS_BODY, Font.NORMAL, TXT3, WHITE, Element.ALIGN_CENTER, 6, BORDER_WIDTH));
         } else {
             for (QuoteDetailGroup g : groups) {
                 List<QuoteDetailItem> items = g.items() != null ? g.items() : List.of();
@@ -358,18 +366,14 @@ public class PiPdfRenderer {
                 }
                 if (items.isEmpty()) {
                     table.addCell(nameCell(g.name(), g.hsCode(), 1));
-                    table.addCell(cell("—", FS_XS, Font.NORMAL, TXT3, WHITE, Element.ALIGN_LEFT, 6, 0.6f));
-                    table.addCell(cell("", FS_BODY, Font.NORMAL, TXT3, WHITE, Element.ALIGN_CENTER, 6, 0.6f));
-                    table.addCell(cell("", FS_BODY, Font.NORMAL, TXT3, WHITE, Element.ALIGN_CENTER, 6, 0.6f));
-                    table.addCell(cell("", FS_BODY, Font.NORMAL, TXT3, WHITE, Element.ALIGN_CENTER, 6, 0.6f));
+                    table.addCell(cell("—", FS_S, Font.NORMAL, TXT3, WHITE, Element.ALIGN_LEFT, 6, BORDER_WIDTH));
+                    table.addCell(cell("", FS_BODY, Font.NORMAL, TXT3, WHITE, Element.ALIGN_CENTER, 6, BORDER_WIDTH));
+                    table.addCell(cell("", FS_BODY, Font.NORMAL, TXT3, WHITE, Element.ALIGN_CENTER, 6, BORDER_WIDTH));
+                    table.addCell(cell("", FS_BODY, Font.NORMAL, TXT3, WHITE, Element.ALIGN_CENTER, 6, BORDER_WIDTH));
                 }
             }
         }
-        try {
-            doc.add(table);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        add(doc, table);
     }
 
     /** 6. TOTAL：深蓝标签带 + 单一金色金额区（11pt 深蓝）+ 数量（白底深蓝）+ 可选 WARRANTY 整行（直接合并进本表） */
@@ -381,7 +385,7 @@ public class PiPdfRenderer {
                 if (g.items() == null) continue;
                 for (QuoteDetailItem it : g.items()) {
                     if (it.unitPrice() == null || it.quantity() <= 0) continue;
-                    String ccy = it.currency() != null ? it.currency() : "USD";
+                    String ccy = it.currency() != null ? it.currency() : DEFAULT_CCY;
                     BigDecimal lineTotal = it.unitPrice().multiply(BigDecimal.valueOf(it.quantity()));
                     totalByCcy.merge(ccy, lineTotal, BigDecimal::add);
                 }
@@ -390,12 +394,12 @@ public class PiPdfRenderer {
 
         PdfPTable table = new PdfPTable(5);
         table.setWidthPercentage(100);
-        table.setWidths(new float[]{1.1f, 4.5f, 1f, 1.4f, 1.6f});
-        String mainCcy = totalByCcy.keySet().stream().findFirst().orElse("USD");
+        table.setWidths(ITEM_COL_WIDTHS);
+        String mainCcy = totalByCcy.keySet().stream().findFirst().orElse(DEFAULT_CCY);
         BigDecimal mainTotal = totalByCcy.getOrDefault(mainCcy, BigDecimal.ZERO);
 
         PdfPCell label = cell("T O T A L   —   F O B   C H I N A   P O R T",
-                FS_BL, Font.BOLD, WHITE, NAVY, Element.ALIGN_CENTER, 4, 0.6f);
+                FS_BODY, Font.BOLD, WHITE, NAVY, Element.ALIGN_CENTER, 4, BORDER_WIDTH);
         label.setColspan(4);
         table.addCell(label);
         // 唯一金色区域（合并为一个框）：金额（FS_TITLE 深蓝，居中）+ 总数量（FS_MICRO 深蓝，居中）
@@ -405,7 +409,7 @@ public class PiPdfRenderer {
                 textFont(fmtMoney(mainTotal) + mainCcy, FS_TITLE, Font.BOLD, NAVY)));
         totalPh.add(new Chunk(totalQty(groups) + " " + mainUnit(groups),
                 textFont(mainUnit(groups), FS_MICRO, Font.NORMAL, TXT3)));
-        PdfPCell totalCell = phraseCell(totalPh, Element.ALIGN_CENTER, 6, 0.6f, GOLD);
+        PdfPCell totalCell = phraseCell(totalPh, Element.ALIGN_CENTER, 6, BORDER_WIDTH, GOLD);
         totalCell.setColspan(1);
         table.addCell(totalCell);
 
@@ -415,19 +419,15 @@ public class PiPdfRenderer {
             Phrase wPh = new Phrase();
             wPh.add(new Chunk("W A R R A N T Y    ", textFont("W A R R A N T Y", FS_S, Font.BOLD, GOLD)));
             wPh.add(new Chunk(safe(warranty), textFont(warranty, FS_S, Font.NORMAL, TXT2)));
-            PdfPCell wCell = phraseCell(wPh, Element.ALIGN_LEFT, 5, 0.6f, WHITE);
+            PdfPCell wCell = phraseCell(wPh, Element.ALIGN_LEFT, 5, BORDER_WIDTH, WHITE);
             wCell.setColspan(5);
             table.addCell(wCell);
         }
 
-        try {
-            doc.add(table);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        add(doc, table);
     }
 
-    /** 8. TERMS & CONDITIONS：深蓝文字标题（无表格框，下方金色线）+ 标签列浅蓝底 + 值灰度 */
+    /** 7. TERMS & CONDITIONS：深蓝文字标题（无表格框，下方金色线）+ 标签列浅蓝底 + 值灰度 */
     private void renderTermsAndConditions(Document doc, ProformaDetails details) {
         String title = "T E R M S   &   C O N D I T I O N S";
         Map<String, String> rows = parseTerms(details != null ? details.terms() : null);
@@ -442,22 +442,18 @@ public class PiPdfRenderer {
         String[] labels = {"Country of Origin", "Port of Delivery", "Time of Delivery",
                 "Payment Term", "Packing", "Note"};
         for (String label : labels) {
-            table.addCell(cell(label, FS_BODY, Font.BOLD, NAVY, ZONE, Element.ALIGN_LEFT, 3, 0.6f));
-            table.addCell(cell(safe(rows.get(label)), FS_BODY, Font.NORMAL, TXT2, WHITE, Element.ALIGN_LEFT, 3, 0.6f));
+            table.addCell(cell(label, FS_BODY, Font.BOLD, NAVY, ZONE, Element.ALIGN_LEFT, 3, BORDER_WIDTH));
+            table.addCell(cell(safe(rows.get(label)), FS_BODY, Font.NORMAL, TXT2, WHITE, Element.ALIGN_LEFT, 3, BORDER_WIDTH));
         }
         if (rows.containsKey("_extra")) {
-            PdfPCell extra = cell(rows.get("_extra"), FS_BODY, Font.ITALIC, TXT2, CARD, Element.ALIGN_LEFT, 3, 0.6f);
+            PdfPCell extra = cell(rows.get("_extra"), FS_BODY, Font.ITALIC, TXT2, CARD, Element.ALIGN_LEFT, 3, BORDER_WIDTH);
             extra.setColspan(2);
             table.addCell(extra);
         }
-        try {
-            doc.add(table);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        add(doc, table);
     }
 
-    /** 9. BANK ACCOUNT：深蓝文字标题（无表格框，下方金色线）+ 标签行深蓝带/白底交替，值灰度 */
+    /** 8. BANK ACCOUNT：深蓝文字标题（无表格框，下方金色线）+ 标签行深蓝带/白底交替，值灰度 */
     private void renderBankAccount(Document doc, ProformaDetails details) {
         String title = "B A N K   A C C O U N T   I N F O R M A T I O N";
         doc.add(para(title, FS_MID, Font.BOLD, NAVY, 3));
@@ -471,58 +467,38 @@ public class PiPdfRenderer {
                 "SWIFT Code"};
         Map<String, String> kv = parseKvByFirstColon(details != null ? details.bankAccountInformation() : null);
         for (String label : labels) {
-            table.addCell(cell(label, FS_BODY, Font.BOLD, NAVY, ZONE, Element.ALIGN_LEFT, 3, 0.6f));
-            table.addCell(cell(safe(kv.get(label)), FS_BODY, Font.NORMAL, TXT2, WHITE, Element.ALIGN_LEFT, 3, 0.6f));
+            table.addCell(cell(label, FS_BODY, Font.BOLD, NAVY, ZONE, Element.ALIGN_LEFT, 3, BORDER_WIDTH));
+            table.addCell(cell(safe(kv.get(label)), FS_BODY, Font.NORMAL, TXT2, WHITE, Element.ALIGN_LEFT, 3, BORDER_WIDTH));
         }
-        try {
-            doc.add(table);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        add(doc, table);
         doc.add(blank(4));
     }
 
-    /** 10. 签名区：金色 "F o r..." 标签 + 深蓝公司名 + 斜体说明（浅蓝外框） */
+    /** 9. 签名区：金色 "F o r..." 标签 + 深蓝公司名 + 斜体说明（浅蓝外框） */
     private void renderSignatures(Document doc, ProformaDetails details, ProformaDetails.BuyerInfo buyer) {
         PdfPTable table = new PdfPTable(2);
         table.setWidthPercentage(100);
         table.setWidths(new float[]{1, 1});
 
-        PdfPCell left = new PdfPCell();
-        left.setBorderWidth(0.6f);
-        left.setBorderColor(NAVY);
-        left.setPaddingLeft(10);
-        left.setPaddingRight(4);
-        left.setPaddingTop(2);
-        left.setPaddingBottom(4);
-        left.addElement(para("F o r   &   o n   b e h a l f   o f   S E L L E R", FS_XS, Font.BOLD, GOLD, 2));
+        PdfPCell left = borderedCardCell();
+        left.addElement(para("F o r   &   o n   b e h a l f   o f   S E L L E R", FS_S, Font.BOLD, GOLD, 2));
         left.addElement(boldParagraph(sellerCompanyName(details != null ? details.seller() : null), FS_BODY, 4, NAVY));
-        left.addElement(blank(80));
+        left.addElement(blank(SIGNATURE_GAP));
         LineSeparator sigLineL = new LineSeparator(0.5f, 100f, LINE_LIGHT, Element.ALIGN_CENTER, 0);
         left.addElement(sigLineL);
         left.addElement(para("Authorised Signature & Seal", FS_MICRO, Font.ITALIC, TXT3, 0));
         table.addCell(left);
 
-        PdfPCell right = new PdfPCell();
-        right.setBorderWidth(0.6f);
-        right.setBorderColor(NAVY);
-        right.setPaddingLeft(10);
-        right.setPaddingRight(4);
-        right.setPaddingTop(2);
-        right.setPaddingBottom(4);
-        right.addElement(para("F o r   &   o n   b e h a l f   o f   B U Y E R", FS_XS, Font.BOLD, GOLD, 2));
+        PdfPCell right = borderedCardCell();
+        right.addElement(para("F o r   &   o n   b e h a l f   o f   B U Y E R", FS_S, Font.BOLD, GOLD, 2));
         right.addElement(boldParagraph(safe(buyer != null ? buyer.companyName() : ""), FS_BODY, 4, NAVY));
-        right.addElement(blank(80));
+        right.addElement(blank(SIGNATURE_GAP));
         LineSeparator sigLineR = new LineSeparator(0.5f, 100f, LINE_LIGHT, Element.ALIGN_CENTER, 0);
         right.addElement(sigLineR);
         right.addElement(para("Authorised Signature & Seal", FS_MICRO, Font.ITALIC, TXT3, 0));
         table.addCell(right);
 
-        try {
-            doc.add(table);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        add(doc, table);
     }
 
     // =====================================================================
@@ -559,7 +535,7 @@ public class PiPdfRenderer {
         String[] labels = {"Country of Origin", "Port of Delivery", "Time of Delivery",
                 "Payment Term", "Packing", "Note"};
         String[] lines = terms.split("\\r?\\n");
-        java.util.List<String> extras = new java.util.ArrayList<>();
+        List<String> extras = new ArrayList<>();
         for (String line : lines) {
             String trimmed = line.trim();
             if (trimmed.isEmpty()) continue;
@@ -673,8 +649,8 @@ public class PiPdfRenderer {
     /** 两色短语：label（深蓝加粗）+ value（近黑常规） */
     private static Phrase kvPhrase(String label, String value) {
         Phrase p = new Phrase();
-        p.add(new Chunk(label, textFont(label, FS_REF, Font.BOLD, NAVY)));
-        p.add(new Chunk(value, textFont(value, FS_REF, Font.NORMAL, TXT)));
+        p.add(new Chunk(label, textFont(label, FS_MID, Font.BOLD, NAVY)));
+        p.add(new Chunk(value, textFont(value, FS_MID, Font.NORMAL, TXT)));
         return p;
     }
 
@@ -708,16 +684,17 @@ public class PiPdfRenderer {
     }
 
     private static PdfPCell headerCell(String text) {
-        return cell(text, FS_BODY, Font.BOLD, WHITE, NAVY, Element.ALIGN_CENTER, 6, 0.6f);
+        return cell(text, FS_BODY, Font.BOLD, WHITE, NAVY, Element.ALIGN_CENTER, 6, BORDER_WIDTH);
     }
 
     private static PdfPCell nameCell(String name, String hsCode, int rowspan) {
         Phrase ph = new Phrase();
         ph.add(new Chunk("Name:\n", textFont("Name: ", FS_MID, Font.BOLD | Font.ITALIC, NAVY)));
-        ph.add(new Chunk(safe(name) + "\n", textFont(safe(name), FS_S, Font.NORMAL, TXT2)));
+        ph.add(new Chunk(safe(name) + "\n", textFont(safe(name), FS_BODY, Font.NORMAL, TXT2)));
+        ph.add(new Chunk("\n", textFont(" ", FS_MICRO, Font.NORMAL, TXT2)));   // ← 矮空白行：高度≈FS_MICRO，仅留一点缝
         ph.add(new Chunk("HS Code:\n", textFont("HS Code:", FS_MID, Font.BOLD | Font.ITALIC, NAVY)));
-        ph.add(new Chunk(safe(hsCode), textFont(safe(hsCode), FS_S, Font.NORMAL, TXT2)));
-        PdfPCell c = phraseCell(ph, Element.ALIGN_LEFT, 6, 0.6f, WHITE);
+        ph.add(new Chunk(safe(hsCode), textFont(safe(hsCode), FS_BODY, Font.NORMAL, TXT2)));
+        PdfPCell c = phraseCell(ph, Element.ALIGN_LEFT, 6, BORDER_WIDTH, WHITE);
         if (rowspan > 1) c.setRowspan(rowspan);
         return c;
     }
@@ -731,7 +708,7 @@ public class PiPdfRenderer {
         c.setPaddingRight(6);
         c.setPaddingTop(4);
         c.setPaddingBottom(6);
-        c.setBorderWidth(0.6f);
+        c.setBorderWidth(BORDER_WIDTH);
         c.setBorderColor(NAVY);
 
         String safeDesc = safe(desc);
@@ -741,7 +718,7 @@ public class PiPdfRenderer {
             return c;
         }
         if (!safeName.isEmpty()) {
-            Paragraph p = new Paragraph(safeName, textFont(safeName, FS_MID, Font.BOLD | Font.NORMAL, NAVY));
+            Paragraph p = new Paragraph(safeName, textFont(safeName, FS_MID, Font.BOLD, NAVY));
             p.setAlignment(Element.ALIGN_LEFT);
             p.setSpacingAfter(3f);
             c.addElement(p);
@@ -767,7 +744,7 @@ public class PiPdfRenderer {
         Phrase ph = new Phrase();
         ph.add(new Chunk(String.valueOf(qty) + "\n", textFont(String.valueOf(qty), FS_QTY, Font.BOLD, NAVY)));
         ph.add(new Chunk(safe(unit), textFont(safe(unit), FS_MICRO, Font.NORMAL, TXT3)));
-        return phraseCell(ph, Element.ALIGN_CENTER, 6, 0.6f, WHITE);
+        return phraseCell(ph, Element.ALIGN_CENTER, 6, BORDER_WIDTH, WHITE);
     }
 
     private static PdfPCell unitPriceCell(BigDecimal price, String unit, String ccy) {
@@ -775,7 +752,7 @@ public class PiPdfRenderer {
         ph.add(new Chunk((price != null ? fmtMoney(price) : "-") + "\n",
                 textFont(price != null ? fmtMoney(price) : "-", FS_TITLE, Font.BOLD, NAVY)));
         ph.add(new Chunk(safe(ccy) + " / " + safe(unit), textFont(safe(ccy), FS_MICRO, Font.NORMAL, TXT3)));
-        return phraseCell(ph, Element.ALIGN_CENTER, 6, 0.6f, WHITE);
+        return phraseCell(ph, Element.ALIGN_CENTER, 6, BORDER_WIDTH, WHITE);
     }
 
     private static PdfPCell totalPriceCell(BigDecimal total, String ccy) {
@@ -783,7 +760,7 @@ public class PiPdfRenderer {
         ph.add(new Chunk((total != null ? fmtMoney(total) : "-") + "\n",
                 textFont(total != null ? fmtMoney(total) : "-", FS_TITLE, Font.BOLD, NAVY)));
         ph.add(new Chunk(safe(ccy), textFont(safe(ccy), FS_MICRO, Font.NORMAL, TXT3)));
-        return phraseCell(ph, Element.ALIGN_CENTER, 6, 0.6f, WHITE);
+        return phraseCell(ph, Element.ALIGN_CENTER, 6, BORDER_WIDTH, WHITE);
     }
 
     // =====================================================================
@@ -804,7 +781,7 @@ public class PiPdfRenderer {
 
         @Override
         public void onOpenDocument(PdfWriter writer, Document document) {
-            totalTP = writer.getDirectContent().createTemplate(30, 12);
+            totalTP = writer.getDirectContent().createTemplate(FOOTER_TPL_W, FOOTER_TPL_H);
         }
 
         @Override
@@ -818,13 +795,13 @@ public class PiPdfRenderer {
             // 1) 声明句（三级灰斜体，居中）
             ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
                     new Phrase(DECLARATION, textFont(DECLARATION, FS_MICRO, Font.ITALIC, TXT3)),
-                    cx, bottom - 4, 0);
+                    cx, bottom - FOOTER_DECL_GAP, 0);
 
             // 2) 横线（LINE_LIGHT，0.5pt，满正文宽）
             cb.saveState();
             cb.setColorStroke(LINE_LIGHT);
             cb.setLineWidth(0.5f);
-            float lineY = bottom - 11;
+            float lineY = bottom - FOOTER_LINE_GAP;
             cb.moveTo(left, lineY);
             cb.lineTo(right, lineY);
             cb.stroke();
@@ -836,8 +813,8 @@ public class PiPdfRenderer {
             Font footFont = textFont(lead, FS_MICRO, Font.NORMAL, TXT3);
             float leadW = footFont.getBaseFont().getWidthPoint(lead, FS_MICRO);
             ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
-                    new Phrase(lead, footFont), cx, bottom - 18, 0);
-            cb.addTemplate(totalTP, cx + leadW / 2f, bottom - 18);
+                    new Phrase(lead, footFont), cx, bottom - FOOTER_PAGE_GAP, 0);
+            cb.addTemplate(totalTP, cx + leadW / 2f, bottom - FOOTER_PAGE_GAP);
         }
 
         @Override
