@@ -529,6 +529,39 @@ a {
     transition: border-color var(--transition), box-shadow var(--transition);
 }
 
+/* 下拉箭头需要右侧留白，避免与文字重叠（Bootstrap 默认 padding-right: 2.25rem 被上方简写覆盖） */
+.form-select {
+    padding-right: 2.5rem;
+}
+
+/* 条款库选择器：与普通输入框区分（浅色强调底 + 图标前缀 + 强调边框） */
+.terms-lib-picker {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+.terms-lib-picker > .bi-journal-text {
+    position: absolute;
+    left: 11px;
+    z-index: 2;
+    color: var(--primary);
+    font-size: 14px;
+    pointer-events: none;
+}
+.terms-lib-picker .form-select {
+    padding-left: 34px;
+    min-width: 280px;
+    width: auto;
+    border-color: var(--primary-ring);
+    background-color: var(--primary-soft);
+    font-weight: 500;
+}
+.terms-lib-picker .form-select:focus {
+    background-color: #fff;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px var(--primary-ring);
+}
+
 .form-control:focus, .form-select:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 4px var(--primary-ring);

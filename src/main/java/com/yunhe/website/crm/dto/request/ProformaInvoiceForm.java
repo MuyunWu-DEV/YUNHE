@@ -43,6 +43,9 @@ public class ProformaInvoiceForm {
     /** Seller - 邮箱 */
     private String sellerEmail;
 
+    /** Seller - 中文名（抬头第二行，斜体浅蓝） */
+    private String sellerChineseName;
+
     /** Buyer - 公司名 */
     private String buyerCompanyName;
 

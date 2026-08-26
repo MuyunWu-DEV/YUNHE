@@ -226,6 +226,8 @@ public class ProformaInvoiceController {
         }
         model.addAttribute("termsLibPrefills", prefills);
         model.addAttribute("isEdit", isEdit);
+        // 新增模式（非编辑/非变更）下，进入页面默认选中并导入第一个条款库
+        model.addAttribute("autoImportTermsLib", !isEdit);
     }
 
     private void prepareReviseModel(Model model) {

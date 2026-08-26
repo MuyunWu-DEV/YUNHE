@@ -263,7 +263,8 @@ public class ProformaInvoiceService {
                         form.getSellerCompanyName(),
                         form.getSellerAddress(),
                         form.getSellerPhone(),
-                        form.getSellerEmail()),
+                        form.getSellerEmail(),
+                        form.getSellerChineseName()),
                 new ProformaDetails.BuyerInfo(
                         form.getBuyerCompanyName(),
                         form.getBuyerRegistrationNo(),

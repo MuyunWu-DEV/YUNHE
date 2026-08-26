@@ -17,32 +17,35 @@
                 <input type="hidden" th:field="*{quotationId}"/>
 
                 <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-6 mb-3">
                         <label class="form-label" for="invoiceNumber">发票号</label>
                         <input type="text" class="form-control" id="invoiceNumber" th:field="*{invoiceNumber}"
                                readonly th:placeholder="${isEdit} ? '' : '保存后自动生成'"/>
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-6 mb-3">
                         <label class="form-label" for="invoiceDate">发票日期 <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="invoiceDate" th:field="*{invoiceDate}"/>
                         <div class="text-danger small" th:if="${#fields.hasErrors('invoiceDate')}" th:errors="*{invoiceDate}"></div>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label" for="termsLibId">条款库</label>
-                        <select class="form-select" id="termsLibId" th:field="*{termsLibId}">
-                            <option value="">-- 无 --</option>
-                            <option th:each="lib : ${termsLibs}" th:value="${lib.id}"
-                                    th:text="${lib.companyNameEnglish} ?: (${lib.companyNameChinese} ?: '条款库 #' + ${lib.id})"></option>
-                        </select>
-                    </div>
                 </div>
 
                 <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <label class="form-label mb-0">Seller（卖方）</label>
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="importBtn">
-                            <i class="bi bi-box-arrow-in-down"></i> 一键导入
-                        </button>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <div class="terms-lib-picker">
+                                <i class="bi bi-journal-text"></i>
+                                <select class="form-select" id="termsLibId" th:field="*{termsLibId}">
+                                    <option value="">-- 无 --</option>
+                                    <option th:each="lib : ${termsLibs}" th:value="${lib.id}"
+                                            th:text="${lib.companyNameEnglish} ?: (${lib.companyNameChinese} ?: '条款库 #' + ${lib.id})"></option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="reapplyBtn"
+                                    title="将当前所选条款库的预设重新覆盖回表单">
+                                <i class="bi bi-arrow-clockwise"></i> 重新应用所选
+                            </button>
+                        </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-md-6 mb-2">
@@ -81,14 +84,20 @@
 
                 <div class="mb-3">
                     <label class="form-label" for="terms">Terms（条款）</label>
-                    <textarea class="form-control" id="terms" th:field="*{terms}" rows="3"
+                    <textarea class="form-control" id="terms" th:field="*{terms}" rows="6"
                               placeholder="付款条款、交货条款等"></textarea>
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label" for="bankAccountInformation">Bank Account Information（银行账户信息）</label>
                     <textarea class="form-control" id="bankAccountInformation" th:field="*{bankAccountInformation}"
-                              rows="3" placeholder="开户行、账号、SWIFT 等"></textarea>
+                              rows="6" placeholder="开户行、账号、SWIFT 等"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="warranty">Warranty（质保条款）</label>
+                    <textarea class="form-control" id="warranty" th:field="*{warranty}" rows="2"
+                              placeholder="如：One year warranty on electrical parts"></textarea>
                 </div>
 
                 <div class="mb-3" th:if="${isChange}">
@@ -107,16 +116,55 @@
         </div>
     </div>
 
-    <script>
-        document.getElementById('importBtn').addEventListener('click', function () {
-            document.getElementById('sellerCompanyName').value = this.dataset.sellerCompany || '';
-            document.getElementById('sellerAddress').value = this.dataset.sellerAddress || '';
-            document.getElementById('sellerPhone').value = this.dataset.sellerPhone || '';
-            document.getElementById('sellerEmail').value = this.dataset.sellerEmail || '';
-            document.getElementById('incoterms').value = this.dataset.incoterms || '';
-            document.getElementById('terms').value = this.dataset.terms || '';
-            document.getElementById('bankAccountInformation').value = this.dataset.bank || '';
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var termsLibPrefills = /*[[${termsLibPrefills}]]*/ {};
+        var termsLibSelect = document.getElementById('termsLibId');
+
+        function applyTermsLib(id) {
+            var p = termsLibPrefills[id];
+            if (!p) return;
+            if (p.sellerCompanyName != null) document.getElementById('sellerCompanyName').value = p.sellerCompanyName;
+            if (p.sellerAddress != null) document.getElementById('sellerAddress').value = p.sellerAddress;
+            if (p.sellerPhone != null) document.getElementById('sellerPhone').value = p.sellerPhone;
+            if (p.sellerEmail != null) document.getElementById('sellerEmail').value = p.sellerEmail;
+            if (p.incoterms != null) document.getElementById('incoterms').value = p.incoterms;
+            if (p.terms != null) document.getElementById('terms').value = p.terms;
+            if (p.bankAccountInformation != null) document.getElementById('bankAccountInformation').value = p.bankAccountInformation;
+            if (p.warranty != null) document.getElementById('warranty').value = p.warranty;
+        }
+
+        function firstLibId() {
+            for (var i = 0; i < termsLibSelect.options.length; i++) {
+                var v = termsLibSelect.options[i].value;
+                if (v) return v;
+            }
+            return '';
+        }
+
+        // 可选导入：切换条款库即导入对应预设；选「无」不覆盖手动内容
+        termsLibSelect.addEventListener('change', function () {
+            var id = termsLibSelect.value;
+            if (!id) return;
+            applyTermsLib(id);
         });
+
+        // 重新应用：将当前所选条款库的预设覆盖回表单（已手动修改后可一键还原）
+        document.getElementById('reapplyBtn').addEventListener('click', function () {
+            var id = termsLibSelect.value;
+            if (!id) return;
+            applyTermsLib(id);
+        });
+
+        // 新增模式：默认选中第一个条款库并自动导入
+        if (/*[[${autoImportTermsLib}]]*/ false) {
+            var first = firstLibId();
+            if (first) {
+                termsLibSelect.value = first;
+                applyTermsLib(first);
+            }
+        }
+        /*]]>*/
     </script>
 </div>
 </body>

@@ -80,8 +80,24 @@
             </dl>
 
             <h6 class="mb-2">Seller（卖方）</h6>
-            <div class="mb-4" style="white-space: pre-line;"
-                 th:text="${invoice.details != null ? invoice.details.seller() : '-'}">-</div>
+            <dl class="row mb-3">
+                <dt class="col-sm-2">公司名</dt>
+                <dd class="col-sm-4"
+                    th:text="${invoice.details != null and invoice.details.seller() != null ? invoice.details.seller().companyName() : '-'}">-</dd>
+                <dt class="col-sm-2">电话</dt>
+                <dd class="col-sm-4"
+                    th:text="${invoice.details != null and invoice.details.seller() != null ? invoice.details.seller().phone() : '-'}">-</dd>
+            </dl>
+            <dl class="row mb-3">
+                <dt class="col-sm-2">邮箱</dt>
+                <dd class="col-sm-10"
+                    th:text="${invoice.details != null and invoice.details.seller() != null ? invoice.details.seller().email() : '-'}">-</dd>
+            </dl>
+            <dl class="row mb-4">
+                <dt class="col-sm-2">地址</dt>
+                <dd class="col-sm-10" style="white-space: pre-line;"
+                    th:text="${invoice.details != null and invoice.details.seller() != null ? invoice.details.seller().address() : '-'}">-</dd>
+            </dl>
 
             <h6 class="mb-2">Buyer（买方）</h6>
             <dl class="row mb-3">

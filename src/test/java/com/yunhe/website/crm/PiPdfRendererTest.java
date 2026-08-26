@@ -22,7 +22,8 @@ class PiPdfRendererTest {
                         "Qingdao Yurun Machinery Technology Co., Ltd.",
                         "Wangtai Industrial Park, Qingdao, Shandong, China 266425",
                         "+86 19853207766",
-                        "karoljiang@126.com"),
+                        "karoljiang@126.com",
+                        "青岛钰润机械科技有限公司"),
                 new ProformaDetails.BuyerInfo(
                         "VIDHI FASHION",
                         "24AKCPD9513H1ZH",

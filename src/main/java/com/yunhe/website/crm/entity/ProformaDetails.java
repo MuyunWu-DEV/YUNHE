@@ -14,13 +14,14 @@ public record ProformaDetails(
 ) {
 
     /**
-     * 卖方信息（对应系统设置 seller 对象的 companyName / address / phone / email）。
+     * 卖方信息（对应系统设置 seller 对象的 companyName / address / phone / email / chineseName）。
      */
     public record SellerInfo(
             String companyName,
             String address,
             String phone,
-            String email
+            String email,
+            String chineseName
     ) {
     }
 
