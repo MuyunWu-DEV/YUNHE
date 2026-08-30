@@ -1,7 +1,12 @@
 package com.yunhe.website.crm;
 
-import com.yunhe.website.crm.entity.*;
-import com.yunhe.website.crm.support.PiPdfRenderer;
+import com.yunhe.website.crm.entity.CommercialInvoice;
+import com.yunhe.website.crm.entity.ProformaDetails;
+import com.yunhe.website.crm.entity.ProformaInvoice;
+import com.yunhe.website.crm.entity.Quotation;
+import com.yunhe.website.crm.entity.QuoteDetailGroup;
+import com.yunhe.website.crm.entity.QuoteDetailItem;
+import com.yunhe.website.crm.support.CiPdfRenderer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
@@ -10,13 +15,12 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
- * 一次性手动验证：按参考模板数据构造 mock PI，渲染为 PDF 写到 workspace，肉眼对比模板。
- * 验证完可保留作为 PDF 渲染的 smoke test。
+ * 一次性手动验证：按参考单据数据构造 mock CI，渲染为 PDF 写到 workspace，肉眼对比原 Commercial Invoice。
  */
-class PiPdfRendererTest {
+class CiPdfRendererTest {
 
     @Test
-    void renderMockPiFromTemplate() throws Exception {
+    void renderMockCiFromTemplate() throws Exception {
         ProformaDetails details = new ProformaDetails(
                 new ProformaDetails.SellerInfo(
                         "Qingdao Yunhe Intelligent Manufacturing Co., Ltd.",
@@ -61,22 +65,30 @@ class PiPdfRendererTest {
                                         + "- With Standard Accessories\n"
                                         + "- WIR 1100 MPM\n"
                                         + "- HS Code: 84463090",
-                                new BigDecimal("11000"),
-                                28,
+                                new BigDecimal("11500"),
+                                24,
                                 "SETS",
                                 "USD")))));
 
-        ProformaInvoice invoice = new ProformaInvoice();
-        invoice.setInvoiceDate(LocalDate.of(2026, 7, 10));
-        invoice.setInvoiceNumber("YRPI20260708");
-        invoice.setQuotation(quotation);
-        invoice.setDetails(details);
+        ProformaInvoice pi = new ProformaInvoice();
+        pi.setInvoiceDate(LocalDate.of(2026, 7, 10));
+        pi.setInvoiceNumber("YRPI20260802");
+        pi.setQuotation(quotation);
+        pi.setDetails(details);
 
-        byte[] pdf = new PiPdfRenderer().render(invoice);
-        File out = new File("C:/Users/Muyun/WorkBuddy/YUNHE/pi_mock.pdf");
+        CommercialInvoice ci = new CommercialInvoice();
+        ci.setInvoiceNo("YHINV-2026-001");
+        ci.setInvoiceDate(LocalDate.of(2026, 8, 4));
+        ci.setDepositPercentage(new BigDecimal("35"));
+        ci.setDepositPaymentMethod("T/T in advance");
+        ci.setBalancePaymentMethod("T/T after B/L copy");
+        ci.setProformaInvoice(pi);
+
+        byte[] pdf = new CiPdfRenderer().render(ci);
+        File out = new File("C:/Users/Muyun/WorkBuddy/YUNHE/ci_mock.pdf");
         try (FileOutputStream fos = new FileOutputStream(out)) {
             fos.write(pdf);
         }
-        System.out.println("PI PDF 写入：" + out + " (" + pdf.length + " bytes)");
+        System.out.println("CI PDF 写入：" + out + " (" + pdf.length + " bytes)");
     }
 }

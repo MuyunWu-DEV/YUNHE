@@ -239,6 +239,7 @@ public class ProformaInvoiceController {
         CrmTermsLib lib = termsLibService.get();
         form.setTermsLibId(lib.getId());
         form.setSellerCompanyName(lib.getCompanyNameEnglish());
+        form.setSellerChineseName(lib.getCompanyNameChinese());
         form.setSellerAddress(lib.getAddress());
         form.setSellerPhone(lib.getPhone());
         form.setSellerEmail(lib.getEmail());
@@ -257,6 +258,7 @@ public class ProformaInvoiceController {
         if (details != null) {
             if (details.seller() != null) {
                 form.setSellerCompanyName(details.seller().companyName());
+                form.setSellerChineseName(details.seller().chineseName());
                 form.setSellerAddress(details.seller().address());
                 form.setSellerPhone(details.seller().phone());
                 form.setSellerEmail(details.seller().email());

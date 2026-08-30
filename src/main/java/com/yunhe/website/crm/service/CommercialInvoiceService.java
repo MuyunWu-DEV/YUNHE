@@ -13,6 +13,7 @@ import com.yunhe.website.crm.entity.ProformaInvoice;
 import com.yunhe.website.crm.repository.CommercialInvoiceRepository;
 import com.yunhe.website.crm.repository.CommercialInvoiceVersionRepository;
 import com.yunhe.website.crm.repository.ProformaInvoiceRepository;
+import com.yunhe.website.crm.support.CiPdfRenderer;
 import com.yunhe.website.crm.support.DocNumberGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +39,7 @@ public class CommercialInvoiceService {
     private final CommercialInvoiceVersionRepository versionRepository;
     private final ObjectMapper objectMapper;
     private final SequenceStore sequenceStore;
+    private final CiPdfRenderer ciPdfRenderer;
 
     @Transactional(readOnly = true)
     public Page<CommercialInvoiceDto> list(Pageable pageable) {
@@ -214,9 +216,9 @@ public class CommercialInvoiceService {
         return new VersionFileDto(version.getPdf(), filename);
     }
 
-    /** PDF 生成（OpenPDF，暂未实现，留空函数） */
+    /** PDF 生成（OpenPDF 渲染：调用 CiPdfRenderer 产出纯黑白商业发票） */
     private byte[] generatePdf(CommercialInvoice invoice) {
-        return null;
+        return ciPdfRenderer.render(invoice);
     }
 
     private void assignInvoiceNo(CommercialInvoice invoice, int year) {
