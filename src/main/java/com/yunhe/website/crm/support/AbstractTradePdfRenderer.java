@@ -25,7 +25,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +88,9 @@ public abstract class AbstractTradePdfRenderer {
     protected static final float FOOTER_TPL_W = 30f;      // 总页数占位模板宽
     protected static final float FOOTER_TPL_H = 12f;      // 总页数占位模板高
     protected static final String DEFAULT_CCY = "USD";    // 缺省币种
+    // 条款字段顺序（TERMS 区块标签列与 parseTerms 解析共用，保证解析与呈现一致）
+    protected static final String[] TERMS_LABELS = {"Country of Origin", "Port of Delivery",
+            "Time of Delivery", "Payment Term", "Packing", "Note"};
 
     // ===================== 字体基础设施 =====================
 
@@ -188,6 +194,11 @@ public abstract class AbstractTradePdfRenderer {
         return BORDER_WIDTH;
     }
 
+    /** 区块标签颜色（S E L L E R / B U Y E R / E X P O R T E R 等小标题）。基类默认黑；PI 覆写为 GOLD，CI 保持黑。 */
+    protected Color labelColor() {
+        return BLACK;
+    }
+
     // ===================== 底层 cell / phrase / paragraph 工厂 =====================
 
     protected static Paragraph blank(float pt) {
@@ -249,14 +260,20 @@ public abstract class AbstractTradePdfRenderer {
         return c;
     }
 
-    /** 带边框 + 固定内边距的卡片单元格（Seller/Buyer/EXPORTER/CONSIGNEE 复用） */
-    protected PdfPCell borderedCardCell() {
+    /** 带边框 + 固定内边距的单元格骨架（子类复用，避免各自手写 setBorderWidth/setPadding）。bg 传 null 表示无填充。 */
+    protected PdfPCell borderedCell(int vAlign, Color bg) {
         PdfPCell c = new PdfPCell();
         c.setBorderWidth(borderWidth());
         c.setBorderColor(borderColor());
-        c.setVerticalAlignment(Element.ALIGN_TOP); // 钉顶对齐，避免内容行数不同的卡片被垂直居中导致左右标签错位
+        c.setVerticalAlignment(vAlign);
         c.setPadding(PAD);
+        if (bg != null) c.setBackgroundColor(bg);
         return c;
+    }
+
+    /** 顶对齐卡片单元格（Seller/Buyer/EXPORTER/CONSIGNEE 复用），无填充 */
+    protected PdfPCell borderedCardCell() {
+        return borderedCell(Element.ALIGN_TOP, null);
     }
 
     protected static Paragraph para(String text, float size, int style, Color color, float spacingAfter) {
@@ -271,6 +288,11 @@ public abstract class AbstractTradePdfRenderer {
         p.setLeading(0, LEADING);
         p.setSpacingAfter(spacingAfter);
         return p;
+    }
+
+    /** 区块小标签（字母带间距 + FS_LABEL 加粗）；颜色由 {@link #labelColor()} 决定（PI=GOLD，CI=BLACK）。 */
+    protected Paragraph labelParagraph(String text) {
+        return para(text, FS_LABEL, Font.BOLD, labelColor(), 2);
     }
 
     /** 两色短语：label（指定样式/颜色）+ value（指定颜色） */
@@ -349,27 +371,42 @@ public abstract class AbstractTradePdfRenderer {
         return c;
     }
 
+    /** 数量单元格（qty + 单位，居中加粗；默认白底填充，CI 可传 null 实现纯线条无填充） */
     protected PdfPCell qtyCell(int qty, String unit, Color numColor, Color unitColor) {
+        return qtyCell(qty, unit, numColor, unitColor, WHITE);
+    }
+
+    protected PdfPCell qtyCell(int qty, String unit, Color numColor, Color unitColor, Color bg) {
         Phrase ph = new Phrase();
         ph.add(new Chunk(String.valueOf(qty) + "\n", textFont(String.valueOf(qty), FS_BODY, Font.BOLD, numColor)));
         ph.add(new Chunk(safe(unit), textFont(safe(unit), FS_MICRO, Font.NORMAL, unitColor)));
-        return phraseCell(ph, Element.ALIGN_CENTER, PAD, borderWidth(), WHITE);
+        return phraseCell(ph, Element.ALIGN_CENTER, PAD, borderWidth(), bg);
     }
 
+    /** 单价单元格（price + 币种/单位，居中加粗；默认白底填充，CI 可传 null 实现纯线条无填充） */
     protected PdfPCell unitPriceCell(BigDecimal price, String unit, String ccy, Color numColor, Color unitColor) {
+        return unitPriceCell(price, unit, ccy, numColor, unitColor, WHITE);
+    }
+
+    protected PdfPCell unitPriceCell(BigDecimal price, String unit, String ccy, Color numColor, Color unitColor, Color bg) {
         Phrase ph = new Phrase();
         ph.add(new Chunk((price != null ? fmtMoney(price) : "-") + "\n",
                 textFont(price != null ? fmtMoney(price) : "-", FS_BODY, Font.BOLD, numColor)));
         ph.add(new Chunk(safe(ccy) + " / " + safe(unit), textFont(safe(ccy), FS_MICRO, Font.NORMAL, unitColor)));
-        return phraseCell(ph, Element.ALIGN_CENTER, PAD, borderWidth(), WHITE);
+        return phraseCell(ph, Element.ALIGN_CENTER, PAD, borderWidth(), bg);
     }
 
+    /** 金额单元格（total + 币种，居中加粗；默认白底填充，CI 可传 null 实现纯线条无填充） */
     protected PdfPCell totalPriceCell(BigDecimal total, String ccy, Color numColor, Color unitColor) {
+        return totalPriceCell(total, ccy, numColor, unitColor, WHITE);
+    }
+
+    protected PdfPCell totalPriceCell(BigDecimal total, String ccy, Color numColor, Color unitColor, Color bg) {
         Phrase ph = new Phrase();
         ph.add(new Chunk((total != null ? fmtMoney(total) : "-") + "\n",
                 textFont(total != null ? fmtMoney(total) : "-", FS_BODY, Font.BOLD, numColor)));
         ph.add(new Chunk(safe(ccy), textFont(safe(ccy), FS_MICRO, Font.NORMAL, unitColor)));
-        return phraseCell(ph, Element.ALIGN_CENTER, PAD, borderWidth(), WHITE);
+        return phraseCell(ph, Element.ALIGN_CENTER, PAD, borderWidth(), bg);
     }
 
     // ===================== 单据无关助手 =====================
@@ -398,11 +435,50 @@ public abstract class AbstractTradePdfRenderer {
                 .findFirst().orElse("");
     }
 
+    // ===================== 金额 / 日期 / 判空助手（单据无关） =====================
+
+    /** 判空：非 null 且去除空白后非空。渲染器族内复用；其它包请直接使用 Spring StringUtils.hasText。 */
+    protected static boolean nonBlank(String s) {
+        return s != null && !s.isBlank();
+    }
+
+    /** 日期格式化：MMM d, yyyy（英文月名，全大写），如 AUG 30, 2026 */
+    protected static String formatDate(LocalDate d) {
+        if (d == null) return "";
+        return d.format(DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.ENGLISH)).toUpperCase(Locale.ENGLISH);
+    }
+
+    /** 取货物明细的主币种（首个有币种的明细项），无则返回 {@link #DEFAULT_CCY} */
+    protected static String primaryCurrency(List<QuoteDetailGroup> groups) {
+        if (groups == null) return DEFAULT_CCY;
+        return groups.stream()
+                .filter(g -> g.items() != null)
+                .flatMap(g -> g.items().stream())
+                .map(QuoteDetailItem::currency)
+                .filter(c -> c != null && !c.isBlank())
+                .findFirst()
+                .orElse(DEFAULT_CCY);
+    }
+
+    /** 按币种汇总明细行金额（unitPrice × qty），返回有序 Map（币种 → 金额） */
+    protected static Map<String, BigDecimal> sumTotalsByCcy(List<QuoteDetailGroup> groups) {
+        Map<String, BigDecimal> map = new LinkedHashMap<>();
+        if (groups == null) return map;
+        for (QuoteDetailGroup g : groups) {
+            if (g.items() == null) continue;
+            for (QuoteDetailItem it : g.items()) {
+                if (it.unitPrice() == null || it.quantity() <= 0) continue;
+                String ccy = it.currency() != null ? it.currency() : DEFAULT_CCY;
+                map.merge(ccy, it.subtotal(), BigDecimal::add);
+            }
+        }
+        return map;
+    }
+
     protected static Map<String, String> parseTerms(String terms) {
         Map<String, String> map = new LinkedHashMap<>();
         if (terms == null || terms.isBlank()) return map;
-        String[] labels = {"Country of Origin", "Port of Delivery", "Time of Delivery",
-                "Payment Term", "Packing", "Note"};
+        String[] labels = TERMS_LABELS;
         String[] lines = terms.split("\\r?\\n");
         List<String> extras = new ArrayList<>();
         for (String line : lines) {

@@ -1,6 +1,5 @@
 package com.yunhe.website.crm.support;
 
-import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
@@ -22,10 +21,7 @@ import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -36,11 +32,11 @@ import org.springframework.stereotype.Component;
  * <ul>
  *   <li>纯黑白：{@link #borderColor()} 沿用基类默认 BLACK；所有单元格背景传 {@code null}（无任何填充），
  *       仅靠边框线条勾勒——这是与 PI（彩色填充）在「同一套规律」下的黑白分支。</li>
-     *   <li>版面框架（由代码读取原 PDF 坐标还原）：公司抬头 + 居中大标题 → META 双列盒
-     *       (DATE/SHIPMENT · INV.NO/TO) → <b>拆为 4 段独立方法</b>（renderPartiesTable / renderItemTable /
-     *       renderTotalsTable / renderPaymentTermsTable），每段仍是同一 5 列网格（{@link #BODY_COL_WIDTHS}），
-     *       以 spacing=0 直接叠放 → 列线贯穿、各段零间隙，视觉上仍为<b>单一连续框</b>
-     *       （与原单体表完全一致）。代码拆分（可单测/可复用）与视觉连续由此解耦，贴合 PI 已采用的分解结构。</li>
+ *   <li>版面框架（由代码读取原 PDF 坐标还原）：公司抬头 + 居中大标题 → META 双列盒
+ *       (DATE/SHIPMENT · INV.NO/TO) → <b>拆为 4 段独立方法</b>（renderPartiesTable / renderItemTable /
+ *       renderTotalsTable / renderPaymentTermsTable），每段仍是同一 5 列网格（{@link #BODY_COL_WIDTHS}），
+ *       以 spacing=0 直接叠放 → 列线贯穿、各段零间隙，视觉上仍为<b>单一连续框</b>
+ *       （与原单体表完全一致）。代码拆分（可单测/可复用）与视觉连续由此解耦，贴合 PI 已采用的分解结构。</li>
  *   <li>线条整体加粗：覆写 {@link #borderWidth()} 为 0.9（PI 仍为基类默认 0.6，互不影响）。</li>
  * </ul>
  *
@@ -97,7 +93,7 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
             doc.add(blank(2));
             renderTitle(doc);
             doc.add(blank(8));
-            renderMetaBlock(doc, ci, pi, details, buyer);
+            renderMetaTable(doc, ci, pi, details, buyer);
             doc.add(blank(16)); // META 与下方连续 body 表之间的分段间隙
             renderPartiesTable(doc, ci, pi, details, buyer);
             renderItemTable(doc, pi);
@@ -124,24 +120,18 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
         if (companyName.isEmpty()) {
             companyName = "SELLER";
         }
-        Paragraph h = new Paragraph(companyName.toUpperCase(), textFont(companyName, FS_TITLE, Font.BOLD, BLACK));
-        h.setAlignment(Element.ALIGN_LEFT);
-        h.setLeading(0, LEADING);
-        h.setSpacingAfter(4);
-        add(doc, h);
+        add(doc, para(companyName.toUpperCase(), FS_TITLE, Font.BOLD, BLACK, 4));
     }
 
     /** 2. 大标题：COMMERCIAL INVOICE（居中，FS_H1 加粗，黑，无框无填充） */
     private void renderTitle(Document doc) {
-        Paragraph p = new Paragraph("COMMERCIAL INVOICE", textFont("COMMERCIAL INVOICE", FS_H1, Font.BOLD, BLACK));
+        Paragraph p = boldParagraph("COMMERCIAL INVOICE", FS_H1, 8, BLACK);
         p.setAlignment(Element.ALIGN_CENTER);
-        p.setLeading(0, LEADING);
-        p.setSpacingAfter(8);
         add(doc, p);
     }
 
-    /** 3. META 双列盒：左 = DATE + SHIPMENT，右 = INV. NO. + TO（标签与值全为黑，盒子带边框、无填充） */
-    private void renderMetaBlock(Document doc, CommercialInvoice ci, ProformaInvoice pi,
+    /** 3. META 双列盒：左 = DATE + PORT OF LOADING，右 = INV. NO. + PORT OF DESTINATION（标签与值全为黑，盒子带边框、无填充） */
+    private void renderMetaTable(Document doc, CommercialInvoice ci, ProformaInvoice pi,
                                  ProformaDetails details, ProformaDetails.BuyerInfo buyer) {
         PdfPTable table = new PdfPTable(2);
         table.setWidthPercentage(100);
@@ -154,11 +144,11 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
         Phrase datePh = kvPhrase("DATE:  ",
                 ci != null && ci.getInvoiceDate() != null ? formatDate(ci.getInvoiceDate()) : "",
                 Font.BOLD, BLACK, BLACK);
-        Phrase shipPh = kvPhrase("SHIPMENT:  ", safe(shipment), Font.BOLD, BLACK, BLACK);
+        Phrase shipPh = kvPhrase("PORT OF LOADING:  ", safe(shipment), Font.BOLD, BLACK, BLACK);
         Phrase invPh = kvPhrase("INV. NO.:  ", safe(pi != null ? pi.getInvoiceNumber() : ""), Font.BOLD, BLACK, BLACK);
-        Phrase toPh = kvPhrase("TO:  ", safe(to), Font.BOLD, BLACK, BLACK);
+        Phrase toPh = kvPhrase("PORT OF DESTINATION:  ", safe(to), Font.BOLD, BLACK, BLACK);
 
-        // 行1 = DATE(左) + SHIPMENT(右)，行2 = INV.NO(左) + TO(右)；
+        // 行1 = DATE(左) + PORT OF LOADING(右)，行2 = INV.NO(左) + PORT OF DESTINATION(右)；
         // 用 2×1 表（每格两行），与原 PDF 无内部分隔线吻合。
         table.addCell(metaCell(datePh, invPh));
         table.addCell(metaCell(shipPh, toPh));
@@ -211,16 +201,16 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
                 List<QuoteDetailItem> items = g.items() != null ? g.items() : List.of();
                 if (items.isEmpty()) {
                     table.addCell(ciNameCell(g.name(), g.hsCode()));
-                    table.addCell(ciDescCell("—"));
+                    table.addCell(ciDescCell(g.name(), "—"));
                     addEmptyItemCells(table, 3);
                     continue;
                 }
                 for (QuoteDetailItem it : items) {
                     table.addCell(ciNameCell(g.name(), g.hsCode()));                          // 列1 = HS Code + Name
-                    table.addCell(ciDescCell(it.description()));                              // 列2 = 规格明细
-                    table.addCell(ciUnitPriceCell(it.unitPrice(), it.unit(), it.currency()));  // 列3 = UNIT PRICE
-                    table.addCell(ciQtyCell(it.quantity(), it.unit()));                        // 列4 = QTY
-                    table.addCell(ciTotalPriceCell(it.subtotal(), it.currency()));             // 列5 = AMOUNT
+                    table.addCell(ciDescCell(g.name(), it.description()));                     // 列2 = 加粗品名头 + 规格明细
+                    table.addCell(unitPriceCell(it.unitPrice(), it.unit(), it.currency(), BLACK, BLACK, null));  // 列3 = UNIT PRICE（纯线条无填充）
+                    table.addCell(qtyCell(it.quantity(), it.unit(), BLACK, BLACK, null));                        // 列4 = QTY
+                    table.addCell(totalPriceCell(it.subtotal(), it.currency(), BLACK, BLACK, null));             // 列5 = AMOUNT
                 }
             }
         }
@@ -236,10 +226,10 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
 
     /**
      * 货物表列1（ITEMS）：HS Code + Name，标签独占一行、值在下一行（对齐原单据列序：编码在上、品名在下）。
-     * 基类 nameCell 是 Name 在前，此处按原单据调整；padding 与 ciQtyCell 等保持一致。
+     * 基类 nameCell 是 Name 在前，此处按原单据调整为编码/品名分列；单元格骨架统一走基类 {@link #borderedCell}（PAD 内边距）。
      */
     private PdfPCell ciNameCell(String name, String hsCode) {
-        PdfPCell c = newBodyItemCell();
+        PdfPCell c = borderedCell(Element.ALIGN_MIDDLE, null);
         String code = safe(hsCode);
         String nm = safe(name);
         if (code.isEmpty() && nm.isEmpty()) {
@@ -247,20 +237,32 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
             return c;
         }
         if (!code.isEmpty()) {
-            c.addElement(linePara("HS Code:", FS_LABEL, Font.BOLD | Font.ITALIC, 0));
-            c.addElement(linePara(code, FS_BODY, Font.NORMAL, 4f));
+            c.addElement(para("HS Code:", FS_LABEL, Font.BOLD | Font.ITALIC, BLACK, 0));
+            c.addElement(para(code, FS_BODY, Font.NORMAL, BLACK, 4f));
         }
         if (!nm.isEmpty()) {
-            c.addElement(linePara("Name:", FS_LABEL, Font.BOLD | Font.ITALIC, 0));
-            c.addElement(linePara(nm, FS_BODY, Font.NORMAL, 0));
+            c.addElement(para("Name:", FS_LABEL, Font.BOLD | Font.ITALIC, BLACK, 0));
+            c.addElement(para(nm, FS_BODY, Font.NORMAL, BLACK, 0));
         }
         return c;
     }
 
-    /** 货物表列2（DESCRIPTION OF GOODS）：规格明细逐行输出 */
-    private PdfPCell ciDescCell(String desc) {
-        PdfPCell c = newBodyItemCell();
+    /**
+     * 货物表列2（DESCRIPTION OF GOODS）：顶部先输出加粗品名头（对齐 SAHIL FAB 参考），其下逐行输出规格明细。
+     * 配色走 CI 的 BLACK；PI 的对应方法 {@link #piDescCell} 仅配色不同（NAVY/TXT2），结构一致（差异只在配色）。
+     */
+    private PdfPCell ciDescCell(String name, String desc) {
+        PdfPCell c = borderedCell(Element.ALIGN_MIDDLE, null);
+        String safeName = safe(name);
         String safeDesc = safe(desc);
+        if (safeName.isEmpty() && safeDesc.isEmpty()) {
+            c.addElement(blank(9));
+            return c;
+        }
+        // 顶部加粗品名头（与列1 的 Name 呼应，符合 SAHIL FAB 原单据列2 样式）
+        if (!safeName.isEmpty()) {
+            c.addElement(para(safeName, FS_BODY, Font.BOLD, BLACK, 3f));
+        }
         if (safeDesc.isEmpty()) {
             c.addElement(blank(9));
             return c;
@@ -269,31 +271,10 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
         String[] lines = safeDesc.split("\n", -1);
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
-            c.addElement(linePara(line.isBlank() ? " " : line, FS_BODY, Font.NORMAL,
+            c.addElement(para(line.isBlank() ? " " : line, FS_BODY, Font.NORMAL, BLACK,
                     i < lines.length - 1 ? 2f : 0f));
         }
         return c;
-    }
-
-    /** 货物表文本单元格骨架：padding 与 ciQtyCell 等一致（6）、纯线条无填充、左对齐垂直居中 */
-    private PdfPCell newBodyItemCell() {
-        PdfPCell c = new PdfPCell();
-        c.setHorizontalAlignment(Element.ALIGN_LEFT);
-        c.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        c.setPadding(PAD);
-        c.setBorderWidth(borderWidth());
-        c.setBorderColor(borderColor());
-        return c;
-    }
-
-    /** 单行 Paragraph（固定 leading，可带段后间距） */
-    private Paragraph linePara(String text, float size, int style, float spacingAfter) {
-        Paragraph p = new Paragraph(safe(text), textFont(text, size, style, BLACK));
-        p.setLeading(0, LEADING);
-        if (spacingAfter > 0) {
-            p.setSpacingAfter(spacingAfter);
-        }
-        return p;
     }
 
     /** 4.3 TOTAL / LESS / NET 段（标签跨 4 列 + 金额第 5 列；NET 盒底加粗线作视觉标识） */
@@ -391,20 +372,12 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
     /** 汇总 TOTAL / LESS(NET) / 定金比例 / 付款条款文案（与 PI 同套金额算法，CI 仅黑线条呈现） */
     private InvoiceMoney calcMoney(CommercialInvoice ci, ProformaInvoice pi) {
         List<QuoteDetailGroup> groups = resolveGroups(pi != null ? pi.getQuotation() : null);
-        BigDecimal total = BigDecimal.ZERO;
-        if (groups != null) {
-            for (QuoteDetailGroup g : groups) {
-                if (g.items() == null) continue;
-                for (QuoteDetailItem it : g.items()) {
-                    if (it.unitPrice() == null || it.quantity() <= 0) continue;
-                    total = total.add(it.subtotal());
-                }
-            }
-        }
+        BigDecimal total = sumTotalsByCcy(groups).values().stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal pct = ci != null && ci.getDepositPercentage() != null ? ci.getDepositPercentage() : BigDecimal.ZERO;
         BigDecimal advance = total.multiply(pct).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         BigDecimal net = total.subtract(advance);
-        String ccy = mainCcy(pi);
+        String ccy = primaryCurrency(groups);
         String inc = safe(pi != null && pi.getDetails() != null ? pi.getDetails().incoterms() : null);
         String totalLabel = (inc.isEmpty() ? "FOB QINGDAO, CHINA (Incoterms 2020)" : inc);
         String pctStr = pct.stripTrailingZeros().toPlainString();
@@ -428,11 +401,7 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
 
     /** EXPORTER / CONSIGNEE 单元格：标签加粗 + 联系信息（全黑、带边框、无填充、顶对齐）。isExporter=true 取卖方，false 取买方。 */
     private PdfPCell partyCell(boolean isExporter, ProformaDetails details, ProformaDetails.BuyerInfo buyer) {
-        PdfPCell c = new PdfPCell();
-        c.setBorderWidth(borderWidth());
-        c.setBorderColor(borderColor());
-        c.setPadding(PAD);
-        c.setVerticalAlignment(Element.ALIGN_TOP);
+        PdfPCell c = borderedCell(Element.ALIGN_TOP, null);
 
         if (isExporter) {
             ProformaDetails.SellerInfo seller = details != null ? details.seller() : null;
@@ -456,11 +425,7 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
 
     /** META 单元格：承载多行「标签: 值」短语（无填充，仅带边框） */
     private PdfPCell metaCell(Phrase... lines) {
-        PdfPCell c = new PdfPCell();
-        c.setBorderWidth(borderWidth());
-        c.setBorderColor(borderColor());
-        c.setPadding(PAD);
-        c.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        PdfPCell c = borderedCell(Element.ALIGN_MIDDLE, null);
         for (Phrase p : lines) {
             Paragraph para = new Paragraph(p);
             para.setLeading(0, LEADING);
@@ -468,58 +433,5 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
             c.addElement(para);
         }
         return c;
-    }
-
-    /** 区块小标签：参考 PI 的 labelParagraph（字母带间距 + FS_LABEL 加粗）；CI 颜色为黑 */
-    private static Paragraph labelParagraph(String text) {
-        Paragraph p = para(text, FS_LABEL, Font.BOLD, BLACK, 2);
-        p.setLeading(0f, LEADING); // 与全局统一行距（1.2×）一致，区块标签不再单独钉顶
-        return p;
-    }
-
-    private static boolean nonBlank(String s) {
-        return s != null && !s.isBlank();
-    }
-
-    private static String formatDate(LocalDate d) {
-        if (d == null) return "";
-        return d.format(DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.ENGLISH)).toUpperCase(Locale.ENGLISH);
-    }
-
-    private static String mainCcy(ProformaInvoice pi) {
-        List<QuoteDetailGroup> groups = resolveGroups(pi != null ? pi.getQuotation() : null);
-        if (groups == null) return DEFAULT_CCY;
-        return groups.stream()
-                .filter(g -> g.items() != null)
-                .flatMap(g -> g.items().stream())
-                .map(QuoteDetailItem::currency)
-                .filter(c -> c != null && !c.isBlank())
-                .findFirst()
-                .orElse(DEFAULT_CCY);
-    }
-
-    // ---- CI 数字单元格（与基类 qtyCell/unitPriceCell/totalPriceCell 同构，但背景传 null：纯线条无填充）----
-
-    private PdfPCell ciQtyCell(int qty, String unit) {
-        Phrase ph = new Phrase();
-        ph.add(new Chunk(String.valueOf(qty) + "\n", textFont(String.valueOf(qty), FS_BODY, Font.BOLD, BLACK)));
-        ph.add(new Chunk(safe(unit), textFont(safe(unit), FS_MICRO, Font.NORMAL, BLACK)));
-        return phraseCell(ph, Element.ALIGN_CENTER, PAD, borderWidth(), null);
-    }
-
-    private PdfPCell ciUnitPriceCell(BigDecimal price, String unit, String ccy) {
-        Phrase ph = new Phrase();
-        ph.add(new Chunk((price != null ? fmtMoney(price) : "-") + "\n",
-                textFont(price != null ? fmtMoney(price) : "-", FS_BODY, Font.BOLD, BLACK)));
-        ph.add(new Chunk(safe(ccy) + " / " + safe(unit), textFont(safe(ccy), FS_MICRO, Font.NORMAL, BLACK)));
-        return phraseCell(ph, Element.ALIGN_CENTER, PAD, borderWidth(), null);
-    }
-
-    private PdfPCell ciTotalPriceCell(BigDecimal total, String ccy) {
-        Phrase ph = new Phrase();
-        ph.add(new Chunk((total != null ? fmtMoney(total) : "-") + "\n",
-                textFont(total != null ? fmtMoney(total) : "-", FS_BODY, Font.BOLD, BLACK)));
-        ph.add(new Chunk(safe(ccy), textFont(safe(ccy), FS_MICRO, Font.NORMAL, BLACK)));
-        return phraseCell(ph, Element.ALIGN_CENTER, PAD, borderWidth(), null);
     }
 }
