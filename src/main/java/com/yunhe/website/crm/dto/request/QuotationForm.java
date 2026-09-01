@@ -58,6 +58,9 @@ public class QuotationForm {
     @Data
     public static class DetailItemForm {
 
+        /** 稳定实体标识：与报价单项一一对应，PL 经此 key JOIN；编辑时由前端原样回传，保持不丢 */
+        private String key;
+
         private String description;
 
         @NotNull(message = "单价不能为空")

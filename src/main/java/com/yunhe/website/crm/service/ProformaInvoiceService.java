@@ -272,7 +272,10 @@ public class ProformaInvoiceService {
                 form.getIncoterms(),
                 form.getTerms(),
                 form.getBankAccountInformation(),
-                form.getWarranty());
+                form.getWarranty(),
+                new ProformaDetails.RouteInfo(
+                        form.getPortOfLoading(),
+                        form.getPortOfDestination()));
         invoice.setDetails(details);
 
         // 保存时把 buyer 信息回写到客户档案

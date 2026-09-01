@@ -3,20 +3,29 @@ package com.yunhe.website.crm.service;
 import com.yunhe.website.common.exception.BusinessException;
 import com.yunhe.website.common.sequence.SequenceStore;
 import com.yunhe.website.crm.dto.PackingListDto;
+import com.yunhe.website.crm.dto.PackingLineDto;
 import com.yunhe.website.crm.dto.VersionFileDto;
+import com.yunhe.website.crm.dto.request.PackingLineForm;
 import com.yunhe.website.crm.dto.request.PackingListForm;
 import com.yunhe.website.crm.entity.Customer;
 import com.yunhe.website.crm.entity.DocumentStatus;
+import com.yunhe.website.crm.entity.PackingLine;
 import com.yunhe.website.crm.entity.PackingList;
 import com.yunhe.website.crm.entity.PackingListVersion;
 import com.yunhe.website.crm.entity.ProformaInvoice;
+import com.yunhe.website.crm.entity.QuoteDetailGroup;
+import com.yunhe.website.crm.entity.QuoteDetailItem;
+import com.yunhe.website.crm.entity.Quotation;
 import com.yunhe.website.crm.repository.PackingListRepository;
 import com.yunhe.website.crm.repository.PackingListVersionRepository;
 import com.yunhe.website.crm.repository.ProformaInvoiceRepository;
+import com.yunhe.website.crm.repository.QuotationRepository;
 import com.yunhe.website.crm.support.DocNumberGenerator;
+import com.yunhe.website.crm.support.PlPdfRenderer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,9 +44,11 @@ public class PackingListService {
 
     private final PackingListRepository packingListRepository;
     private final ProformaInvoiceRepository proformaInvoiceRepository;
+    private final QuotationRepository quotationRepository;
     private final PackingListVersionRepository versionRepository;
     private final ObjectMapper objectMapper;
     private final SequenceStore sequenceStore;
+    private final PlPdfRenderer plPdfRenderer;
 
     @Transactional(readOnly = true)
     public Page<PackingListDto> list(Pageable pageable) {
@@ -77,6 +88,8 @@ public class PackingListService {
         packingList.setCustomer(pi.getCustomer());
         packingList.setProformaInvoice(pi);
         packingList.setRootQuotationId(pi.getQuotation().getId());
+        // 由报价单项播种装箱行：每行关联 quoteLineKey，装箱字段留空待用户填写（单一数据源 = 报价单）
+        packingList.setLines(seedLinesFromQuotation(pi.getQuotation()));
         assignPackingNo(packingList, LocalDate.now().getYear());
         packingListRepository.save(packingList);
         return toDto(packingList);
@@ -106,14 +119,22 @@ public class PackingListService {
         return toDto(packingList);
     }
 
-    /** 将表单字段写入实体 */
+    /** 将表单字段写入实体（整单合计由 lines 派生，不在此冗余存储） */
     private void applyForm(PackingList packingList, PackingListForm form) {
         packingList.setPackingDate(form.getPackingDate());
         packingList.setMarks(form.getMarks());
-        packingList.setNumberOfPackages(form.getNumberOfPackages());
-        packingList.setGrossWeight(form.getGrossWeight());
-        packingList.setNetWeight(form.getNetWeight());
-        packingList.setVolume(form.getVolume());
+        // 逐货物项装箱信息：经 quoteLineKey 对齐报价单项，装箱字段覆盖写入
+        if (form.getLines() != null) {
+            List<PackingLine> lines = form.getLines().stream()
+                    .map(f -> new PackingLine(
+                            f.getQuoteLineKey(),
+                            f.getPackages(),
+                            f.getNetWeight(),
+                            f.getGrossWeight(),
+                            f.getMeasurement()))
+                    .toList();
+            packingList.setLines(lines);
+        }
         packingList.setRemark(form.getRemark());
     }
 
@@ -189,6 +210,7 @@ public class PackingListService {
         snapshot.put("netWeight", packingList.getNetWeight());
         snapshot.put("volume", packingList.getVolume());
         snapshot.put("remark", packingList.getRemark());
+        snapshot.put("lines", packingList.getLines());
         ProformaInvoice pi = packingList.getProformaInvoice();
         if (pi != null) {
             snapshot.put("piDetails", pi.getDetails());
@@ -218,9 +240,31 @@ public class PackingListService {
         return new VersionFileDto(version.getPdf(), filename);
     }
 
-    /** PDF 生成（OpenPDF，暂未实现，留空函数） */
+    /** PDF 生成（OpenPDF，经 PlPdfRenderer 渲染；货物字段按 quoteLineKey JOIN 根报价单） */
     private byte[] generatePdf(PackingList packingList) {
-        return null;
+        Quotation quotation = null;
+        if (packingList.getRootQuotationId() != null) {
+            quotation = quotationRepository.findById(packingList.getRootQuotationId()).orElse(null);
+        }
+        if (quotation == null && packingList.getProformaInvoice() != null) {
+            quotation = packingList.getProformaInvoice().getQuotation();
+        }
+        return plPdfRenderer.render(packingList, quotation);
+    }
+
+    /** 由报价单项播种装箱行：每行绑定 item.key()，装箱字段留空（null）待填 */
+    private List<PackingLine> seedLinesFromQuotation(Quotation quotation) {
+        List<PackingLine> lines = new ArrayList<>();
+        if (quotation == null || quotation.getDetails() == null) {
+            return lines;
+        }
+        for (QuoteDetailGroup g : quotation.getDetails()) {
+            if (g.items() == null) continue;
+            for (QuoteDetailItem it : g.items()) {
+                lines.add(new PackingLine(it.key(), null, null, null, null));
+            }
+        }
+        return lines;
     }
 
     private void assignPackingNo(PackingList packingList, int year) {
@@ -235,6 +279,10 @@ public class PackingListService {
         PackingListDto.CustomerSummary summary = customer == null ? null
                 : new PackingListDto.CustomerSummary(customer.getId(), customer.getName(), customer.getCompany());
         Long piId = packingList.getProformaInvoice() == null ? null : packingList.getProformaInvoice().getId();
+        List<PackingLineDto> lineDtos = packingList.getLines() == null ? List.of()
+                : packingList.getLines().stream().map(l -> new PackingLineDto(
+                        l.quoteLineKey(), l.packages(), l.netWeight(), l.grossWeight(), l.measurement()))
+                .toList();
         return new PackingListDto(
                 packingList.getId(),
                 packingList.getPackingNo(),
@@ -245,6 +293,7 @@ public class PackingListService {
                 packingList.getGrossWeight(),
                 packingList.getNetWeight(),
                 packingList.getVolume(),
+                lineDtos,
                 packingList.getRemark(),
                 summary,
                 piId,

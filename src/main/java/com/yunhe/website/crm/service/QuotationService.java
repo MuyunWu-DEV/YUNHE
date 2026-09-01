@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -161,6 +162,7 @@ public class QuotationService {
                     : group.getItems().stream()
                             .filter(item -> StringUtils.hasText(item.getDescription()))
                             .map(item -> new QuoteDetailItem(
+                                    resolveItemKey(item.getKey()),
                                     item.getDescription(),
                                     item.getUnitPrice() == null ? BigDecimal.ZERO : item.getUnitPrice(),
                                     item.getQuantity() == null ? 0 : item.getQuantity(),
@@ -178,5 +180,16 @@ public class QuotationService {
         }
         return customerRepository.findById(customerId)
                 .orElseThrow(() -> BusinessException.notFound("客户", customerId));
+    }
+
+    /**
+     * 解析明细项稳定 key：表单带回的 key 原样沿用（保证 PL JOIN 不因重排而断）；
+     * 表单未带（新建/历史数据）则生成 UUID，写入后随报价单持久化。
+     */
+    private String resolveItemKey(String incoming) {
+        if (incoming != null && !incoming.isBlank()) {
+            return incoming;
+        }
+        return UUID.randomUUID().toString();
     }
 }

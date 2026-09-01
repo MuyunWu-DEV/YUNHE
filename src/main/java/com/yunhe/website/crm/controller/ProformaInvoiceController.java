@@ -272,6 +272,10 @@ public class ProformaInvoiceController {
             form.setTerms(details.terms());
             form.setBankAccountInformation(details.bankAccountInformation());
             form.setWarranty(details.warranty());
+            if (details.route() != null) {
+                form.setPortOfLoading(details.route().portOfLoading());
+                form.setPortOfDestination(details.route().portOfDestination());
+            }
         }
         return form;
     }

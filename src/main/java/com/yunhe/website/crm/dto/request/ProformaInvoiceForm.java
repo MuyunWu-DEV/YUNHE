@@ -67,6 +67,12 @@ public class ProformaInvoiceForm {
     /** Warranty（质保单行短文本，用于 PDF WARRANTY 行） */
     private String warranty;
 
+    /** 装货港（PORT OF LOADING，用于 PI/CI/PL 的 META 盒） */
+    private String portOfLoading;
+
+    /** 目的港（PORT OF DESTINATION，用于 PI/CI/PL 的 META 盒） */
+    private String portOfDestination;
+
     /** 变更原因（仅「发起变更」时必填，由 ReviseGroup 分组校验） */
     @NotBlank(groups = ReviseGroup.class, message = "变更原因不能为空")
     private String changeReason;

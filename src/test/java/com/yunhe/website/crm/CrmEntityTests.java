@@ -51,10 +51,10 @@ class CrmEntityTests {
 
         List<QuoteDetailGroup> details = List.of(
                 new QuoteDetailGroup("服务器", "84713090", List.of(
-                        new QuoteDetailItem("配置A", new BigDecimal("100.00"), 2, "SETS", "USD"),
-                        new QuoteDetailItem("配置B", new BigDecimal("200.50"), 1, "SETS", "USD"))),
+                        new QuoteDetailItem("qa-1", "配置A", new BigDecimal("100.00"), 2, "SETS", "USD"),
+                        new QuoteDetailItem("qa-2", "配置B", new BigDecimal("200.50"), 1, "SETS", "USD"))),
                 new QuoteDetailGroup("硬盘", "84717090", List.of(
-                        new QuoteDetailItem("配置C", new BigDecimal("50.00"), 4, "PCS", "USD"))));
+                        new QuoteDetailItem("qa-3", "配置C", new BigDecimal("50.00"), 4, "PCS", "USD"))));
         quotation.setDetails(details);
         quotationRepository.save(quotation);
 

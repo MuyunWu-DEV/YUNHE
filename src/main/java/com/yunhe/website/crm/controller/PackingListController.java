@@ -3,8 +3,12 @@ package com.yunhe.website.crm.controller;
 import com.yunhe.website.common.exception.BusinessException;
 import com.yunhe.website.common.validation.ReviseGroup;
 import com.yunhe.website.common.web.PageUtil;
+import com.yunhe.website.crm.dto.PackingLineDto;
 import com.yunhe.website.crm.dto.PackingListDto;
+import com.yunhe.website.crm.dto.PlFormItemView;
 import com.yunhe.website.crm.dto.VersionFileDto;
+import com.yunhe.website.crm.dto.DocumentChainDto;
+import com.yunhe.website.crm.dto.request.PackingLineForm;
 import com.yunhe.website.crm.dto.request.PackingListForm;
 import com.yunhe.website.crm.service.DocumentChainService;
 import com.yunhe.website.crm.service.PackingListService;
@@ -70,7 +74,10 @@ public class PackingListController {
         model.addAttribute("packingList", packingList);
         model.addAttribute("versions", packingListService.listVersions(id));
         if (packingList.rootQuotationId() != null) {
-            model.addAttribute("chain", documentChainService.buildChain(packingList.rootQuotationId()));
+            var chain = documentChainService.buildChain(packingList.rootQuotationId());
+            model.addAttribute("chain", chain);
+            // 装箱行按 quoteLineKey 索引，供详情页 JOIN 展示 N.W./G.W./件数/体积
+            model.addAttribute("plLineByKey", toLineByKey(packingList.lines()));
         }
         return "packing-list/detail";
     }
@@ -102,6 +109,7 @@ public class PackingListController {
         model.addAttribute("packingListForm", toForm(packingListService.getById(id)));
         model.addAttribute("isEdit", true);
         model.addAttribute("isChange", true);
+        addPlFormContext(model, id);
         return "packing-list/form";
     }
 
@@ -114,6 +122,7 @@ public class PackingListController {
                          RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             prepareReviseModel(model);
+            addPlFormContext(model, id);
             return "packing-list/form";
         }
         try {
@@ -132,6 +141,7 @@ public class PackingListController {
     public String editForm(@PathVariable Long id, Model model) {
         model.addAttribute("packingListForm", toForm(packingListService.getById(id)));
         model.addAttribute("isEdit", true);
+        addPlFormContext(model, id);
         return "packing-list/form";
     }
 
@@ -144,6 +154,7 @@ public class PackingListController {
                          RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("isEdit", true);
+            addPlFormContext(model, id);
             return "packing-list/form";
         }
         try {
@@ -174,15 +185,66 @@ public class PackingListController {
         model.addAttribute("isChange", true);
     }
 
+    /**
+     * 为编辑/变更表单补充「货物上下文」：加载根报价单链，并按下 item.key() 建索引，
+     * 供表单按 quoteLineKey 展示每项的品名/HS Code/描述/数量（装箱字段本身在 packingListForm.lines 中）。
+     */
+    private void addPlFormContext(Model model, Long id) {
+        PackingListDto pl = packingListService.getById(id);
+        if (pl.rootQuotationId() == null) {
+            return;
+        }
+        var chain = documentChainService.buildChain(pl.rootQuotationId());
+        model.addAttribute("chain", chain);
+        model.addAttribute("plItemByKey", toItemByKey(chain));
+    }
+
+    /** 展平报价单项，按下 key 建索引（用于编辑表单按 quoteLineKey 取货物字段） */
+    private java.util.Map<String, PlFormItemView> toItemByKey(DocumentChainDto chain) {
+        java.util.Map<String, PlFormItemView> map = new java.util.LinkedHashMap<>();
+        if (chain == null || chain.quotation() == null || chain.quotation().details() == null) {
+            return map;
+        }
+        for (var g : chain.quotation().details()) {
+            if (g.items() == null) continue;
+            for (var it : g.items()) {
+                if (it.key() == null) continue;
+                map.put(it.key(), new PlFormItemView(
+                        it.key(), g.name(), g.hsCode(), it.description(),
+                        it.quantity(), it.unit()));
+            }
+        }
+        return map;
+    }
+
+    /** 装箱行按下 quoteLineKey 建索引（用于详情页按 key JOIN 展示装箱数据） */
+    private java.util.Map<String, PackingLineDto> toLineByKey(java.util.List<PackingLineDto> lines) {
+        java.util.Map<String, PackingLineDto> map = new java.util.LinkedHashMap<>();
+        if (lines == null) return map;
+        for (PackingLineDto l : lines) {
+            if (l.quoteLineKey() != null) {
+                map.put(l.quoteLineKey(), l);
+            }
+        }
+        return map;
+    }
+
     private PackingListForm toForm(PackingListDto dto) {
         PackingListForm form = new PackingListForm();
         form.setId(dto.id());
         form.setPackingDate(dto.packingDate());
         form.setMarks(dto.marks());
-        form.setNumberOfPackages(dto.numberOfPackages());
-        form.setGrossWeight(dto.grossWeight());
-        form.setNetWeight(dto.netWeight());
-        form.setVolume(dto.volume());
+        if (dto.lines() != null) {
+            form.setLines(dto.lines().stream().map(l -> {
+                PackingLineForm line = new PackingLineForm();
+                line.setQuoteLineKey(l.quoteLineKey());
+                line.setPackages(l.packages());
+                line.setNetWeight(l.netWeight());
+                line.setGrossWeight(l.grossWeight());
+                line.setMeasurement(l.measurement());
+                return line;
+            }).toList());
+        }
         form.setRemark(dto.remark());
         return form;
     }

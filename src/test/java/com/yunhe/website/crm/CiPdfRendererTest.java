@@ -45,7 +45,9 @@ class CiPdfRendererTest {
                         + "Account No.: 200000000347964\n"
                         + "Beneficiary Name: Qingdao Yunhe Intelligent Manufacturing Co., Ltd.\n"
                         + "Beneficiary Address: Qingdao Yunhe Intelligent Manufacturing Co., Ltd., Wangtai Town, Huangdao District, Qingdao City, Shandong Province",
-                "One year after-sales service warranty on electrical accessories under correct operation.");
+                "One year after-sales service warranty on electrical accessories under correct operation.",
+                new com.yunhe.website.crm.entity.ProformaDetails.RouteInfo(
+                        "Qingdao, China", "Nhava Sheva, India"));
 
         Quotation quotation = new Quotation();
         quotation.setQuoteDate(LocalDate.now());
@@ -54,6 +56,7 @@ class CiPdfRendererTest {
                         "Brand New Shuttleless Water Jet Looms",
                         "84463090",
                         List.of(new QuoteDetailItem(
+                                "qi-1",
                                 "- Model Number: YRW-8101,\n"
                                         + "Working Width: 190 cm,\n"
                                         + "Xinliao Electronic Panel with Double Feeders, Double Nozzles,\n"
