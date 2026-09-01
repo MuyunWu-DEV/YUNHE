@@ -64,7 +64,7 @@ public class PackingList extends BaseEntity {
 
     /** 装箱逐行数据（JSON 存储）；货物字段经 quoteLineKey JOIN 回报价单项，不在此冗余 */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "lines", columnDefinition = "json")
+    @Column(name = "packing_lines", columnDefinition = "json")
     private List<PackingLine> lines = new ArrayList<>();
 
     /** 备注 */
