@@ -612,7 +612,7 @@ public abstract class AbstractTradePdfRenderer {
      */
     protected static String amountInWordsEn(BigDecimal amount, String ccy) {
         if (amount == null) amount = BigDecimal.ZERO;
-        BigDecimal scaled = amount.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal scaled = amount.setScale(2, RoundingMode.HALF_EVEN);
         long cents = scaled.multiply(BigDecimal.valueOf(100)).longValue();
         long dollars = cents / 100;
         int rem = (int) (cents % 100);

@@ -375,7 +375,7 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
         BigDecimal total = sumTotalsByCcy(groups).values().stream()
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal pct = ci != null && ci.getDepositPercentage() != null ? ci.getDepositPercentage() : BigDecimal.ZERO;
-        BigDecimal advance = total.multiply(pct).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal advance = total.multiply(pct).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_EVEN);
         BigDecimal net = total.subtract(advance);
         String ccy = primaryCurrency(groups);
         String inc = safe(pi != null && pi.getDetails() != null ? pi.getDetails().incoterms() : null);
