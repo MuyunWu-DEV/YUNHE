@@ -91,16 +91,16 @@
                             </div>
                         </td>
                         <td th:text="${line.packages() != null ? line.packages() : '-'}">件数</td>
-                        <td th:text="${line.netWeight() != null ? #numbers.formatDecimal(line.netWeight(), 1, 0, 3, '.') : '-'}">净重</td>
-                        <td th:text="${line.grossWeight() != null ? #numbers.formatDecimal(line.grossWeight(), 1, 0, 3, '.') : '-'}">毛重</td>
-                        <td th:text="${line.measurement() != null ? #numbers.formatDecimal(line.measurement(), 1, 0, 3, '.') : '-'}">体积</td>
+                        <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(line.netWeight())}">净重</td>
+                        <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(line.grossWeight())}">毛重</td>
+                        <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(line.measurement())}">体积</td>
                     </tr>
                     <tr class="fw-bold table-light">
                         <td>合计 TOTAL</td>
                         <td th:text="${packingList.numberOfPackages()} ?: '-'">件数</td>
-                        <td th:text="${packingList.netWeight() != null ? #numbers.formatDecimal(packingList.netWeight(), 1, 0, 3, '.') : '-'}">净重</td>
-                        <td th:text="${packingList.grossWeight() != null ? #numbers.formatDecimal(packingList.grossWeight(), 1, 0, 3, '.') : '-'}">毛重</td>
-                        <td th:text="${packingList.volume() != null ? #numbers.formatDecimal(packingList.volume(), 1, 0, 3, '.') : '-'}">体积</td>
+                        <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(packingList.netWeight())}">净重</td>
+                        <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(packingList.grossWeight())}">毛重</td>
+                        <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(packingList.volume())}">体积</td>
                     </tr>
                     </tbody>
                 </table>

@@ -89,10 +89,10 @@
                                 <div class="small text-muted" th:if="${group.hsCode() != null}" th:text="'HS Code: ' + ${group.hsCode()}">HS Code</div>
                                 <div class="small" th:text="${item.description()}">描述</div>
                             </td>
-                            <td th:text="${item.unitPrice() != null ? #numbers.formatDecimal(item.unitPrice(), 1, 0, 3, '.') : '-'}">单价</td>
+                            <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).money(item.unitPrice())}">单价</td>
                             <td th:text="${item.quantity()}">数量</td>
                             <td th:text="${item.unit()} ?: '-'">单位</td>
-                            <td th:text="${item.subtotal() != null ? #numbers.formatDecimal(item.subtotal(), 1, 0, 3, '.') : '-'}">小计</td>
+                            <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).money(item.subtotal())}">小计</td>
                         </tr>
                     </th:block>
                     </tbody>
