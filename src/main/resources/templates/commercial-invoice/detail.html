@@ -74,9 +74,7 @@
                 <table class="table">
                     <thead>
                     <tr>
-                        <th style="width:180px">品名</th>
-                        <th style="width:120px">HS Code</th>
-                        <th>货物描述</th>
+                        <th style="width:210px">品名 / HS Code / 描述</th>
                         <th style="width:120px">单价</th>
                         <th style="width:80px">数量</th>
                         <th style="width:80px">单位</th>
@@ -85,10 +83,12 @@
                     </thead>
                     <tbody>
                     <th:block th:each="group : ${chain.quotation.details}">
-                        <tr th:each="item, iterStat : ${group.items()}">
-                            <td th:if="${iterStat.first}" th:text="${group.name()}" th:rowspan="${group.items().size()}">品名</td>
-                            <td th:if="${iterStat.first}" th:text="${group.hsCode()} ?: '-'" th:rowspan="${group.items().size()}">HS Code</td>
-                            <td th:text="${item.description()}">描述</td>
+                        <tr th:each="item : ${group.items()}">
+                            <td>
+                                <div class="fw-bold" th:text="${group.name()}">品名</div>
+                                <div class="small text-muted" th:if="${group.hsCode() != null}" th:text="'HS Code: ' + ${group.hsCode()}">HS Code</div>
+                                <div class="small" th:text="${item.description()}">描述</div>
+                            </td>
                             <td th:text="${item.unitPrice()} ?: '-'">单价</td>
                             <td th:text="${item.quantity()}">数量</td>
                             <td th:text="${item.unit()} ?: '-'">单位</td>

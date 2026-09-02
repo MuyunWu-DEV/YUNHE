@@ -78,6 +78,8 @@ public class PackingListController {
             model.addAttribute("chain", chain);
             // 装箱行按 quoteLineKey 索引，供详情页 JOIN 展示 N.W./G.W./件数/体积
             model.addAttribute("plLineByKey", toLineByKey(packingList.lines()));
+            // 报价单项按 quoteLineKey 索引，供详情页展示 品名 / HS Code / 描述（与编辑页一致）
+            model.addAttribute("plItemByKey", toItemByKey(chain));
         }
         return "packing-list/detail";
     }

@@ -70,50 +70,42 @@
             </dl>
 
             <h6 class="mb-3">货物明细</h6>
-            <div class="table-responsive" th:if="${chain != null and chain.quotation != null and chain.quotation.details != null and !chain.quotation.details.isEmpty()}">
-                <table class="table">
+            <div class="table-responsive" th:if="${packingList.lines != null and !packingList.lines.isEmpty()}">
+                <table class="table table-bordered align-middle">
                     <thead>
                     <tr>
-                        <th style="width:160px">品名</th>
-                        <th style="width:100px">HS Code</th>
-                        <th>货物描述</th>
-                        <th style="width:110px">单价</th>
-                        <th style="width:70px">数量</th>
-                        <th style="width:70px">单位</th>
-                        <th style="width:120px">小计</th>
-                        <th style="width:90px">件数</th>
-                        <th style="width:100px">净重(kg)</th>
-                        <th style="width:100px">毛重(kg)</th>
-                        <th style="width:100px">体积(m³)</th>
+                        <th>品名 / HS Code / 描述</th>
+                        <th style="width:10%">件数</th>
+                        <th style="width:12%">净重(kg)</th>
+                        <th style="width:12%">毛重(kg)</th>
+                        <th style="width:12%">体积(m³)</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <th:block th:each="group : ${chain.quotation.details}">
-                        <tr th:each="item, iterStat : ${group.items()}">
-                            <td th:if="${iterStat.first}" th:text="${group.name()}" th:rowspan="${group.items().size()}">品名</td>
-                            <td th:if="${iterStat.first}" th:text="${group.hsCode()} ?: '-'" th:rowspan="${group.items().size()}">HS Code</td>
-                            <td th:text="${item.description()}">描述</td>
-                            <td th:text="${item.unitPrice()} ?: '-'">单价</td>
-                            <td th:text="${item.quantity()}">数量</td>
-                            <td th:text="${item.unit()} ?: '-'">单位</td>
-                            <td th:text="${item.subtotal()}">小计</td>
-                            <td th:with="pl=${plLineByKey[item.key()]}" th:text="${pl != null and pl.packages() != null ? pl.packages() : '-'}">件数</td>
-                            <td th:with="pl=${plLineByKey[item.key()]}" th:text="${pl != null and pl.netWeight() != null ? #numbers.formatDecimal(pl.netWeight(), 1, 3) : '-'}">净重</td>
-                            <td th:with="pl=${plLineByKey[item.key()]}" th:text="${pl != null and pl.grossWeight() != null ? #numbers.formatDecimal(pl.grossWeight(), 1, 3) : '-'}">毛重</td>
-                            <td th:with="pl=${plLineByKey[item.key()]}" th:text="${pl != null and pl.measurement() != null ? #numbers.formatDecimal(pl.measurement(), 1, 3) : '-'}">体积</td>
-                        </tr>
-                    </th:block>
-                    <tr class="fw-bold table-light" th:if="${chain != null and chain.quotation != null and chain.quotation.details != null and !chain.quotation.details.isEmpty()}">
-                        <td colspan="7" class="text-end">合计 TOTAL</td>
+                    <tr th:each="line : ${packingList.lines}">
+                        <td>
+                            <div th:with="ctx=${plItemByKey != null ? plItemByKey[line.quoteLineKey()] : null}">
+                                <div class="fw-bold" th:text="${ctx != null ? ctx.groupName() : (line.quoteLineKey() ?: '-')}">品名</div>
+                                <div class="small text-muted" th:if="${ctx != null and ctx.hsCode() != null}" th:text="'HS Code: ' + ${ctx.hsCode()}">HS Code</div>
+                                <div class="small" th:if="${ctx != null and ctx.description() != null}" th:text="${ctx.description()}">描述</div>
+                            </div>
+                        </td>
+                        <td th:text="${line.packages() != null ? line.packages() : '-'}">件数</td>
+                        <td th:text="${line.netWeight() != null ? #numbers.formatDecimal(line.netWeight(), 1, 0, 3, '.') : '-'}">净重</td>
+                        <td th:text="${line.grossWeight() != null ? #numbers.formatDecimal(line.grossWeight(), 1, 0, 3, '.') : '-'}">毛重</td>
+                        <td th:text="${line.measurement() != null ? #numbers.formatDecimal(line.measurement(), 1, 0, 3, '.') : '-'}">体积</td>
+                    </tr>
+                    <tr class="fw-bold table-light">
+                        <td>合计 TOTAL</td>
                         <td th:text="${packingList.numberOfPackages()} ?: '-'">件数</td>
-                        <td th:text="${packingList.netWeight()} != null ? #numbers.formatDecimal(packingList.netWeight(), 1, 3) : '-'">净重</td>
-                        <td th:text="${packingList.grossWeight()} != null ? #numbers.formatDecimal(packingList.grossWeight(), 1, 3) : '-'">毛重</td>
-                        <td th:text="${packingList.volume()} != null ? #numbers.formatDecimal(packingList.volume(), 1, 3) : '-'">体积</td>
+                        <td th:text="${packingList.netWeight() != null ? #numbers.formatDecimal(packingList.netWeight(), 1, 0, 3, '.') : '-'}">净重</td>
+                        <td th:text="${packingList.grossWeight() != null ? #numbers.formatDecimal(packingList.grossWeight(), 1, 0, 3, '.') : '-'}">毛重</td>
+                        <td th:text="${packingList.volume() != null ? #numbers.formatDecimal(packingList.volume(), 1, 0, 3, '.') : '-'}">体积</td>
                     </tr>
                     </tbody>
                 </table>
             </div>
-            <div th:if="${chain == null or chain.quotation == null or chain.quotation.details == null or chain.quotation.details.isEmpty()}" class="empty-state">暂无明细</div>
+            <div th:if="${packingList.lines == null or packingList.lines.isEmpty()}" class="empty-state">暂无明细</div>
 
             <h6 class="mb-2 mt-4">版本历史</h6>
             <table class="table" th:if="${versions != null and !versions.isEmpty()}">

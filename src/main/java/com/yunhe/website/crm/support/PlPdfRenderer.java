@@ -73,6 +73,7 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
     public byte[] render(PackingList pl, Quotation quotation) {
         ProformaInvoice pi = pl != null ? pl.getProformaInvoice() : null;
         ProformaDetails details = pi != null ? pi.getDetails() : null;
+        ProformaDetails.BuyerInfo buyer = details != null ? details.buyer() : null;
 
         Document doc = new Document(PageSize.A4, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -89,9 +90,11 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
             doc.add(blank(8));
             renderMetaTable(doc, pl, pi, details);
             doc.add(blank(16));
+            renderPartiesTable(doc, pl, details, buyer);
             renderItemTable(doc, pl, quotation);
             renderTotalsTable(doc, pl, quotation);
             renderMarksAndRemark(doc, pl);
+            renderSay(doc, pl);
 
             doc.close();
             return baos.toByteArray();
@@ -158,13 +161,14 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
      */
     private void renderItemTable(Document doc, PackingList pl, Quotation quotation) {
         PdfPTable table = newBodyTable();
+        String mu = mainUnit(resolveGroups(quotation));
         table.addCell(headerCell("ITEMS", null, BLACK, FS_LABEL));
         table.addCell(headerCell("DESCRIPTION OF GOODS", null, BLACK, FS_LABEL));
-        table.addCell(headerCell("QTY", null, BLACK, FS_LABEL));
-        table.addCell(headerCell("N.W.(KGS)", null, BLACK, FS_LABEL));
-        table.addCell(headerCell("G.W.(KGS)", null, BLACK, FS_LABEL));
-        table.addCell(headerCell("QTY(PKGS)", null, BLACK, FS_LABEL));
-        table.addCell(headerCell("MEAS(m\u00B3)", null, BLACK, FS_LABEL));
+        table.addCell(headerCell("QTY (" + safe(mu) + ")", null, BLACK, FS_LABEL));
+        table.addCell(headerCell("N.W. (KGS)", null, BLACK, FS_LABEL));
+        table.addCell(headerCell("G.W. (KGS)", null, BLACK, FS_LABEL));
+        table.addCell(headerCell("QTY (PKGS)", null, BLACK, FS_LABEL));
+        table.addCell(headerCell("MEAS (m\u00B3)", null, BLACK, FS_LABEL));
 
         List<JoinedRow> rows = buildJoinedRows(pl, quotation);
         if (rows.isEmpty()) {
@@ -176,15 +180,14 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
                     table.addCell(plNameCell(r.groupName, r.hsCode, r.groupItemCount));
                 }
                 table.addCell(plDescCell(r.groupName, r.item != null ? r.item.description() : ""));
-                // 数量来自 JOIN 的报价单项
+                // 数量来自 JOIN 的报价单项（单位已上提到表头，单元格内不显示单位）
                 int qty = r.item != null ? r.item.quantity() : 0;
-                String unit = r.item != null ? safe(r.item.unit()) : "";
-                table.addCell(qtyCell(qty, unit, BLACK, BLACK, null));
-                // 装箱数据来自 line
-                table.addCell(weightCell(r.line != null ? r.line.netWeight() : null, "KGS"));
-                table.addCell(weightCell(r.line != null ? r.line.grossWeight() : null, "KGS"));
+                table.addCell(qtyCellPlain(qty));
+                // 装箱数据来自 line（单位已上提到表头，单元格内不显示单位）
+                table.addCell(weightCell(r.line != null ? r.line.netWeight() : null, ""));
+                table.addCell(weightCell(r.line != null ? r.line.grossWeight() : null, ""));
                 table.addCell(pkgCell(r.line != null ? r.line.packages() : null));
-                table.addCell(weightCell(r.line != null ? r.line.measurement() : null, "m\u00B3"));
+                table.addCell(weightCell(r.line != null ? r.line.measurement() : null, ""));
             }
         }
         add(doc, table);
@@ -199,18 +202,16 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
                 .filter(r -> r.item != null)
                 .mapToInt(r -> r.item.quantity())
                 .sum();
-        String unit = rows.stream().map(r -> r.item).filter(java.util.Objects::nonNull)
-                .map(QuoteDetailItem::unit).filter(u -> u != null && !u.isBlank())
-                .findFirst().orElse("");
 
         PdfPCell label = cell("TOTAL", FS_BODY, Font.BOLD, BLACK, null, Element.ALIGN_LEFT, PAD, borderWidth());
         label.setColspan(2);
         table.addCell(label);
-        table.addCell(qtyCell(totalQty, unit, BLACK, BLACK, null));
-        table.addCell(weightCell(pl.getNetWeight(), "KGS"));
-        table.addCell(weightCell(pl.getGrossWeight(), "KGS"));
+        // 单位已在表头，单元格内不显示（与 CI/明细页一致）
+        table.addCell(qtyCellPlain(totalQty));
+        table.addCell(weightCell(pl.getNetWeight(), ""));
+        table.addCell(weightCell(pl.getGrossWeight(), ""));
         table.addCell(pkgCell(pl.getNumberOfPackages()));
-        table.addCell(weightCell(pl.getVolume(), "m\u00B3"));
+        table.addCell(weightCell(pl.getVolume(), ""));
         add(doc, table);
     }
 
@@ -224,6 +225,51 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
             doc.add(blank(4));
             add(doc, boldParagraph("REMARKS: " + safe(pl.getRemark()), FS_BODY, 0, BLACK));
         }
+    }
+
+    /** 7. 发货人/收货人表（SHIPPER / CONSIGNEE 双列盒，黑白纯线条，与 CI 同源结构） */
+    private void renderPartiesTable(Document doc, PackingList pl, ProformaDetails details, ProformaDetails.BuyerInfo buyer) {
+        PdfPTable table = new PdfPTable(2);
+        table.setWidthPercentage(100);
+        table.setWidths(new float[]{1, 1});
+        table.addCell(partyCell(true, details, null));
+        table.addCell(partyCell(false, details, buyer));
+        add(doc, table);
+    }
+
+    /** 8. 末尾 SAY … PACKAGES ONLY（总件数英文大写；单位已在表头，此处不写单位） */
+    private void renderSay(Document doc, PackingList pl) {
+        Integer totalPkgs = pl != null ? pl.getNumberOfPackages() : null;
+        long n = totalPkgs != null ? totalPkgs : 0;
+        add(doc, boldParagraph("SAY  " + numberToWords(n) + "  PACKAGES ONLY.", FS_BODY, 0, BLACK));
+    }
+
+    /** SHIPPER / CONSIGNEE 单元格：标签带间距 + 联系信息（全黑、带边框、无填充、顶对齐） */
+    private PdfPCell partyCell(boolean isShipper, ProformaDetails details, ProformaDetails.BuyerInfo buyer) {
+        PdfPCell c = borderedCell(Element.ALIGN_TOP, null);
+        if (isShipper) {
+            ProformaDetails.SellerInfo seller = details != null ? details.seller() : null;
+            c.addElement(labelParagraph("S H I P P E R"));
+            if (seller != null) {
+                if (nonBlank(seller.companyName())) c.addElement(boldParagraph(seller.companyName(), FS_BODY, 2, BLACK));
+                if (nonBlank(seller.address())) c.addElement(kvLineParagraph("ADD: ", seller.address(), Font.BOLD, BLACK, BLACK));
+                if (nonBlank(seller.phone())) c.addElement(kvLineParagraph("TEL: ", seller.phone(), Font.BOLD, BLACK, BLACK));
+                if (nonBlank(seller.email())) c.addElement(kvLineParagraph("EMAIL: ", seller.email(), Font.BOLD, BLACK, BLACK));
+            }
+        } else {
+            c.addElement(labelParagraph("C O N S I G N E E"));
+            if (buyer != null) {
+                if (nonBlank(buyer.companyName())) c.addElement(boldParagraph(buyer.companyName(), FS_BODY, 2, BLACK));
+                if (nonBlank(buyer.registrationNo())) c.addElement(kvLineParagraph("REGISTRATION NO.: ", buyer.registrationNo(), Font.BOLD, BLACK, BLACK));
+                if (nonBlank(buyer.address())) c.addElement(kvLineParagraph("ADD: ", buyer.address(), Font.BOLD, BLACK, BLACK));
+            }
+        }
+        return c;
+    }
+
+    /** 数量单元格（仅数字，居中加粗；单位已上提到表头，单元格内不显示） */
+    private PdfPCell qtyCellPlain(int qty) {
+        return cell(String.valueOf(qty), FS_BODY, Font.BOLD, BLACK, null, Element.ALIGN_CENTER, PAD, borderWidth());
     }
 
     // =====================================================================
@@ -332,10 +378,13 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
         return c;
     }
 
-    /** 重量/体积单元格：数值（加粗）+ 单位（micro），居中，无填充 */
+    /** 重量/体积单元格：数值（加粗），居中，无填充；unit 为空时不显示单位（单位已上提到表头） */
     private PdfPCell weightCell(BigDecimal value, String unit) {
         if (value == null) {
             return cell("-", FS_BODY, Font.NORMAL, BLACK, null, Element.ALIGN_CENTER, PAD, borderWidth());
+        }
+        if (unit == null || unit.isBlank()) {
+            return cell(fmtWeight(value), FS_BODY, Font.BOLD, BLACK, null, Element.ALIGN_CENTER, PAD, borderWidth());
         }
         Phrase ph = new Phrase();
         ph.add(new Chunk(fmtWeight(value) + "\n", textFont(fmtWeight(value), FS_BODY, Font.BOLD, BLACK)));
