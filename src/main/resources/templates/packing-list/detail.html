@@ -75,6 +75,7 @@
                     <thead>
                     <tr>
                         <th>品名 / HS Code / 描述</th>
+                        <th style="width:10%">数量</th>
                         <th style="width:10%">件数</th>
                         <th style="width:12%">净重(kg)</th>
                         <th style="width:12%">毛重(kg)</th>
@@ -82,14 +83,15 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="line : ${packingList.lines}">
+                    <tr th:each="line : ${packingList.lines}" th:with="ctx=${plItemByKey != null ? plItemByKey[line.quoteLineKey()] : null}">
                         <td>
-                            <div th:with="ctx=${plItemByKey != null ? plItemByKey[line.quoteLineKey()] : null}">
+                            <div>
                                 <div class="fw-bold" th:text="${ctx != null ? ctx.groupName() : (line.quoteLineKey() ?: '-')}">品名</div>
                                 <div class="small text-muted" th:if="${ctx != null and ctx.hsCode() != null}" th:text="'HS Code: ' + ${ctx.hsCode()}">HS Code</div>
                                 <div class="small" th:if="${ctx != null and ctx.description() != null}" th:text="${ctx.description()}">描述</div>
                             </div>
                         </td>
+                        <td th:text="${ctx != null ? ctx.quantity() + (ctx.unit() != null ? ' ' + ctx.unit() : '') : '-'}">数量</td>
                         <td th:text="${line.packages() != null ? line.packages() : '-'}">件数</td>
                         <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(line.netWeight())}">净重</td>
                         <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(line.grossWeight())}">毛重</td>
@@ -97,6 +99,7 @@
                     </tr>
                     <tr class="fw-bold table-light">
                         <td>合计 TOTAL</td>
+                        <td>-</td>
                         <td th:text="${packingList.numberOfPackages()} ?: '-'">件数</td>
                         <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(packingList.netWeight())}">净重</td>
                         <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(packingList.grossWeight())}">毛重</td>

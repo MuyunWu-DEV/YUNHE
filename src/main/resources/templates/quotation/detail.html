@@ -57,8 +57,7 @@
                         <th style="width:120px">HS Code</th>
                         <th>货物描述</th>
                         <th style="width:120px">单价</th>
-                        <th style="width:80px">数量</th>
-                        <th style="width:80px">单位</th>
+                        <th style="width:120px">数量</th>
                         <th style="width:140px">小计</th>
                     </tr>
                     </thead>
@@ -68,10 +67,9 @@
                             <td th:if="${iterStat.first}" th:text="${group.name()}" th:rowspan="${group.items().size()}">品名</td>
                             <td th:if="${iterStat.first}" th:text="${group.hsCode()} ?: '-'" th:rowspan="${group.items().size()}">HS Code</td>
                             <td th:text="${item.description()}">描述</td>
-                            <td th:text="${item.unitPrice()} ?: '-'">单价</td>
-                            <td th:text="${item.quantity()}">数量</td>
-                            <td th:text="${item.unit()} ?: '-'">单位</td>
-                            <td th:text="${item.subtotal()}">小计</td>
+                            <td th:text="${item.unitPrice() != null ? T(com.yunhe.website.crm.support.FormatUtil).money(item.unitPrice()) + (item.unit() != null ? ' ' + item.unit() : '') : '-'}">单价</td>
+                            <td th:text="${item.quantity() != null ? item.quantity() + (item.unit() != null ? ' ' + item.unit() : '') : '-'}">数量</td>
+                            <td th:text="${item.subtotal() != null ? T(com.yunhe.website.crm.support.FormatUtil).money(item.subtotal()) + (item.unit() != null ? ' ' + item.unit() : '') : '-'}">小计</td>
                         </tr>
                     </th:block>
                     </tbody>
