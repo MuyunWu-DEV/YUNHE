@@ -83,15 +83,15 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="line : ${packingList.lines}" th:with="ctx=${plItemByKey != null ? plItemByKey[line.quoteLineKey()] : null}">
+                    <tr th:each="line, stat : ${packingList.lines}" th:with="ctx=${plItemByKey != null ? plItemByKey[line.quoteLineKey()] : null}, posItem=${ctx == null and plItemsInOrder != null and stat.index &lt; plItemsInOrder.size() ? plItemsInOrder[stat.index] : null}, eff=${ctx != null ? ctx : posItem}">
                         <td>
                             <div>
-                                <div class="fw-bold" th:text="${ctx != null ? ctx.groupName() : (line.quoteLineKey() ?: '-')}">品名</div>
-                                <div class="small text-muted" th:if="${ctx != null and ctx.hsCode() != null}" th:text="'HS Code: ' + ${ctx.hsCode()}">HS Code</div>
-                                <div class="small" th:if="${ctx != null and ctx.description() != null}" th:text="${ctx.description()}">描述</div>
+                                <div class="fw-bold" th:text="${eff != null ? eff.groupName() : (line.quoteLineKey() ?: '-')}">品名</div>
+                                <div class="small text-muted" th:if="${eff != null and eff.hsCode() != null}" th:text="'HS Code: ' + ${eff.hsCode()}">HS Code</div>
+                                <div class="small" th:if="${eff != null and eff.description() != null}" th:text="${eff.description()}">描述</div>
                             </div>
                         </td>
-                        <td th:text="${ctx != null ? ctx.quantity() : '-'}">数量</td>
+                        <td th:text="${eff != null ? eff.quantity() : '-'}">数量</td>
                         <td th:text="${line.packages() != null ? line.packages() : '-' }">件数</td>
                         <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(line.netWeight())}">净重</td>
                         <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(line.grossWeight())}">毛重</td>

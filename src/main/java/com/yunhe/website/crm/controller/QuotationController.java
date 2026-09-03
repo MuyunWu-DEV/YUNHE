@@ -222,6 +222,9 @@ public class QuotationController {
             itemForm.setQuantity(item.quantity());
             itemForm.setUnit(item.unit());
             itemForm.setCurrency(item.currency());
+            // 关键：回填稳定 key，否则发起变更/编辑提交后 resolveItemKey 会为每个明细项重新生成 UUID，
+            // 导致下游 PL 经 quoteLineKey JOIN 的关联断裂（PL 详情页品名退化成 key）。
+            itemForm.setKey(item.key());
             result.add(itemForm);
         }
         return result;

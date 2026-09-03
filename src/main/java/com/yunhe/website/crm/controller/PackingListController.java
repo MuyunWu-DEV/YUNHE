@@ -80,6 +80,8 @@ public class PackingListController {
             model.addAttribute("plLineByKey", toLineByKey(packingList.lines()));
             // 报价单项按 quoteLineKey 索引，供详情页展示 品名 / HS Code / 描述（与编辑页一致）
             model.addAttribute("plItemByKey", toItemByKey(chain));
+            // 报价单项按生成顺序展平，供详情页在 key 失配时按位置兜底 JOIN（PL 以报价单 item 为基准）
+            model.addAttribute("plItemsInOrder", toItemsInOrder(chain));
         }
         return "packing-list/detail";
     }
@@ -217,6 +219,24 @@ public class PackingListController {
             }
         }
         return map;
+    }
+
+    /** 展平报价单项为有序列表（与生成装箱行时 1:1 的顺序一致），供详情页在 key 失配时按位置兜底 JOIN */
+    private java.util.List<PlFormItemView> toItemsInOrder(DocumentChainDto chain) {
+        java.util.List<PlFormItemView> list = new java.util.ArrayList<>();
+        if (chain == null || chain.quotation() == null || chain.quotation().details() == null) {
+            return list;
+        }
+        for (var g : chain.quotation().details()) {
+            if (g.items() == null) continue;
+            for (var it : g.items()) {
+                if (it.key() == null) continue;
+                list.add(new PlFormItemView(
+                        it.key(), g.name(), g.hsCode(), it.description(),
+                        it.quantity(), it.unit()));
+            }
+        }
+        return list;
     }
 
     /** 装箱行按下 quoteLineKey 建索引（用于详情页按 key JOIN 展示装箱数据） */
