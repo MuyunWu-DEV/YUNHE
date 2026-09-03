@@ -499,13 +499,9 @@ public abstract class AbstractTradePdfRenderer {
 
     protected static String fmtMoney(BigDecimal v) {
         if (v == null) return "0";
-        // 无小数时不显示 .00；显式 Locale.US，避免非 en/US JVM 下千分位/小数点随系统 Locale 错乱
-        // （与 Web 端 FormatUtil 的 DecimalFormatSymbols(Locale.US) 口径一致）
-        BigDecimal s = v.stripTrailingZeros();
-        if (s.scale() <= 0) {
-            return String.format(Locale.US, "%,d", s.toBigInteger());
-        }
-        return String.format(Locale.US, "%,.2f", v);
+        // 委托 FormatUtil.moneyGrouped：与 Web 端金额展示共享同一 US + 千分位到分实现，
+        // 消除本类 String.format 与 FormatUtil DecimalFormat 的分叉（C1 已统一 Locale，C1b 统一实现）
+        return FormatUtil.moneyGrouped(v);
     }
 
     protected static String safe(String s) {
