@@ -282,32 +282,10 @@ public class PiPdfRenderer extends AbstractTradePdfRenderer {
     }
 
     /**
-     * 货物表列2（COMMODITY NAME）：顶部先输出加粗品名头（对齐 CI 的 ciDescCell / SAHIL FAB 参考），其下逐行输出规格明细。
-     * 配色用 PI 的 NAVY/TXT2（CI 为黑）；结构一致，差异只在配色。
+     * 货物表列2（COMMODITY NAME）：结构复用基类 {@link #descCell}，仅传 PI 调色板（品名 NAVY / 规格 TXT2）。
      */
     private PdfPCell piDescCell(String name, String desc) {
-        PdfPCell c = borderedCell(Element.ALIGN_MIDDLE, null);
-        String safeName = safe(name);
-        String safeDesc = safe(desc);
-        if (safeName.isEmpty() && safeDesc.isEmpty()) {
-            c.addElement(blank(9));
-            return c;
-        }
-        if (!safeName.isEmpty()) {
-            c.addElement(para(safeName, FS_BODY, Font.BOLD, NAVY, 3f));
-        }
-        if (safeDesc.isEmpty()) {
-            c.addElement(blank(9));
-            return c;
-        }
-        // OpenPDF 对含 \n 的单 Paragraph setLeading 不生效，必须拆行后各自控制 leading + spacingAfter
-        String[] lines = safeDesc.split("\n", -1);
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
-            c.addElement(para(line.isBlank() ? " " : line, FS_BODY, Font.NORMAL, TXT2,
-                    i < lines.length - 1 ? 2f : 0f));
-        }
-        return c;
+        return descCell(name, desc, NAVY, TXT2);
     }
 
     /** 6. TOTAL：深蓝标签带 + 单一金色金额区（FS_BODY 深蓝）+ 数量（白底深蓝）+ 可选 WARRANTY 整行 */

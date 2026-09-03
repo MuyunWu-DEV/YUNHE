@@ -276,6 +276,37 @@ public abstract class AbstractTradePdfRenderer {
         return borderedCell(Element.ALIGN_TOP, null);
     }
 
+    /**
+     * 货物表列2（DESCRIPTION OF GOODS / COMMODITY NAME）：顶部先输出加粗品名头，其下逐行输出规格明细。
+     * PI/CI 结构完全一致，差异只在配色（PI=NAVY/TXT2，CI=BLACK），故上收为参数化共用实现。
+     * nameColor=品名头文字色；descColor=规格行文字色。颜色常量仍由各子类私调色板传入，基类不感知子类色。
+     */
+    protected PdfPCell descCell(String name, String desc, Color nameColor, Color descColor) {
+        PdfPCell c = borderedCell(Element.ALIGN_MIDDLE, null);
+        String safeName = safe(name);
+        String safeDesc = safe(desc);
+        if (safeName.isEmpty() && safeDesc.isEmpty()) {
+            c.addElement(blank(9));
+            return c;
+        }
+        // 顶部加粗品名头（与列1 Name 呼应）
+        if (!safeName.isEmpty()) {
+            c.addElement(para(safeName, FS_BODY, Font.BOLD, nameColor, 3f));
+        }
+        if (safeDesc.isEmpty()) {
+            c.addElement(blank(9));
+            return c;
+        }
+        // OpenPDF 对含 \n 的单 Paragraph setLeading 不生效，必须拆行后各自控制 leading + spacingAfter
+        String[] lines = safeDesc.split("\n", -1);
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            c.addElement(para(line.isBlank() ? " " : line, FS_BODY, Font.NORMAL, descColor,
+                    i < lines.length - 1 ? 2f : 0f));
+        }
+        return c;
+    }
+
     protected static Paragraph para(String text, float size, int style, Color color, float spacingAfter) {
         Paragraph p = new Paragraph(safe(text), textFont(text, size, style, color));
         p.setLeading(0, LEADING); // 统一正文行距（与 boldParagraph/kvLineParagraph 一致），去除默认 1.5× 的松散余量

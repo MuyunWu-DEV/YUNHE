@@ -293,33 +293,10 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
     }
 
     /**
-     * 货物表列2（DESCRIPTION OF GOODS）：顶部先输出加粗品名头（对齐 SAHIL FAB 参考），其下逐行输出规格明细。
-     * 配色走 CI 的 BLACK；PI 的对应方法 {@link #piDescCell} 仅配色不同（NAVY/TXT2），结构一致（差异只在配色）。
+     * 货物表列2（DESCRIPTION OF GOODS）：结构复用基类 {@link #descCell}，仅传 CI 调色板（全黑）。
      */
     private PdfPCell ciDescCell(String name, String desc) {
-        PdfPCell c = borderedCell(Element.ALIGN_MIDDLE, null);
-        String safeName = safe(name);
-        String safeDesc = safe(desc);
-        if (safeName.isEmpty() && safeDesc.isEmpty()) {
-            c.addElement(blank(9));
-            return c;
-        }
-        // 顶部加粗品名头（与列1 的 Name 呼应，符合 SAHIL FAB 原单据列2 样式）
-        if (!safeName.isEmpty()) {
-            c.addElement(para(safeName, FS_BODY, Font.BOLD, BLACK, 3f));
-        }
-        if (safeDesc.isEmpty()) {
-            c.addElement(blank(9));
-            return c;
-        }
-        // OpenPDF 对含 \n 的单 Paragraph setLeading 不生效，必须拆行后各自控制 leading + spacingAfter
-        String[] lines = safeDesc.split("\n", -1);
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
-            c.addElement(para(line.isBlank() ? " " : line, FS_BODY, Font.NORMAL, BLACK,
-                    i < lines.length - 1 ? 2f : 0f));
-        }
-        return c;
+        return descCell(name, desc, BLACK, BLACK);
     }
 
     /** 4.3 TOTAL / LESS / NET 段（标签跨 4 列 + 金额第 5 列；NET 盒底加粗线作视觉标识） */
@@ -414,15 +391,17 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
         }
     }
 
-    /** 汇总 TOTAL / LESS(NET) / 定金比例 / 付款条款文案（与 PI 同套金额算法，CI 仅黑线条呈现） */
+    /** 汇总 TOTAL / LESS(NET) / 定金比例 / 付款条款文案（金额口径与 PI 的 renderTotalsTable 对齐） */
     private InvoiceMoney calcMoney(CommercialInvoice ci, ProformaInvoice pi) {
         List<QuoteDetailGroup> groups = resolveGroups(pi != null ? pi.getQuotation() : null);
-        BigDecimal total = sumTotalsByCcy(groups).values().stream()
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // 金额总计只统计「主币种」明细行：一张 CI 的 NET VALUE 必须单一币种。
+        // 此前误用 sumTotalsByCcy(...).values() 把所有币种金额混加，多币种报价时 TOTAL/NET 口径错误。
+        // 与 PiPdfRenderer.renderTotalsTable 的 totalByCcy.getOrDefault(mainCcy, ZERO) 完全对齐。
+        String ccy = primaryCurrency(groups);
+        BigDecimal total = sumTotalsByCcy(groups).getOrDefault(ccy, BigDecimal.ZERO);
         BigDecimal pct = ci != null && ci.getDepositPercentage() != null ? ci.getDepositPercentage() : BigDecimal.ZERO;
         BigDecimal advance = total.multiply(pct).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_EVEN);
         BigDecimal net = total.subtract(advance);
-        String ccy = primaryCurrency(groups);
         String inc = safe(pi != null && pi.getDetails() != null ? pi.getDetails().incoterms() : null);
         String totalLabel = (inc.isEmpty() ? "FOB QINGDAO, CHINA (Incoterms 2020)" : inc);
         String pctStr = pct.stripTrailingZeros().toPlainString();
