@@ -83,7 +83,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="line, stat : ${packingList.lines}" th:with="ctx=${plItemByKey != null ? plItemByKey[line.quoteLineKey()] : null}, posItem=${ctx == null and plItemsInOrder != null and stat.index &lt; plItemsInOrder.size() ? plItemsInOrder[stat.index] : null}, eff=${ctx != null ? ctx : posItem}">
+                    <tr th:each="line, stat : ${packingList.lines}" th:with="ctx=${plItemByKey != null ? plItemByKey[line.quoteLineKey()] : null}, posItem=${ctx == null and plItemsInOrder != null and stat.index &lt; plItemsInOrder.size() ? plItemsInOrder[stat.index] : null}, eff=${ctx != null ? ctx : posItem}, matched=${ctx != null}">
                         <td>
                             <div>
                                 <div class="fw-bold" th:text="${eff != null ? eff.groupName() : (line.quoteLineKey() ?: '-')}">品名</div>
@@ -92,10 +92,10 @@
                             </div>
                         </td>
                         <td th:text="${eff != null ? eff.quantity() : '-'}">数量</td>
-                        <td th:text="${line.packages() != null ? line.packages() : '-' }">件数</td>
-                        <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(line.netWeight())}">净重</td>
-                        <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(line.grossWeight())}">毛重</td>
-                        <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(line.measurement())}">体积</td>
+                        <td th:text="${matched and line.packages() != null ? line.packages() : '-'}">件数</td>
+                        <td th:text="${matched ? T(com.yunhe.website.crm.support.FormatUtil).weight(line.netWeight()) : '-'}">净重</td>
+                        <td th:text="${matched ? T(com.yunhe.website.crm.support.FormatUtil).weight(line.grossWeight()) : '-'}">毛重</td>
+                        <td th:text="${matched ? T(com.yunhe.website.crm.support.FormatUtil).weight(line.measurement()) : '-'}">体积</td>
                     </tr>
                     <tr class="fw-bold table-light">
                         <td>合计 TOTAL</td>
