@@ -520,12 +520,13 @@ public abstract class AbstractTradePdfRenderer {
 
     protected static String fmtMoney(BigDecimal v) {
         if (v == null) return "0";
-        // 无小数时不显示 .00
+        // 无小数时不显示 .00；显式 Locale.US，避免非 en/US JVM 下千分位/小数点随系统 Locale 错乱
+        // （与 Web 端 FormatUtil 的 DecimalFormatSymbols(Locale.US) 口径一致）
         BigDecimal s = v.stripTrailingZeros();
         if (s.scale() <= 0) {
-            return String.format("%,d", s.toBigInteger());
+            return String.format(Locale.US, "%,d", s.toBigInteger());
         }
-        return String.format("%,.2f", v);
+        return String.format(Locale.US, "%,.2f", v);
     }
 
     protected static String safe(String s) {

@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -361,15 +362,15 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
         }
     }
 
-    /** 重量格式化：最多 3 位小数，去掉末尾 0（整数不显示小数） */
+    /** 重量格式化：最多 3 位小数，去掉末尾 0（整数不显示小数）。显式 Locale.US，避免千分位/小数点随系统 Locale 错乱。 */
     private static String fmtWeight(BigDecimal v) {
         if (v == null) return "-";
         BigDecimal s = v.stripTrailingZeros();
         if (s.scale() <= 0) {
-            return String.format("%,d", s.toBigInteger());
+            return String.format(Locale.US, "%,d", s.toBigInteger());
         }
         // 有小数：按实际小数位显示（最多 3 位），不补末尾 0 —— 修复此前 "%,.3f" 强制 3 位导致 100.5→100.500
         int frac = Math.min(s.scale(), 3);
-        return String.format("%,." + frac + "f", v);
+        return String.format(Locale.US, "%,." + frac + "f", v);
     }
 }
