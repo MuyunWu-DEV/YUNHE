@@ -99,11 +99,11 @@
                     </tr>
                     <tr class="fw-bold table-light">
                         <td>合计 TOTAL</td>
-                        <td>-</td>
-                        <td th:text="${packingList.numberOfPackages()} ?: '-'">件数</td>
-                        <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(packingList.netWeight())}">净重</td>
-                        <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(packingList.grossWeight())}">毛重</td>
-                        <td th:text="${T(com.yunhe.website.crm.support.FormatUtil).weight(packingList.volume())}">体积</td>
+                        <td th:text="${plTotalQty != null ? plTotalQty : '-'}">数量</td>
+                        <td th:text="${plTotalPkgs != null ? plTotalPkgs : '-'}">件数</td>
+                        <td th:text="${plTotalNet != null ? T(com.yunhe.website.crm.support.FormatUtil).weight(plTotalNet) : '-'}">净重</td>
+                        <td th:text="${plTotalGross != null ? T(com.yunhe.website.crm.support.FormatUtil).weight(plTotalGross) : '-'}">毛重</td>
+                        <td th:text="${plTotalVol != null ? T(com.yunhe.website.crm.support.FormatUtil).weight(plTotalVol) : '-'}">体积</td>
                     </tr>
                     </tbody>
                 </table>

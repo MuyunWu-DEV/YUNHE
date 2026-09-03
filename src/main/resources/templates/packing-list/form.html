@@ -36,18 +36,17 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="line, st : ${packingListForm.lines}">
+                        <tr th:each="line, st : ${packingListForm.lines}" th:with="ctx=${plItemByKey != null ? plItemByKey[line.quoteLineKey] : null}, posItem=${ctx == null and plItemsInOrder != null and st.index &lt; plItemsInOrder.size() ? plItemsInOrder[st.index] : null}, eff=${ctx != null ? ctx : posItem}">
                             <td>
                                 <input type="hidden" th:field="*{lines[__${st.index}__].quoteLineKey}"/>
-                                <div th:with="ctx=${plItemByKey[line.quoteLineKey]}">
-                                    <div class="fw-bold" th:text="${ctx != null ? ctx.groupName() : (line.quoteLineKey ?: '-')}">品名</div>
-                                    <div class="small text-muted" th:if="${ctx != null and ctx.hsCode() != null}" th:text="'HS Code: ' + ${ctx.hsCode()}">HS Code</div>
-                                    <div class="small" th:if="${ctx != null and ctx.description() != null}" th:text="${ctx.description()}">描述</div>
+                                <div>
+                                    <div class="fw-bold" th:text="${eff != null ? eff.groupName() : (line.quoteLineKey ?: '-')}">品名</div>
+                                    <div class="small text-muted" th:if="${eff != null and eff.hsCode() != null}" th:text="'HS Code: ' + ${eff.hsCode()}">HS Code</div>
+                                    <div class="small" th:if="${eff != null and eff.description() != null}" th:text="${eff.description()}">描述</div>
                                 </div>
                             </td>
-                            <td th:if="${plItemByKey[line.quoteLineKey] != null}"
-                                th:text="${plItemByKey[line.quoteLineKey].quantity()}">24 SETS</td>
-                            <td th:unless="${plItemByKey[line.quoteLineKey] != null}">-</td>
+                            <td th:if="${eff != null}" th:text="${eff.quantity()}">24 SETS</td>
+                            <td th:unless="${eff != null}">-</td>
                             <td><input type="number" min="1" step="1" class="form-control" th:field="*{lines[__${st.index}__].packages}"/></td>
                             <td><input type="number" step="any" class="form-control" th:field="*{lines[__${st.index}__].netWeight}"/></td>
                             <td><input type="number" step="any" class="form-control" th:field="*{lines[__${st.index}__].grossWeight}"/></td>
