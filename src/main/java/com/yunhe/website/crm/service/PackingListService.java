@@ -97,14 +97,19 @@ public class PackingListService {
         return toDto(packingList);
     }
 
+    /**
+     * 更新（普通编辑，仅未生成单据可走）。
+     * 已生成（GENERATED）单据禁止裸 update 降级：改动必须经 {@link #revise} 留版本日志，
+     * 防止绕过版本审计直接改已出 PDF 的单据。
+     */
     @Transactional
     public PackingListDto update(Long id, PackingListForm form) {
         PackingList packingList = packingListRepository.findById(id)
                 .orElseThrow(() -> BusinessException.notFound("装箱单", id));
-        applyForm(packingList, form);
         if (packingList.getStatus() == DocumentStatus.GENERATED) {
-            packingList.setStatus(DocumentStatus.PENDING_REGENERATION);
+            throw BusinessException.of("该装箱单已生成 PDF，不能直接编辑；请使用「变更」功能发起变更");
         }
+        applyForm(packingList, form);
         return toDto(packingList);
     }
 
@@ -140,10 +145,13 @@ public class PackingListService {
         packingList.setRemark(form.getRemark());
     }
 
+    /** 删除装箱单（叶子单据，无下游）：级联删除其自身版本后删除 */
     @Transactional
     public void delete(Long id) {
         PackingList packingList = packingListRepository.findById(id)
                 .orElseThrow(() -> BusinessException.notFound("装箱单", id));
+        // 级联清理从属版本，避免撞版本 FK 转 500
+        versionRepository.deleteByPackingListId(id);
         packingListRepository.delete(packingList);
     }
 
@@ -237,9 +245,12 @@ public class PackingListService {
         return versionRepository.findByPackingListIdOrderByVersionNoDesc(id);
     }
 
-    /** 获取版本 PDF 及下载文件名（生成功能暂未实现，pdf 可能为空） */
+    /** 获取版本 PDF 及下载文件名。校验版本归属于指定装箱单，防止用任意 versionId 越权下载他单 PDF */
     @Transactional(readOnly = true)
-    public VersionFileDto getVersionFile(Long versionId) {
+    public VersionFileDto getVersionFile(Long plId, Long versionId) {
+        if (!versionRepository.existsByIdAndPackingListId(versionId, plId)) {
+            throw BusinessException.notFound("版本", versionId);
+        }
         PackingListVersion version = versionRepository.findById(versionId)
                 .orElseThrow(() -> BusinessException.notFound("版本", versionId));
         String filename = version.getPackingList().getPackingNo() + "-v" + version.getVersionNo() + ".pdf";

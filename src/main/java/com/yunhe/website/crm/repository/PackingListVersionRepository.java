@@ -16,4 +16,10 @@ public interface PackingListVersionRepository extends JpaRepository<PackingListV
 
     /** 版本历史列表（轻量投影，只取列表展示所需列，不加载 pdf/data 大字段） */
     List<DocVersionSummary> findByPackingListIdOrderByVersionNoDesc(Long plId);
+
+    /** 版本是否存在且归属于指定装箱单（下载越权校验用） */
+    boolean existsByIdAndPackingListId(Long id, Long packingListId);
+
+    /** 删除某装箱单的全部版本（删除主单据前级联清理其从属版本） */
+    void deleteByPackingListId(Long packingListId);
 }

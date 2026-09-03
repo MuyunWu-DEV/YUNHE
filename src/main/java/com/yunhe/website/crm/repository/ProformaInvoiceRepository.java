@@ -28,6 +28,9 @@ public interface ProformaInvoiceRepository extends JpaRepository<ProformaInvoice
     /** 某报价单是否已生成 PI（1:1，防重复） */
     boolean existsByQuotationId(Long quotationId);
 
+    /** 某客户是否有关联形式发票（删除客户守卫用） */
+    boolean existsByCustomerId(Long customerId);
+
     /** 按来源报价单查询 PI（1:1，用于全链追溯） */
     Optional<ProformaInvoice> findByQuotationId(Long quotationId);
 }

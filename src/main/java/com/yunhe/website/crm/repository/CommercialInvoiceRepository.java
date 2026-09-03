@@ -15,6 +15,12 @@ public interface CommercialInvoiceRepository extends JpaRepository<CommercialInv
     /** 某 PI 是否已生成商业发票（1:1，防重复） */
     boolean existsByProformaInvoiceId(Long proformaInvoiceId);
 
+    /** 某客户是否有关联商业发票（删除客户守卫用） */
+    boolean existsByCustomerId(Long customerId);
+
+    /** 某根报价单是否已产生商业发票（删除报价单守卫用） */
+    boolean existsByRootQuotationId(Long rootQuotationId);
+
     /** 按根报价单查询商业发票（1:1，用于全链追溯） */
     Optional<CommercialInvoice> findByRootQuotationId(Long rootQuotationId);
 

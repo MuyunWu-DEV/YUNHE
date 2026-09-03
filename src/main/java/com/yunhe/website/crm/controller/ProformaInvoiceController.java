@@ -133,8 +133,8 @@ public class ProformaInvoiceController {
 
     @GetMapping("/{id}/versions/{versionId}/download")
     @PreAuthorize("hasAuthority(T(com.yunhe.website.security.Permissions).PROFORMA_INVOICE_LIST)")
-    public ResponseEntity<byte[]> downloadVersion(@PathVariable Long versionId) {
-        VersionFileDto file = invoiceService.getVersionFile(versionId);
+    public ResponseEntity<byte[]> downloadVersion(@PathVariable Long id, @PathVariable Long versionId) {
+        VersionFileDto file = invoiceService.getVersionFile(id, versionId);
         if (file.pdf() == null || file.pdf().length == 0) {
             return ResponseEntity.notFound().build();
         }

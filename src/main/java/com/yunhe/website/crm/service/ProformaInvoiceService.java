@@ -19,6 +19,7 @@ import com.yunhe.website.crm.repository.PackingListRepository;
 import com.yunhe.website.crm.repository.ProformaInvoiceRepository;
 import com.yunhe.website.crm.repository.ProformaInvoiceVersionRepository;
 import com.yunhe.website.crm.repository.QuotationRepository;
+import com.yunhe.website.crm.repository.SalesOrderRepository;
 import com.yunhe.website.crm.support.DocNumberGenerator;
 import com.yunhe.website.crm.support.PiPdfRenderer;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -45,6 +46,7 @@ public class ProformaInvoiceService {
     private final ProformaInvoiceVersionRepository versionRepository;
     private final CommercialInvoiceRepository commercialInvoiceRepository;
     private final PackingListRepository packingListRepository;
+    private final SalesOrderRepository salesOrderRepository;
     private final CommercialInvoiceService commercialInvoiceService;
     private final PackingListService packingListService;
     private final ObjectMapper objectMapper;
@@ -88,44 +90,34 @@ public class ProformaInvoiceService {
         return toDto(invoice);
     }
 
-    /** 更新发票：保存改动，若已生成则打回 PI 自身及下游 CI/PL */
+    /**
+     * 更新（普通编辑，仅未生成单据可走）。
+     * 已生成（GENERATED）单据禁止裸 update 降级：改动必须经 {@link #revise} 留版本日志并联动下游，
+     * 防止绕过版本审计直接改已出 PDF 的单据。
+     */
     @Transactional
     public ProformaInvoiceDto update(Long id, ProformaInvoiceForm form) {
         ProformaInvoice invoice = invoiceRepository.findById(id)
                 .orElseThrow(() -> BusinessException.notFound("形式发票", id));
-        applyForm(invoice, form);
         if (invoice.getStatus() == DocumentStatus.GENERATED) {
-            invoice.setStatus(DocumentStatus.PENDING_REGENERATION);
-            markDownstreamPendingRegeneration(invoice);
+            throw BusinessException.of("该形式发票已生成 PDF，不能直接编辑；请使用「变更」功能发起变更");
         }
+        applyForm(invoice, form);
         return toDto(invoice);
     }
 
-    /** PI 变更后，把下游已生成的 CI / PL 置为待重新生成 */
-    private void markDownstreamPendingRegeneration(ProformaInvoice invoice) {
-        if (invoice.getQuotation() == null) {
-            return;
-        }
-        Long rootId = invoice.getQuotation().getId();
-        commercialInvoiceRepository.findByRootQuotationId(rootId)
-                .ifPresent(ci -> {
-                    if (ci.getStatus() == DocumentStatus.GENERATED) {
-                        ci.setStatus(DocumentStatus.PENDING_REGENERATION);
-                    }
-                });
-        packingListRepository.findByRootQuotationId(rootId)
-                .ifPresent(pl -> {
-                    if (pl.getStatus() == DocumentStatus.GENERATED) {
-                        pl.setStatus(DocumentStatus.PENDING_REGENERATION);
-                    }
-                });
-    }
-
-    /** 删除发票 */
+    /** 删除形式发票：若已被下游单据（CI/PL/SO）引用则拒绝；否则级联删除其自身版本后删除 */
     @Transactional
     public void delete(Long id) {
         ProformaInvoice invoice = invoiceRepository.findById(id)
                 .orElseThrow(() -> BusinessException.notFound("形式发票", id));
+        if (commercialInvoiceRepository.existsByProformaInvoiceId(id)
+                || packingListRepository.existsByProformaInvoiceId(id)
+                || salesOrderRepository.existsByProformaInvoiceId(id)) {
+            throw BusinessException.of("该形式发票已被下游单据引用，不能删除（请先删除其商业发票/装箱单/销售订单）");
+        }
+        // 级联清理从属版本，避免撞版本 FK 转 500
+        versionRepository.deleteByProformaInvoiceId(id);
         invoiceRepository.delete(invoice);
     }
 
@@ -240,9 +232,12 @@ public class ProformaInvoiceService {
         return versionRepository.findByProformaInvoiceIdOrderByVersionNoDesc(id);
     }
 
-    /** 获取版本 PDF 及下载文件名（生成功能暂未实现，pdf 可能为空） */
+    /** 获取版本 PDF 及下载文件名。校验版本归属于指定形式发票，防止用任意 versionId 越权下载他单 PDF */
     @Transactional(readOnly = true)
-    public VersionFileDto getVersionFile(Long versionId) {
+    public VersionFileDto getVersionFile(Long piId, Long versionId) {
+        if (!versionRepository.existsByIdAndProformaInvoiceId(versionId, piId)) {
+            throw BusinessException.notFound("版本", versionId);
+        }
         ProformaInvoiceVersion version = versionRepository.findById(versionId)
                 .orElseThrow(() -> BusinessException.notFound("版本", versionId));
         String filename = version.getProformaInvoice().getInvoiceNumber() + "-v" + version.getVersionNo() + ".pdf";

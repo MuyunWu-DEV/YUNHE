@@ -16,4 +16,10 @@ public interface ProformaInvoiceVersionRepository extends JpaRepository<Proforma
 
     /** 版本历史列表（轻量投影，只取列表展示所需列，不加载 pdf/data 大字段） */
     List<DocVersionSummary> findByProformaInvoiceIdOrderByVersionNoDesc(Long piId);
+
+    /** 版本是否存在且归属于指定形式发票（下载越权校验用） */
+    boolean existsByIdAndProformaInvoiceId(Long id, Long proformaInvoiceId);
+
+    /** 删除某形式发票的全部版本（删除主单据前级联清理其从属版本） */
+    void deleteByProformaInvoiceId(Long proformaInvoiceId);
 }

@@ -18,6 +18,7 @@ import com.yunhe.website.crm.repository.PackingListRepository;
 import com.yunhe.website.crm.repository.ProformaInvoiceRepository;
 import com.yunhe.website.crm.repository.QuotationLogRepository;
 import com.yunhe.website.crm.repository.QuotationRepository;
+import com.yunhe.website.crm.repository.SalesOrderRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,7 @@ public class QuotationService {
     private final QuotationLogRepository quotationLogRepository;
     private final CommercialInvoiceRepository commercialInvoiceRepository;
     private final PackingListRepository packingListRepository;
+    private final SalesOrderRepository salesOrderRepository;
     private final ProformaInvoiceService proformaInvoiceService;
     private final CommercialInvoiceService commercialInvoiceService;
     private final PackingListService packingListService;
@@ -103,9 +105,17 @@ public class QuotationService {
         regenerateDownstream(id, form.getChangeReason());
     }
 
-    /** 删除报价单 */
+    /** 删除报价单：若已生成 PI 或已被下游单据（CI/PL/SO）引用则拒绝，防止撞 FK 或产生悬空 rootQuotationId */
     @Transactional
     public void delete(Long id) {
+        if (proformaInvoiceRepository.existsByQuotationId(id)) {
+            throw BusinessException.of("该报价单已生成形式发票，不能删除（请先删除或转移其 PI）");
+        }
+        if (commercialInvoiceRepository.existsByRootQuotationId(id)
+                || packingListRepository.existsByRootQuotationId(id)
+                || salesOrderRepository.existsByRootQuotationId(id)) {
+            throw BusinessException.of("该报价单已被下游单据引用，不能删除");
+        }
         quotationRepository.deleteById(id);
     }
 

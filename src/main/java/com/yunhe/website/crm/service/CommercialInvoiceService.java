@@ -85,14 +85,19 @@ public class CommercialInvoiceService {
         return toDto(invoice);
     }
 
+    /**
+     * 更新（普通编辑，仅未生成单据可走）。
+     * 已生成（GENERATED）单据禁止裸 update 降级：改动必须经 {@link #revise} 留版本日志，
+     * 防止绕过版本审计直接改已出 PDF 的单据。
+     */
     @Transactional
     public CommercialInvoiceDto update(Long id, CommercialInvoiceForm form) {
         CommercialInvoice invoice = invoiceRepository.findById(id)
                 .orElseThrow(() -> BusinessException.notFound("商业发票", id));
-        applyForm(invoice, form);
         if (invoice.getStatus() == DocumentStatus.GENERATED) {
-            invoice.setStatus(DocumentStatus.PENDING_REGENERATION);
+            throw BusinessException.of("该商业发票已生成 PDF，不能直接编辑；请使用「变更」功能发起变更");
         }
+        applyForm(invoice, form);
         return toDto(invoice);
     }
 
@@ -118,10 +123,13 @@ public class CommercialInvoiceService {
         invoice.setBalancePaymentMethod(form.getBalancePaymentMethod());
     }
 
+    /** 删除商业发票（叶子单据，无下游）：级联删除其自身版本后删除 */
     @Transactional
     public void delete(Long id) {
         CommercialInvoice invoice = invoiceRepository.findById(id)
                 .orElseThrow(() -> BusinessException.notFound("商业发票", id));
+        // 级联清理从属版本，避免撞版本 FK 转 500
+        versionRepository.deleteByCommercialInvoiceId(id);
         invoiceRepository.delete(invoice);
     }
 
@@ -208,9 +216,12 @@ public class CommercialInvoiceService {
         return versionRepository.findByCommercialInvoiceIdOrderByVersionNoDesc(id);
     }
 
-    /** 获取版本 PDF 及下载文件名（生成功能暂未实现，pdf 可能为空） */
+    /** 获取版本 PDF 及下载文件名。校验版本归属于指定商业发票，防止用任意 versionId 越权下载他单 PDF */
     @Transactional(readOnly = true)
-    public VersionFileDto getVersionFile(Long versionId) {
+    public VersionFileDto getVersionFile(Long ciId, Long versionId) {
+        if (!versionRepository.existsByIdAndCommercialInvoiceId(versionId, ciId)) {
+            throw BusinessException.notFound("版本", versionId);
+        }
         CommercialInvoiceVersion version = versionRepository.findById(versionId)
                 .orElseThrow(() -> BusinessException.notFound("版本", versionId));
         String filename = version.getCommercialInvoice().getInvoiceNo() + "-v" + version.getVersionNo() + ".pdf";

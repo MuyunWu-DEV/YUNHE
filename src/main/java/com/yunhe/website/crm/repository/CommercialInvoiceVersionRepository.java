@@ -16,4 +16,10 @@ public interface CommercialInvoiceVersionRepository extends JpaRepository<Commer
 
     /** 版本历史列表（轻量投影，只取列表展示所需列，不加载 pdf/data 大字段） */
     List<DocVersionSummary> findByCommercialInvoiceIdOrderByVersionNoDesc(Long ciId);
+
+    /** 版本是否存在且归属于指定商业发票（下载越权校验用） */
+    boolean existsByIdAndCommercialInvoiceId(Long id, Long commercialInvoiceId);
+
+    /** 删除某商业发票的全部版本（删除主单据前级联清理其从属版本） */
+    void deleteByCommercialInvoiceId(Long commercialInvoiceId);
 }

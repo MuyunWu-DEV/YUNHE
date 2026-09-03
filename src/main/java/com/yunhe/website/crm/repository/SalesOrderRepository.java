@@ -15,6 +15,12 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
     /** 某 PI 是否已转订单（1:1，防重复） */
     boolean existsByProformaInvoiceId(Long proformaInvoiceId);
 
+    /** 某客户是否有关联销售订单（删除客户守卫用） */
+    boolean existsByCustomerId(Long customerId);
+
+    /** 某根报价单是否已产生销售订单（删除报价单守卫用） */
+    boolean existsByRootQuotationId(Long rootQuotationId);
+
     /** 按来源 PI 查询订单（1:1） */
     Optional<SalesOrder> findByProformaInvoiceId(Long proformaInvoiceId);
 

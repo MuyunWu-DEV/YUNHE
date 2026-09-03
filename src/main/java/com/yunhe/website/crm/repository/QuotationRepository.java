@@ -11,6 +11,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface QuotationRepository extends JpaRepository<Quotation, Long> {
 
+    /** 某客户是否有关联报价单（删除客户守卫用） */
+    boolean existsByCustomerId(Long customerId);
+
     /** 分页查询，并一次性加载客户（避免 N+1） */
     @Override
     @EntityGraph(attributePaths = "customer")
