@@ -92,9 +92,10 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
             doc.add(blank(16));
             renderPartiesTable(doc, pl, details, buyer);
             renderItemTable(doc, pl, quotation);
-            renderTotalsTable(doc, pl, quotation);
+            PlTotals totals = computeKeyMatchedTotals(pl, quotation);
+            renderTotalsTable(doc, pl, quotation, totals);
             renderMarksAndRemark(doc, pl);
-            renderSay(doc, pl);
+            renderSay(doc, totals);
 
             doc.close();
             return baos.toByteArray();
@@ -193,8 +194,8 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
         add(doc, table);
     }
 
-    /** 5. TOTAL 合计行：前 2 列合并为 TOTAL 标签，后 5 列分别填合计（数量来自 JOIN 求和、其余来自 lines 派生） */
-    private void renderTotalsTable(Document doc, PackingList pl, Quotation quotation) {
+    /** 5. TOTAL 合计行：前 2 列合并为 TOTAL 标签，后 5 列填 key 命中行合计（与 Web 详情页口径一致） */
+    private void renderTotalsTable(Document doc, PackingList pl, Quotation quotation, PlTotals totals) {
         PdfPTable table = newBodyTable();
         List<JoinedRow> rows = buildJoinedRows(pl, quotation);
 
@@ -207,11 +208,12 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
         label.setColspan(2);
         table.addCell(label);
         // 单位已在表头，单元格内不显示（与 CI/明细页一致）
+        // 数量来自 JOIN 全量求和；净重/毛重/件数/体积仅累计 key 命中行（与 Web 详情页合计一致）
         table.addCell(qtyCellPlain(totalQty));
-        table.addCell(weightCell(pl.getNetWeight(), ""));
-        table.addCell(weightCell(pl.getGrossWeight(), ""));
-        table.addCell(pkgCell(pl.getNumberOfPackages()));
-        table.addCell(weightCell(pl.getVolume(), ""));
+        table.addCell(weightCell(totals.net(), ""));
+        table.addCell(weightCell(totals.gross(), ""));
+        table.addCell(pkgCell(totals.packages()));
+        table.addCell(weightCell(totals.vol(), ""));
         add(doc, table);
     }
 
@@ -237,10 +239,9 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
         add(doc, table);
     }
 
-    /** 8. 末尾 SAY … PACKAGES ONLY（总件数英文大写；单位已在表头，此处不写单位） */
-    private void renderSay(Document doc, PackingList pl) {
-        Integer totalPkgs = pl != null ? pl.getNumberOfPackages() : null;
-        long n = totalPkgs != null ? totalPkgs : 0;
+    /** 8. 末尾 SAY … PACKAGES ONLY（总件数英文大写，取 key 命中行合计；单位已在表头，此处不写单位） */
+    private void renderSay(Document doc, PlTotals totals) {
+        long n = totals != null ? totals.packages() : 0;
         add(doc, boldParagraph("SAY  " + numberToWords(n) + "  PACKAGES ONLY.", FS_BODY, 0, BLACK));
     }
 
@@ -285,6 +286,28 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
             boolean firstInGroup,
             int groupItemCount
     ) {
+    }
+
+    /** 合计聚合（仅 key 命中的装箱行参与；与 Web 详情页合计口径一致） */
+    private record PlTotals(int packages, BigDecimal net, BigDecimal gross, BigDecimal vol) {
+    }
+
+    /** 仅累计 key 命中的装箱行（line.quoteLineKey() 与对应报价单项 item.key() 一致）。无命中 → 全 0。 */
+    private PlTotals computeKeyMatchedTotals(PackingList pl, Quotation quotation) {
+        List<JoinedRow> rows = buildJoinedRows(pl, quotation);
+        int pkgs = 0;
+        BigDecimal net = BigDecimal.ZERO, gross = BigDecimal.ZERO, vol = BigDecimal.ZERO;
+        for (JoinedRow r : rows) {
+            if (r.line() != null && r.item() != null
+                    && r.line().quoteLineKey() != null
+                    && r.line().quoteLineKey().equals(r.item().key())) {
+                if (r.line().packages() != null) pkgs += r.line().packages();
+                if (r.line().netWeight() != null) net = net.add(r.line().netWeight());
+                if (r.line().grossWeight() != null) gross = gross.add(r.line().grossWeight());
+                if (r.line().measurement() != null) vol = vol.add(r.line().measurement());
+            }
+        }
+        return new PlTotals(pkgs, net, gross, vol);
     }
 
     private List<JoinedRow> buildJoinedRows(PackingList pl, Quotation quotation) {

@@ -73,6 +73,12 @@ public class PackingListController {
         PackingListDto packingList = packingListService.getById(id);
         model.addAttribute("packingList", packingList);
         model.addAttribute("versions", packingListService.listVersions(id));
+        // 合计默认值（无数据 / 未关联报价单 → 0），与件数口径一致，避免合计行混合显示 0 / -
+        int totalPkgs = 0;
+        java.math.BigDecimal totalNet = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalGross = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalVol = java.math.BigDecimal.ZERO;
+        int totalQty = 0;
         if (packingList.rootQuotationId() != null) {
             var chain = documentChainService.buildChain(packingList.rootQuotationId());
             model.addAttribute("chain", chain);
@@ -85,15 +91,8 @@ public class PackingListController {
             var plItemsInOrder = toItemsInOrder(chain);
             model.addAttribute("plItemsInOrder", plItemsInOrder);
             // 合计只统计 key 命中的装箱行（与明细行装箱数据门控一致：key 失配的装箱值不计入合计）
-            int totalPkgs = 0;
-            java.math.BigDecimal totalNet = java.math.BigDecimal.ZERO;
-            java.math.BigDecimal totalGross = java.math.BigDecimal.ZERO;
-            java.math.BigDecimal totalVol = java.math.BigDecimal.ZERO;
-            int totalQty = 0;
-            boolean anyMatched = false;
             for (PackingLineDto l : packingList.lines()) {
                 if (l.quoteLineKey() != null && plItemByKey.containsKey(l.quoteLineKey())) {
-                    anyMatched = true;
                     if (l.packages() != null) totalPkgs += l.packages();
                     if (l.netWeight() != null) totalNet = totalNet.add(l.netWeight());
                     if (l.grossWeight() != null) totalGross = totalGross.add(l.grossWeight());
@@ -103,12 +102,13 @@ public class PackingListController {
             for (PlFormItemView it : plItemsInOrder) {
                 if (it.quantity() != null) totalQty += it.quantity();
             }
-            model.addAttribute("plTotalPkgs", totalPkgs);
-            model.addAttribute("plTotalNet", anyMatched ? totalNet : null);
-            model.addAttribute("plTotalGross", anyMatched ? totalGross : null);
-            model.addAttribute("plTotalVol", anyMatched ? totalVol : null);
-            model.addAttribute("plTotalQty", totalQty);
         }
+        // 合计始终以 0 为缺省（BigDecimal.ZERO / int 0），不再以 null 退化为 "-"，与件数一致
+        model.addAttribute("plTotalPkgs", totalPkgs);
+        model.addAttribute("plTotalNet", totalNet);
+        model.addAttribute("plTotalGross", totalGross);
+        model.addAttribute("plTotalVol", totalVol);
+        model.addAttribute("plTotalQty", totalQty);
         return "packing-list/detail";
     }
 
