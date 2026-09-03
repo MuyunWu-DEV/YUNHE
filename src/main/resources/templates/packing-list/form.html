@@ -28,8 +28,8 @@
                         <thead>
                         <tr>
                             <th style="width:30%">品名 / HS Code / 描述</th>
-                            <th style="width:10%">数量</th>
-                            <th style="width:12%">件数/箱数</th>
+                            <th style="width:10%">数量(set)</th>
+                            <th style="width:12%">件数/(pcs)</th>
                             <th style="width:12%">净重(kg)</th>
                             <th style="width:12%">毛重(kg)</th>
                             <th style="width:12%">体积(m³)</th>
@@ -46,7 +46,7 @@
                                 </div>
                             </td>
                             <td th:if="${plItemByKey[line.quoteLineKey] != null}"
-                                th:text="${plItemByKey[line.quoteLineKey].quantity()} + ' ' + ${plItemByKey[line.quoteLineKey].unit()}">24 SETS</td>
+                                th:text="${plItemByKey[line.quoteLineKey].quantity()}">24 SETS</td>
                             <td th:unless="${plItemByKey[line.quoteLineKey] != null}">-</td>
                             <td><input type="number" min="1" step="1" class="form-control" th:field="*{lines[__${st.index}__].packages}"/></td>
                             <td><input type="number" step="any" class="form-control" th:field="*{lines[__${st.index}__].netWeight}"/></td>
