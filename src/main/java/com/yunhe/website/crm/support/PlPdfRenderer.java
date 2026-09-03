@@ -10,20 +10,15 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
-import com.yunhe.website.crm.entity.PackingLine;
 import com.yunhe.website.crm.entity.PackingList;
 import com.yunhe.website.crm.entity.ProformaDetails;
 import com.yunhe.website.crm.entity.ProformaInvoice;
 import com.yunhe.website.crm.entity.Quotation;
-import com.yunhe.website.crm.entity.QuoteDetailGroup;
 import com.yunhe.website.crm.entity.QuoteDetailItem;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -91,11 +86,12 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
             renderMetaTable(doc, pl, pi, details);
             doc.add(blank(16));
             renderPartiesTable(doc, pl, details, buyer);
-            renderItemTable(doc, pl, quotation);
-            PlTotals totals = computeKeyMatchedTotals(pl, quotation);
-            renderTotalsTable(doc, pl, quotation, totals);
-            renderMarksAndRemark(doc, pl);
-            renderSay(doc, totals);
+        List<PlJoins.JoinedRow> rows = PlJoins.join(pl.getLines(), resolveGroups(quotation));
+        PlJoins.PlTotals totals = PlJoins.totals(rows);
+        renderItemTable(doc, pl, quotation, rows);
+        renderTotalsTable(doc, pl, quotation, rows, totals);
+        renderMarksAndRemark(doc, pl);
+        renderSay(doc, totals);
 
             doc.close();
             return baos.toByteArray();
@@ -160,7 +156,7 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
      * 列1 ITEMS = HS Code + Name（按品名分组 rowspan 合并）；列2 DESCRIPTION = 描述；
      * 列3 QTY = 数量 + 单位（来自 JOIN 的报价单项）；列4 N.W. / 列5 G.W. / 列6 QTY(PKGS) / 列7 MEAS = 装箱数据（来自 lines）。
      */
-    private void renderItemTable(Document doc, PackingList pl, Quotation quotation) {
+    private void renderItemTable(Document doc, PackingList pl, Quotation quotation, List<PlJoins.JoinedRow> rows) {
         PdfPTable table = newBodyTable();
         String mu = mainUnit(resolveGroups(quotation));
         table.addCell(headerCell("ITEMS", null, BLACK, FS_LABEL));
@@ -171,38 +167,34 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
         table.addCell(headerCell("QTY (PKGS)", null, BLACK, FS_LABEL));
         table.addCell(headerCell("MEAS (m\u00B3)", null, BLACK, FS_LABEL));
 
-        List<JoinedRow> rows = buildJoinedRows(pl, quotation);
         if (rows.isEmpty()) {
             table.addCell(cell("—", FS_BODY, Font.NORMAL, BLACK, null, Element.ALIGN_CENTER, PAD, borderWidth()));
             addEmptyItemCells(table, 6);
         } else {
-            for (JoinedRow r : rows) {
-                if (r.firstInGroup) {
-                    table.addCell(plNameCell(r.groupName, r.hsCode, r.groupItemCount));
+            for (PlJoins.JoinedRow r : rows) {
+                if (r.firstInGroup()) {
+                    table.addCell(plNameCell(r.groupName(), r.hsCode(), r.groupItemCount()));
                 }
-                table.addCell(plDescCell(r.groupName, r.item != null ? r.item.description() : ""));
+                table.addCell(plDescCell(r.groupName(), r.item() != null ? r.item().description() : ""));
                 // 数量来自 JOIN 的报价单项（单位已上提到表头，单元格内不显示单位）
-                int qty = r.item != null ? r.item.quantity() : 0;
+                int qty = r.item() != null ? r.item().quantity() : 0;
                 table.addCell(qtyCellPlain(qty));
                 // 装箱数据来自 line（单位已上提到表头，单元格内不显示单位）
-                table.addCell(weightCell(r.line != null ? r.line.netWeight() : null, ""));
-                table.addCell(weightCell(r.line != null ? r.line.grossWeight() : null, ""));
-                table.addCell(pkgCell(r.line != null ? r.line.packages() : null));
-                table.addCell(weightCell(r.line != null ? r.line.measurement() : null, ""));
+                table.addCell(weightCell(r.line() != null ? r.line().netWeight() : null, ""));
+                table.addCell(weightCell(r.line() != null ? r.line().grossWeight() : null, ""));
+                table.addCell(pkgCell(r.line() != null ? r.line().packages() : null));
+                table.addCell(weightCell(r.line() != null ? r.line().measurement() : null, ""));
             }
         }
         add(doc, table);
     }
 
     /** 5. TOTAL 合计行：前 2 列合并为 TOTAL 标签，后 5 列填 key 命中行合计（与 Web 详情页口径一致） */
-    private void renderTotalsTable(Document doc, PackingList pl, Quotation quotation, PlTotals totals) {
+    private void renderTotalsTable(Document doc, PackingList pl, Quotation quotation,
+                                   List<PlJoins.JoinedRow> rows, PlJoins.PlTotals totals) {
         PdfPTable table = newBodyTable();
-        List<JoinedRow> rows = buildJoinedRows(pl, quotation);
 
-        int totalQty = rows.stream()
-                .filter(r -> r.item != null)
-                .mapToInt(r -> r.item.quantity())
-                .sum();
+        int totalQty = totals.quantity();
 
         PdfPCell label = cell("TOTAL", FS_BODY, Font.BOLD, BLACK, null, Element.ALIGN_LEFT, PAD, borderWidth());
         label.setColspan(2);
@@ -240,7 +232,7 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
     }
 
     /** 8. 末尾 SAY … PACKAGES ONLY（总件数英文大写，取 key 命中行合计；单位已在表头，此处不写单位） */
-    private void renderSay(Document doc, PlTotals totals) {
+    private void renderSay(Document doc, PlJoins.PlTotals totals) {
         long n = totals != null ? totals.packages() : 0;
         add(doc, boldParagraph("SAY  " + numberToWords(n) + "  PACKAGES ONLY.", FS_BODY, 0, BLACK));
     }
@@ -274,70 +266,9 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
     }
 
     // =====================================================================
-    //  JOIN 装配（render-time 按 quoteLineKey 关联报价单项）
+    //  JOIN 装配已迁移至 {@link PlJoins}（flatten / indexByKey / join / totals），
+    //  渲染层只消费 PlJoins.join(pl.getLines(), quotation) 与 PlJoins.totals(rows)，保证 Web / PDF 单一口径。
     // =====================================================================
-
-    /** 渲染层 JOIN 结果：一行 = 一个报价单项 + 其对应装箱行（按 key，缺 key 时按位置回退） */
-    private record JoinedRow(
-            String groupName,
-            String hsCode,
-            QuoteDetailItem item,
-            PackingLine line,
-            boolean firstInGroup,
-            int groupItemCount
-    ) {
-    }
-
-    /** 合计聚合（仅 key 命中的装箱行参与；与 Web 详情页合计口径一致） */
-    record PlTotals(int packages, BigDecimal net, BigDecimal gross, BigDecimal vol) {
-    }
-
-    /** 仅累计 key 命中的装箱行（line.quoteLineKey() 与对应报价单项 item.key() 一致）。无命中 → 全 0。 */
-    PlTotals computeKeyMatchedTotals(PackingList pl, Quotation quotation) {
-        List<JoinedRow> rows = buildJoinedRows(pl, quotation);
-        int pkgs = 0;
-        BigDecimal net = BigDecimal.ZERO, gross = BigDecimal.ZERO, vol = BigDecimal.ZERO;
-        for (JoinedRow r : rows) {
-            if (r.line() != null && r.item() != null
-                    && r.line().quoteLineKey() != null
-                    && r.line().quoteLineKey().equals(r.item().key())) {
-                if (r.line().packages() != null) pkgs += r.line().packages();
-                if (r.line().netWeight() != null) net = net.add(r.line().netWeight());
-                if (r.line().grossWeight() != null) gross = gross.add(r.line().grossWeight());
-                if (r.line().measurement() != null) vol = vol.add(r.line().measurement());
-            }
-        }
-        return new PlTotals(pkgs, net, gross, vol);
-    }
-
-    private List<JoinedRow> buildJoinedRows(PackingList pl, Quotation quotation) {
-        List<JoinedRow> result = new ArrayList<>();
-        if (pl == null || pl.getLines() == null) {
-            return result;
-        }
-        List<QuoteDetailGroup> groups = resolveGroups(quotation);
-
-        // 建 key → line 索引（仅对已带 key 的行），严格按 key 命中关联
-        Map<String, PackingLine> byKey = new LinkedHashMap<>();
-        for (PackingLine l : pl.getLines()) {
-            if (l.quoteLineKey() != null && !l.quoteLineKey().isBlank()) {
-                byKey.putIfAbsent(l.quoteLineKey(), l);
-            }
-        }
-
-        // 遍历报价单项：按 item.key() 命中装箱行；未命中则装箱数据为空（显示 -），不做位置回退
-        for (QuoteDetailGroup g : groups) {
-            List<QuoteDetailItem> items = g.items() != null ? g.items() : List.of();
-            int count = items.size();
-            for (int i = 0; i < count; i++) {
-                QuoteDetailItem item = items.get(i);
-                PackingLine line = item.key() != null ? byKey.get(item.key()) : null;
-                result.add(new JoinedRow(g.name(), g.hsCode(), item, line,
-                        i == 0, count));
-            }
-        }
-        return result;
-    }
 
     // =====================================================================
     //  PL 专属小部件

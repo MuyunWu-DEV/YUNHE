@@ -94,4 +94,50 @@ class CiPdfRendererTest {
         }
         System.out.println("CI PDF 写入：" + out + " (" + pdf.length + " bytes)");
     }
+
+    /**
+     * 验证 ITEMS 列「连续同名合并」：同分组内多行 + 跨分组同名相邻，应合并为一个 rowspan 单元格。
+     */
+    @Test
+    void renderMockCiMergedItems() throws Exception {
+        ProformaDetails details = new ProformaDetails(
+                new ProformaDetails.SellerInfo("Qingdao Yunhe", "Qingdao", "+86", "a@b.com", "青岛云合"),
+                new ProformaDetails.BuyerInfo("MAHI TEXTILE", "GST", "Surat, India"),
+                "FOB Qingdao", "Note", "Bank", "Warranty",
+                new com.yunhe.website.crm.entity.ProformaDetails.RouteInfo("Qingdao", "Nhava Sheva"));
+
+        // 分组1：Water Jet Loom，2 个变体（组内应合并）
+        // 分组2：Water Jet Loom（同名，相邻，应跨组合并）→ 与分组1 共 3 行同名
+        // 分组3：Spare Parts（不同名，不应合并）
+        Quotation quotation = new Quotation();
+        quotation.setDetails(List.of(
+                new QuoteDetailGroup("Water Jet Loom", "84463090", List.of(
+                        new QuoteDetailItem("qi-1", "Model A, 190cm", new BigDecimal("11500"), 24, "SETS", "USD"),
+                        new QuoteDetailItem("qi-2", "Model B, 210cm", new BigDecimal("12500"), 10, "SETS", "USD"))),
+                new QuoteDetailGroup("Water Jet Loom", "84463090", List.of(
+                        new QuoteDetailItem("qi-3", "Model C, 230cm", new BigDecimal("13500"), 8, "SETS", "USD"))),
+                new QuoteDetailGroup("Spare Parts", "84563000", List.of(
+                        new QuoteDetailItem("qi-4", "Heald frame x8", new BigDecimal("200"), 50, "PCS", "USD")))));
+
+        ProformaInvoice pi = new ProformaInvoice();
+        pi.setInvoiceDate(LocalDate.of(2026, 8, 10));
+        pi.setInvoiceNumber("YRPI20260810");
+        pi.setQuotation(quotation);
+        pi.setDetails(details);
+
+        CommercialInvoice ci = new CommercialInvoice();
+        ci.setInvoiceNo("YHINV-2026-010");
+        ci.setInvoiceDate(LocalDate.of(2026, 8, 12));
+        ci.setDepositPercentage(new BigDecimal("30"));
+        ci.setDepositPaymentMethod("T/T in advance");
+        ci.setBalancePaymentMethod("T/T after B/L");
+        ci.setProformaInvoice(pi);
+
+        byte[] pdf = new CiPdfRenderer().render(ci);
+        File out = new File("C:/Users/Muyun/WorkBuddy/YUNHE/ci_mock_merged.pdf");
+        try (FileOutputStream fos = new FileOutputStream(out)) {
+            fos.write(pdf);
+        }
+        System.out.println("CI 合并验证 PDF 写入：" + out + " (" + pdf.length + " bytes)");
+    }
 }

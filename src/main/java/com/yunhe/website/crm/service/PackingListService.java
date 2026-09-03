@@ -21,6 +21,7 @@ import com.yunhe.website.crm.repository.PackingListVersionRepository;
 import com.yunhe.website.crm.repository.ProformaInvoiceRepository;
 import com.yunhe.website.crm.repository.QuotationRepository;
 import com.yunhe.website.crm.support.DocNumberGenerator;
+import com.yunhe.website.crm.support.PlJoins;
 import com.yunhe.website.crm.support.PlPdfRenderer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -284,9 +285,8 @@ public class PackingListService {
                 byKey.putIfAbsent(l.quoteLineKey(), l);
             }
         }
-        List<QuoteDetailItem> items = quotation.getDetails().stream()
-                .filter(g -> g.items() != null)
-                .flatMap(g -> g.items().stream())
+        List<QuoteDetailItem> items = PlJoins.flatten(quotation.getDetails()).stream()
+                .map(PlJoins.QuoteItemRef::item)
                 .toList();
         List<PackingLine> resynced = new ArrayList<>(items.size());
         for (QuoteDetailItem it : items) {
@@ -307,11 +307,8 @@ public class PackingListService {
         if (quotation == null || quotation.getDetails() == null) {
             return lines;
         }
-        for (QuoteDetailGroup g : quotation.getDetails()) {
-            if (g.items() == null) continue;
-            for (QuoteDetailItem it : g.items()) {
-                lines.add(new PackingLine(it.key(), null, null, null, null));
-            }
+        for (var ref : PlJoins.flatten(quotation.getDetails())) {
+            lines.add(new PackingLine(ref.item().key(), null, null, null, null));
         }
         return lines;
     }

@@ -35,7 +35,7 @@ class PlPdfTotalsTest {
         return new PackingLine(key, pkgs, new BigDecimal(net), new BigDecimal(gross), new BigDecimal(vol));
     }
 
-    private static void assertTotal(PlPdfRenderer.PlTotals t, int pkgs, String net, String gross, String vol) {
+    private static void assertTotal(PlJoins.PlTotals t, int pkgs, String net, String gross, String vol) {
         assertEquals(pkgs, t.packages());
         assertEquals(0, new BigDecimal(net).compareTo(t.net()));
         assertEquals(0, new BigDecimal(gross).compareTo(t.gross()));
@@ -49,7 +49,7 @@ class PlPdfTotalsTest {
         pl.setLines(List.of(
                 line("qi-1", 2, "100.000", "110.000", "1.100"),
                 line("qi-2", 3, "200.000", "220.000", "2.200")));
-        assertTotal(new PlPdfRenderer().computeKeyMatchedTotals(pl, q),
+        assertTotal(PlJoins.totals(PlJoins.join(pl.getLines(), q.getDetails())),
                 5, "300.000", "330.000", "3.300");
     }
 
@@ -61,7 +61,7 @@ class PlPdfTotalsTest {
                 line("qi-1", 2, "100.000", "110.000", "1.100"),
                 line("UNMATCHED", 99, "999.000", "999.000", "9.900")));
         // 只有 qi-1 被计入；UNMATCHED 的 99/999/9.9 必须被排除
-        assertTotal(new PlPdfRenderer().computeKeyMatchedTotals(pl, q),
+        assertTotal(PlJoins.totals(PlJoins.join(pl.getLines(), q.getDetails())),
                 2, "100.000", "110.000", "1.100");
     }
 
@@ -70,7 +70,7 @@ class PlPdfTotalsTest {
         Quotation q = quotationWith("qi-1");
         PackingList pl = new PackingList();
         pl.setLines(List.of(line("X1", 5, "50.000", "60.000", "0.500")));
-        PlPdfRenderer.PlTotals t = new PlPdfRenderer().computeKeyMatchedTotals(pl, q);
+        PlJoins.PlTotals t = PlJoins.totals(PlJoins.join(pl.getLines(), q.getDetails()));
         assertEquals(0, t.packages());
         assertEquals(0, BigDecimal.ZERO.compareTo(t.net()));
         assertEquals(0, BigDecimal.ZERO.compareTo(t.gross()));
@@ -82,7 +82,7 @@ class PlPdfTotalsTest {
         Quotation q = quotationWith("qi-1");
         PackingList pl = new PackingList();
         pl.setLines(List.of());
-        PlPdfRenderer.PlTotals t = new PlPdfRenderer().computeKeyMatchedTotals(pl, q);
+        PlJoins.PlTotals t = PlJoins.totals(PlJoins.join(pl.getLines(), q.getDetails()));
         assertEquals(0, t.packages());
         assertEquals(0, BigDecimal.ZERO.compareTo(t.net()));
     }

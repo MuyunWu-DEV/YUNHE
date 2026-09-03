@@ -40,7 +40,7 @@
                             <td>
                                 <input type="hidden" th:field="*{lines[__${st.index}__].quoteLineKey}"/>
                                 <div>
-                                    <div class="fw-bold" th:text="${eff != null ? eff.groupName() : (line.quoteLineKey ?: '-')}">品名</div>
+                                    <div class="fw-bold" th:text="${eff != null ? eff.groupName() : '-'}">品名</div>
                                     <div class="small text-muted" th:if="${eff != null and eff.hsCode() != null}" th:text="'HS Code: ' + ${eff.hsCode()}">HS Code</div>
                                     <div class="small" th:if="${eff != null and eff.description() != null}" th:text="${eff.description()}">描述</div>
                                 </div>

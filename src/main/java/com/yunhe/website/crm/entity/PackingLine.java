@@ -1,5 +1,6 @@
 package com.yunhe.website.crm.entity;
 
+import com.yunhe.website.crm.support.PackingLineLike;
 import java.math.BigDecimal;
 
 /**
@@ -23,5 +24,5 @@ public record PackingLine(
         BigDecimal grossWeight,
         /** 体积 m³（整行合计） */
         BigDecimal measurement
-) {
+) implements PackingLineLike {
 }

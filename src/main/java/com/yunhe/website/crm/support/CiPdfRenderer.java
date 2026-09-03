@@ -21,7 +21,9 @@ import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -182,6 +184,9 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
      * 4.2 货物明细段（表头 + 明细行，5 列网格）。
      * 列序对齐原单据：<b>列1 ITEMS = HS Code + Name</b>（编码在上、品名在下），列2 DESCRIPTION OF GOODS = 规格明细，
      * 列3 UNIT PRICE、列4 QTY、列5 AMOUNT。原单据该表列1 不放行号，故不再输出序号。
+     *
+     * <p>合并规则（与 PL 一致，且更稳健）：列1 的「HS Code + Name」按<b>连续同名</b>合并为一个 rowspan 单元格——
+     * 既合并同分组内的多行，也合并跨分组、只要相邻行同名的情形（修复「同名 item 被拆成多个分组时每行列都显示」的问题）。</p>
      */
     private void renderItemTable(Document doc, ProformaInvoice pi) {
         PdfPTable table = newBodyTable();
@@ -196,25 +201,65 @@ public class CiPdfRenderer extends AbstractTradePdfRenderer {
             table.addCell(cell("—", FS_BODY, Font.NORMAL, BLACK, null, Element.ALIGN_CENTER, PAD, borderWidth()));
             table.addCell(cell("(无明细)", FS_LABEL, Font.ITALIC, BLACK, null, Element.ALIGN_LEFT, PAD, borderWidth()));
             addEmptyItemCells(table, 3);
-        } else {
-            for (QuoteDetailGroup g : groups) {
-                List<QuoteDetailItem> items = g.items() != null ? g.items() : List.of();
-                if (items.isEmpty()) {
-                    table.addCell(ciNameCell(g.name(), g.hsCode()));
-                    table.addCell(ciDescCell(g.name(), "—"));
-                    addEmptyItemCells(table, 3);
-                    continue;
-                }
+            add(doc, table);
+            return;
+        }
+
+        // 扁平化为有序行序列：保留所属分组名 / HS Code / 报价单项（空分组用 null item 占位）
+        List<ItemRow> rows = new ArrayList<>();
+        for (QuoteDetailGroup g : groups) {
+            List<QuoteDetailItem> items = g.items() != null ? g.items() : List.of();
+            if (items.isEmpty()) {
+                rows.add(new ItemRow(g.name(), g.hsCode(), null));
+            } else {
                 for (QuoteDetailItem it : items) {
-                    table.addCell(ciNameCell(g.name(), g.hsCode()));                          // 列1 = HS Code + Name
-                    table.addCell(ciDescCell(g.name(), it.description()));                     // 列2 = 加粗品名头 + 规格明细
-                    table.addCell(unitPriceCell(it.unitPrice(), it.unit(), it.currency(), BLACK, BLACK, null));  // 列3 = UNIT PRICE（纯线条无填充）
-                    table.addCell(qtyCell(it.quantity(), it.unit(), BLACK, BLACK, null));                        // 列4 = QTY
-                    table.addCell(totalPriceCell(it.subtotal(), it.currency(), BLACK, BLACK, null));             // 列5 = AMOUNT
+                    rows.add(new ItemRow(g.name(), g.hsCode(), it));
                 }
             }
         }
+
+        // 连续同名（name + hsCode 均相同）合并为一个 rowspan 单元格（跨分组也合并）
+        int n = rows.size();
+        boolean[] runStart = new boolean[n];
+        int[] runLen = new int[n];
+        for (int i = 0; i < n; i++) {
+            if (i == 0 || !sameName(rows.get(i), rows.get(i - 1))) {
+                runStart[i] = true;
+                int len = 1;
+                while (i + len < n && sameName(rows.get(i + len), rows.get(i))) {
+                    len++;
+                }
+                runLen[i] = len;
+            }
+        }
+
+        for (int i = 0; i < n; i++) {
+            ItemRow r = rows.get(i);
+            if (runStart[i]) {
+                PdfPCell nameCell = ciNameCell(r.name(), r.hsCode());
+                if (runLen[i] > 1) nameCell.setRowspan(runLen[i]);
+                table.addCell(nameCell);
+            }
+            if (r.item() == null) {
+                table.addCell(ciDescCell(r.name(), "—"));
+                addEmptyItemCells(table, 3);
+            } else {
+                table.addCell(ciDescCell(r.name(), r.item().description()));
+                table.addCell(unitPriceCell(r.item().unitPrice(), r.item().unit(), r.item().currency(), BLACK, BLACK, null));
+                table.addCell(qtyCell(r.item().quantity(), r.item().unit(), BLACK, BLACK, null));
+                table.addCell(totalPriceCell(r.item().subtotal(), r.item().currency(), BLACK, BLACK, null));
+            }
+        }
         add(doc, table);
+    }
+
+    /** 货物表行（扁平化后）：分组名 / HS Code / 报价单项（空分组 item 为 null） */
+    private record ItemRow(String name, String hsCode, QuoteDetailItem item) {
+    }
+
+    /** 两行是否「同名可合并」：分组名与 HS Code 均相同 */
+    private static boolean sameName(ItemRow a, ItemRow b) {
+        return Objects.equals(a.name(), b.name()) && Objects.equals(a.hsCode(), b.hsCode());
     }
 
     /** 补 n 个空单元格（padding 与货物表其余单元格一致） */

@@ -10,8 +10,10 @@ import com.yunhe.website.crm.dto.VersionFileDto;
 import com.yunhe.website.crm.dto.DocumentChainDto;
 import com.yunhe.website.crm.dto.request.PackingLineForm;
 import com.yunhe.website.crm.dto.request.PackingListForm;
+import com.yunhe.website.crm.entity.QuoteDetailItem;
 import com.yunhe.website.crm.service.DocumentChainService;
 import com.yunhe.website.crm.service.PackingListService;
+import com.yunhe.website.crm.support.PlJoins;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -83,26 +85,39 @@ public class PackingListController {
         java.math.BigDecimal totalGross = java.math.BigDecimal.ZERO;
         java.math.BigDecimal totalVol = java.math.BigDecimal.ZERO;
         int totalQty = 0;
+        // 详情页以报价单项为基准遍历（与发起变更页 / PDF 一致）：plItems = 有序报价单项；
+        // plLineByKey = 装箱行按 key 索引，用于按 key 命中回填件数 / 净重 / 毛重 / 体积。
+        List<PlFormItemView> plItems = new ArrayList<>();
+        Map<String, PackingLineDto> plLineByKey = new LinkedHashMap<>();
+        if (packingList.lines() != null) {
+            for (PackingLineDto l : packingList.lines()) {
+                if (l.quoteLineKey() != null) plLineByKey.putIfAbsent(l.quoteLineKey(), l);
+            }
+        }
         if (packingList.rootQuotationId() != null) {
             var chain = documentChainService.buildChain(packingList.rootQuotationId());
             model.addAttribute("chain", chain);
-            // 报价单项按 quoteLineKey 索引，供详情页严格按 key 命中展示 品名 / HS Code / 描述 / 数量
+            // 报价单项按 quoteLineKey 索引（详情页顶部汇总 / 兼容用）
             var plItemByKey = toItemByKey(chain);
             model.addAttribute("plItemByKey", plItemByKey);
-            // 合计：件数/毛重/净重/体积只统计 key 命中的装箱行（严格 key 命中，无位置兜底）
+            // 详情页货物表以报价单项为基准（有序），每个报价单项按其 key 关联装箱行
+            plItems = new ArrayList<>(plItemByKey.values());
+            // 合计（key 命中行，单一口径）：复用 PlJoins，与 PDF 渲染完全一致（消重合并、去重后求和）
+            var plRows = PlJoins.join(packingList.lines(), chain.quotation().details());
+            PlJoins.PlTotals plTotals = PlJoins.totals(plRows);
+            totalPkgs = plTotals.packages();
+            totalNet = plTotals.net();
+            totalGross = plTotals.gross();
+            totalVol = plTotals.vol();
+            totalQty = plTotals.quantity();
+        } else if (packingList.lines() != null) {
+            // 无报价单关联（legacy）：无货物名称可取，品名回退为 key；装箱数据仍按 key 命中自身行展示
             for (PackingLineDto l : packingList.lines()) {
-                if (l.quoteLineKey() != null && plItemByKey.containsKey(l.quoteLineKey())) {
-                    if (l.packages() != null) totalPkgs += l.packages();
-                    if (l.netWeight() != null) totalNet = totalNet.add(l.netWeight());
-                    if (l.grossWeight() != null) totalGross = totalGross.add(l.grossWeight());
-                    if (l.measurement() != null) totalVol = totalVol.add(l.measurement());
-                }
-            }
-            // 数量合计取报价单全部项的 quantity（PL 以报价单为基准，行与报价单项严格 key 对齐）
-            for (PlFormItemView it : plItemByKey.values()) {
-                if (it.quantity() != null) totalQty += it.quantity();
+                plItems.add(new PlFormItemView(l.quoteLineKey(), l.quoteLineKey(), null, null, null, null));
             }
         }
+        model.addAttribute("plItems", plItems);
+        model.addAttribute("plLineByKey", plLineByKey);
         // 合计始终以 0 为缺省（BigDecimal.ZERO / int 0），不再以 null 退化为 "-"，与件数一致
         model.addAttribute("plTotalPkgs", totalPkgs);
         model.addAttribute("plTotalNet", totalNet);
@@ -232,17 +247,14 @@ public class PackingListController {
     /** 展平报价单项，按下 key 建索引（用于编辑表单按 quoteLineKey 取货物字段） */
     private java.util.Map<String, PlFormItemView> toItemByKey(DocumentChainDto chain) {
         java.util.Map<String, PlFormItemView> map = new java.util.LinkedHashMap<>();
-        if (chain == null || chain.quotation() == null || chain.quotation().details() == null) {
+        if (chain == null || chain.quotation() == null) {
             return map;
         }
-        for (var g : chain.quotation().details()) {
-            if (g.items() == null) continue;
-            for (var it : g.items()) {
-                if (it.key() == null) continue;
-                map.put(it.key(), new PlFormItemView(
-                        it.key(), g.name(), g.hsCode(), it.description(),
-                        it.quantity(), it.unit()));
-            }
+        for (var ref : PlJoins.indexByKey(chain.quotation().details()).values()) {
+            var it = ref.item();
+            map.put(it.key(), new PlFormItemView(
+                    it.key(), ref.groupName(), ref.hsCode(), it.description(),
+                    it.quantity(), it.unit()));
         }
         return map;
     }
@@ -268,21 +280,19 @@ public class PackingListController {
                     }
                 }
                 List<PackingLineForm> lines = new ArrayList<>();
-                for (var g : chain.quotation().details()) {
-                    if (g.items() == null) continue;
-                    for (var it : g.items()) {
-                        if (it.key() == null) continue;
-                        PackingLineDto existing = lineByKey.get(it.key());
-                        PackingLineForm line = new PackingLineForm();
-                        line.setQuoteLineKey(it.key());
-                        if (existing != null) {
-                            line.setPackages(existing.packages());
-                            line.setNetWeight(existing.netWeight());
-                            line.setGrossWeight(existing.grossWeight());
-                            line.setMeasurement(existing.measurement());
-                        }
-                        lines.add(line);
+                for (var ref : PlJoins.flatten(chain.quotation().details())) {
+                    QuoteDetailItem it = ref.item();
+                    if (it.key() == null) continue;
+                    PackingLineDto existing = lineByKey.get(it.key());
+                    PackingLineForm line = new PackingLineForm();
+                    line.setQuoteLineKey(it.key());
+                    if (existing != null) {
+                        line.setPackages(existing.packages());
+                        line.setNetWeight(existing.netWeight());
+                        line.setGrossWeight(existing.grossWeight());
+                        line.setMeasurement(existing.measurement());
                     }
+                    lines.add(line);
                 }
                 form.setLines(lines);
                 return form;

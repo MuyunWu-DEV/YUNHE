@@ -1,5 +1,6 @@
 package com.yunhe.website.crm.dto;
 
+import com.yunhe.website.crm.support.PackingLineLike;
 import java.math.BigDecimal;
 
 /**
@@ -12,5 +13,5 @@ public record PackingLineDto(
         BigDecimal netWeight,
         BigDecimal grossWeight,
         BigDecimal measurement
-) {
+) implements PackingLineLike {
 }

@@ -70,7 +70,7 @@
             </dl>
 
             <h6 class="mb-3">货物明细</h6>
-            <div class="table-responsive" th:if="${packingList.lines != null and !packingList.lines.isEmpty()}">
+            <div class="table-responsive" th:if="${plItems != null and !plItems.isEmpty()}">
                 <table class="table table-bordered align-middle">
                     <thead>
                     <tr>
@@ -83,15 +83,15 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="line : ${packingList.lines}" th:with="ctx=${plItemByKey != null ? plItemByKey[line.quoteLineKey()] : null}, eff=${ctx}, matched=${ctx != null}">
+                    <tr th:each="it : ${plItems}" th:with="line=${plLineByKey != null ? plLineByKey[it.quoteLineKey()] : null}, matched=${line != null}">
                         <td>
                             <div>
-                                <div class="fw-bold" th:text="${eff != null ? eff.groupName() : (line.quoteLineKey() ?: '-')}">品名</div>
-                                <div class="small text-muted" th:if="${eff != null and eff.hsCode() != null}" th:text="'HS Code: ' + ${eff.hsCode()}">HS Code</div>
-                                <div class="small" th:if="${eff != null and eff.description() != null}" th:text="${eff.description()}">描述</div>
+                                <div class="fw-bold" th:text="${it.groupName()}">品名</div>
+                                <div class="small text-muted" th:if="${it.hsCode() != null}" th:text="'HS Code: ' + ${it.hsCode()}">HS Code</div>
+                                <div class="small" th:if="${it.description() != null}" th:text="${it.description()}">描述</div>
                             </div>
                         </td>
-                        <td th:text="${eff != null ? eff.quantity() : '-'}">数量</td>
+                        <td th:text="${it.quantity() != null ? it.quantity() : '-'}">数量</td>
                         <td th:text="${matched and line.packages() != null ? line.packages() : '-'}">件数</td>
                         <td th:text="${matched ? T(com.yunhe.website.crm.support.FormatUtil).weight(line.netWeight()) : '-'}">净重</td>
                         <td th:text="${matched ? T(com.yunhe.website.crm.support.FormatUtil).weight(line.grossWeight()) : '-'}">毛重</td>
@@ -108,7 +108,7 @@
                     </tbody>
                 </table>
             </div>
-            <div th:if="${packingList.lines == null or packingList.lines.isEmpty()}" class="empty-state">暂无明细</div>
+            <div th:if="${plItems == null or plItems.isEmpty()}" class="empty-state">暂无明细</div>
 
             <h6 class="mb-2 mt-4">版本历史</h6>
             <table class="table" th:if="${versions != null and !versions.isEmpty()}">
