@@ -289,11 +289,11 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
     }
 
     /** 合计聚合（仅 key 命中的装箱行参与；与 Web 详情页合计口径一致） */
-    private record PlTotals(int packages, BigDecimal net, BigDecimal gross, BigDecimal vol) {
+    record PlTotals(int packages, BigDecimal net, BigDecimal gross, BigDecimal vol) {
     }
 
     /** 仅累计 key 命中的装箱行（line.quoteLineKey() 与对应报价单项 item.key() 一致）。无命中 → 全 0。 */
-    private PlTotals computeKeyMatchedTotals(PackingList pl, Quotation quotation) {
+    PlTotals computeKeyMatchedTotals(PackingList pl, Quotation quotation) {
         List<JoinedRow> rows = buildJoinedRows(pl, quotation);
         int pkgs = 0;
         BigDecimal net = BigDecimal.ZERO, gross = BigDecimal.ZERO, vol = BigDecimal.ZERO;

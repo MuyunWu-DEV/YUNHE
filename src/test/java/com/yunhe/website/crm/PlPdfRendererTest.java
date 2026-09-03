@@ -93,4 +93,67 @@ class PlPdfRendererTest {
         }
         System.out.println("PL PDF 写入：" + out + " (" + pdf.length + " bytes)");
     }
+
+    /**
+     * 视觉复核用：装箱行含一条 key 失配（UNMATCHED_KEY）的大数值行，
+     * 其净/毛/件/体积不应计入 TOTAL 行（仅 qi-1 应被计入）。
+     */
+    @Test
+    void renderMockPlWithMismatch() throws Exception {
+        ProformaDetails details = new ProformaDetails(
+                new ProformaDetails.SellerInfo(
+                        "Qingdao Yunhe Intelligent Manufacturing Co., Ltd.",
+                        "Wangtai Industrial Park, Qingdao, Shandong, China 266425",
+                        "+86 19853207766",
+                        "karoljiang@126.com",
+                        "青岛云合智能制造有限公司"),
+                new ProformaDetails.BuyerInfo(
+                        "VIDHI FASHION",
+                        "24AKCPD9513H1ZH",
+                        "GROUND FLOOR, 82, KRISHNA INDUSTRIAL ESTATE-2, KAMREJ ROAD, SURAT, Surat, Gujarat, 394185"),
+                "FOB Qingdao, China",
+                "Country of Origin: The People's Republic of China",
+                "Bank Name: JPMorgan Chase Bank N.A., Hong Kong Branch",
+                "One year after-sales service warranty on electrical accessories under correct operation.",
+                new ProformaDetails.RouteInfo("Qingdao, China", "Nhava Sheva, India"));
+
+        Quotation quotation = new Quotation();
+        quotation.setQuoteDate(LocalDate.of(2026, 7, 10));
+        quotation.setDetails(List.of(
+                new QuoteDetailGroup(
+                        "Brand New Shuttleless Water Jet Looms",
+                        "84463090",
+                        List.of(
+                                new QuoteDetailItem(
+                                        "qi-1",
+                                        "- Model Number: YRW-8101",
+                                        new BigDecimal("11500"), 24, "SETS", "USD"),
+                                new QuoteDetailItem(
+                                        "qi-2",
+                                        "- Model Number: YRW-8102",
+                                        new BigDecimal("800"), 4, "SETS", "USD")))));
+
+        // 仅 qi-1 命中；UNMATCHED_KEY 行的大数值（999/9999/99/9.9）应被 TOTAL 排除
+        PackingList pl = new PackingList();
+        pl.setPackingNo("YHPL-2026-002");
+        pl.setPackingDate(LocalDate.of(2026, 8, 20));
+        pl.setMarks("N/M");
+        pl.setLines(List.of(
+                new PackingLine("qi-1", 2, new BigDecimal("100.000"), new BigDecimal("110.000"), new BigDecimal("1.100")),
+                new PackingLine("UNMATCHED_KEY", 99, new BigDecimal("9999.000"), new BigDecimal("9999.000"), new BigDecimal("9.999"))));
+
+        ProformaInvoice pi = new ProformaInvoice();
+        pi.setInvoiceNumber("YRPI20260802");
+        pi.setInvoiceDate(LocalDate.of(2026, 7, 10));
+        pi.setQuotation(quotation);
+        pi.setDetails(details);
+        pl.setProformaInvoice(pi);
+
+        byte[] pdf = new PlPdfRenderer().render(pl, quotation);
+        File out = new File("C:/Users/Muyun/WorkBuddy/YUNHE/pl_mock_mismatch.pdf");
+        try (FileOutputStream fos = new FileOutputStream(out)) {
+            fos.write(pdf);
+        }
+        System.out.println("PL 失配复核 PDF 写入：" + out + " (" + pdf.length + " bytes) — TOTAL 应仅含 qi-1：件数2/净100/毛110/体积1.1");
+    }
 }
