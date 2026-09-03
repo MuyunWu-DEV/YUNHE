@@ -36,7 +36,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="line, st : ${packingListForm.lines}" th:with="ctx=${plItemByKey != null ? plItemByKey[line.quoteLineKey] : null}, posItem=${ctx == null and plItemsInOrder != null and st.index &lt; plItemsInOrder.size() ? plItemsInOrder[st.index] : null}, eff=${ctx != null ? ctx : posItem}">
+                        <tr th:each="line : ${packingListForm.lines}" th:with="ctx=${plItemByKey != null ? plItemByKey[line.quoteLineKey] : null}, eff=${ctx}">
                             <td>
                                 <input type="hidden" th:field="*{lines[__${st.index}__].quoteLineKey}"/>
                                 <div>

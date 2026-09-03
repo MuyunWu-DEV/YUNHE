@@ -12,6 +12,10 @@ import com.yunhe.website.crm.dto.request.PackingLineForm;
 import com.yunhe.website.crm.dto.request.PackingListForm;
 import com.yunhe.website.crm.service.DocumentChainService;
 import com.yunhe.website.crm.service.PackingListService;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import jakarta.validation.Valid;
 import jakarta.validation.groups.Default;
 import lombok.RequiredArgsConstructor;
@@ -82,15 +86,10 @@ public class PackingListController {
         if (packingList.rootQuotationId() != null) {
             var chain = documentChainService.buildChain(packingList.rootQuotationId());
             model.addAttribute("chain", chain);
-            // 装箱行按 quoteLineKey 索引，供详情页 JOIN 展示 N.W./G.W./件数/体积
-            model.addAttribute("plLineByKey", toLineByKey(packingList.lines()));
-            // 报价单项按 quoteLineKey 索引，供详情页展示 品名 / HS Code / 描述（与编辑页一致）
+            // 报价单项按 quoteLineKey 索引，供详情页严格按 key 命中展示 品名 / HS Code / 描述 / 数量
             var plItemByKey = toItemByKey(chain);
             model.addAttribute("plItemByKey", plItemByKey);
-            // 报价单项按生成顺序展平，供详情页在 key 失配时按位置兜底 JOIN（PL 以报价单 item 为基准）
-            var plItemsInOrder = toItemsInOrder(chain);
-            model.addAttribute("plItemsInOrder", plItemsInOrder);
-            // 合计只统计 key 命中的装箱行（与明细行装箱数据门控一致：key 失配的装箱值不计入合计）
+            // 合计：件数/毛重/净重/体积只统计 key 命中的装箱行（严格 key 命中，无位置兜底）
             for (PackingLineDto l : packingList.lines()) {
                 if (l.quoteLineKey() != null && plItemByKey.containsKey(l.quoteLineKey())) {
                     if (l.packages() != null) totalPkgs += l.packages();
@@ -99,7 +98,8 @@ public class PackingListController {
                     if (l.measurement() != null) totalVol = totalVol.add(l.measurement());
                 }
             }
-            for (PlFormItemView it : plItemsInOrder) {
+            // 数量合计取报价单全部项的 quantity（PL 以报价单为基准，行与报价单项严格 key 对齐）
+            for (PlFormItemView it : plItemByKey.values()) {
                 if (it.quantity() != null) totalQty += it.quantity();
             }
         }
@@ -227,7 +227,6 @@ public class PackingListController {
         var chain = documentChainService.buildChain(pl.rootQuotationId());
         model.addAttribute("chain", chain);
         model.addAttribute("plItemByKey", toItemByKey(chain));
-        model.addAttribute("plItemsInOrder", toItemsInOrder(chain));
     }
 
     /** 展平报价单项，按下 key 建索引（用于编辑表单按 quoteLineKey 取货物字段） */
@@ -248,41 +247,48 @@ public class PackingListController {
         return map;
     }
 
-    /** 展平报价单项为有序列表（与生成装箱行时 1:1 的顺序一致），供详情页在 key 失配时按位置兜底 JOIN */
-    private java.util.List<PlFormItemView> toItemsInOrder(DocumentChainDto chain) {
-        java.util.List<PlFormItemView> list = new java.util.ArrayList<>();
-        if (chain == null || chain.quotation() == null || chain.quotation().details() == null) {
-            return list;
-        }
-        for (var g : chain.quotation().details()) {
-            if (g.items() == null) continue;
-            for (var it : g.items()) {
-                if (it.key() == null) continue;
-                list.add(new PlFormItemView(
-                        it.key(), g.name(), g.hsCode(), it.description(),
-                        it.quantity(), it.unit()));
-            }
-        }
-        return list;
-    }
-
-    /** 装箱行按下 quoteLineKey 建索引（用于详情页按 key JOIN 展示装箱数据） */
-    private java.util.Map<String, PackingLineDto> toLineByKey(java.util.List<PackingLineDto> lines) {
-        java.util.Map<String, PackingLineDto> map = new java.util.LinkedHashMap<>();
-        if (lines == null) return map;
-        for (PackingLineDto l : lines) {
-            if (l.quoteLineKey() != null) {
-                map.put(l.quoteLineKey(), l);
-            }
-        }
-        return map;
-    }
-
+    /** 装箱表单以报价单为基准重建明细行：严格按 quoteLineKey 命中回填装箱值，孤立于报价单的 PL 行丢弃 */
     private PackingListForm toForm(PackingListDto dto) {
         PackingListForm form = new PackingListForm();
         form.setId(dto.id());
         form.setPackingDate(dto.packingDate());
         form.setMarks(dto.marks());
+        form.setRemark(dto.remark());
+        // 以报价单为基准重建明细行：按 quoteLineKey 命中回填装箱值；
+        // 报价单新增项 → 空行；PL 孤儿项（key 不在报价单）→ 丢弃。无报价单关联则沿用已有 PL 行。
+        if (dto.rootQuotationId() != null) {
+            var chain = documentChainService.buildChain(dto.rootQuotationId());
+            if (chain != null && chain.quotation() != null && chain.quotation().details() != null) {
+                Map<String, PackingLineDto> lineByKey = new LinkedHashMap<>();
+                if (dto.lines() != null) {
+                    for (PackingLineDto l : dto.lines()) {
+                        if (l.quoteLineKey() != null) {
+                            lineByKey.put(l.quoteLineKey(), l);
+                        }
+                    }
+                }
+                List<PackingLineForm> lines = new ArrayList<>();
+                for (var g : chain.quotation().details()) {
+                    if (g.items() == null) continue;
+                    for (var it : g.items()) {
+                        if (it.key() == null) continue;
+                        PackingLineDto existing = lineByKey.get(it.key());
+                        PackingLineForm line = new PackingLineForm();
+                        line.setQuoteLineKey(it.key());
+                        if (existing != null) {
+                            line.setPackages(existing.packages());
+                            line.setNetWeight(existing.netWeight());
+                            line.setGrossWeight(existing.grossWeight());
+                            line.setMeasurement(existing.measurement());
+                        }
+                        lines.add(line);
+                    }
+                }
+                form.setLines(lines);
+                return form;
+            }
+        }
+        // 无报价单关联：直接沿用已有 PL 行（legacy）
         if (dto.lines() != null) {
             form.setLines(dto.lines().stream().map(l -> {
                 PackingLineForm line = new PackingLineForm();
@@ -294,7 +300,6 @@ public class PackingListController {
                 return line;
             }).toList());
         }
-        form.setRemark(dto.remark());
         return form;
     }
 }

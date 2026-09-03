@@ -165,7 +165,7 @@ public class PackingListService {
     @Transactional
     public void regenerateAfterQuotationChange(Long id, String changeReason) {
         packingListRepository.findById(id).ifPresent(pl -> {
-            reAnchorKeysToQuotation(pl, resolveQuotation(pl));
+            resyncLinesToQuotation(pl, resolveQuotation(pl));
             packingListRepository.save(pl);
         });
         regenerateAfterChange(id, buildChangeMessage("报价单发起变更", changeReason));
@@ -262,31 +262,43 @@ public class PackingListService {
     }
 
     /**
-     * 将装箱行的 quoteLineKey 重新对齐到当前根报价单的 item key（位置 1:1）。
-     * <p>背景：历史报价单发起变更时曾重新生成 item key，导致存量装箱单的 quoteLineKey 与当前报价单 key 失配，
-     * 渲染时 key 命中失败（装箱数据退化为 -、合计漏计、PDF 合计只计 0）。本方法在「装箱行数量 == 报价单项数量」
-     * 时按位置重锚 key，使 JOIN 恢复有效，同时保留各行已填的装箱值（件数/净重/毛重/体积）。
-     * 数量不一致（报价单增删/重排明细）时不重锚，避免错位。</p>
+     * 按报价单项严格 key 对齐装箱行（取代历史的位置重锚）。
+     * <ul>
+     *   <li>报价单项在 PL 中存在同 key 装箱行 → 保留其已填装箱值（key 命中，直接更新/复用）；</li>
+     *   <li>报价单项为 PL 新增（key 不在 PL 中）→ 插入空装箱行（packages/净重/毛重/体积 = null）；</li>
+     *   <li>PL 中存在、但报价单已无该 key 的孤儿行 → 移除（不写入新集合）。</li>
+     * </ul>
+     * 最终装箱行顺序与数量与当前报价单完全一致，单一来源 = 报价单；无位置兜底。
+     * <p>声明为 {@code static} + 包可见，便于纯单元测试（无需构造服务实例）。</p>
      */
-    private void reAnchorKeysToQuotation(PackingList packingList, Quotation quotation) {
-        if (quotation == null || quotation.getDetails() == null || packingList.getLines() == null) {
+    static void resyncLinesToQuotation(PackingList packingList, Quotation quotation) {
+        if (quotation == null || quotation.getDetails() == null) {
             return;
+        }
+        if (packingList.getLines() == null) {
+            packingList.setLines(new ArrayList<>());
+        }
+        Map<String, PackingLine> byKey = new LinkedHashMap<>();
+        for (PackingLine l : packingList.getLines()) {
+            if (l.quoteLineKey() != null && !l.quoteLineKey().isBlank()) {
+                byKey.putIfAbsent(l.quoteLineKey(), l);
+            }
         }
         List<QuoteDetailItem> items = quotation.getDetails().stream()
                 .filter(g -> g.items() != null)
                 .flatMap(g -> g.items().stream())
                 .toList();
-        List<PackingLine> lines = packingList.getLines();
-        if (items.size() != lines.size()) {
-            return;
+        List<PackingLine> resynced = new ArrayList<>(items.size());
+        for (QuoteDetailItem it : items) {
+            if (it.key() == null) continue;
+            PackingLine existing = byKey.get(it.key());
+            if (existing != null) {
+                resynced.add(existing); // key 命中：保留已填装箱值
+            } else {
+                resynced.add(new PackingLine(it.key(), null, null, null, null)); // 报价单新增项：空行
+            }
         }
-        List<PackingLine> reAnchored = new ArrayList<>(lines.size());
-        for (int i = 0; i < lines.size(); i++) {
-            PackingLine l = lines.get(i);
-            reAnchored.add(new PackingLine(
-                    items.get(i).key(), l.packages(), l.netWeight(), l.grossWeight(), l.measurement()));
-        }
-        packingList.setLines(reAnchored);
+        packingList.setLines(resynced);
     }
 
     /** 由报价单项播种装箱行：每行绑定 item.key()，装箱字段留空（null）待填 */

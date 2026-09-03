@@ -317,35 +317,23 @@ public class PlPdfRenderer extends AbstractTradePdfRenderer {
         }
         List<QuoteDetailGroup> groups = resolveGroups(quotation);
 
-        // 1) 建 key → line 索引（仅对已带 key 的行）
+        // 建 key → line 索引（仅对已带 key 的行），严格按 key 命中关联
         Map<String, PackingLine> byKey = new LinkedHashMap<>();
         for (PackingLine l : pl.getLines()) {
             if (l.quoteLineKey() != null && !l.quoteLineKey().isBlank()) {
                 byKey.putIfAbsent(l.quoteLineKey(), l);
             }
         }
-        // 2) 全局位置回退：行序与报价单项序一致的兜底
-        List<QuoteDetailItem> flat = new ArrayList<>();
-        for (QuoteDetailGroup g : groups) {
-            if (g.items() != null) flat.addAll(g.items());
-        }
 
-        int pos = 0;
+        // 遍历报价单项：按 item.key() 命中装箱行；未命中则装箱数据为空（显示 -），不做位置回退
         for (QuoteDetailGroup g : groups) {
             List<QuoteDetailItem> items = g.items() != null ? g.items() : List.of();
             int count = items.size();
             for (int i = 0; i < count; i++) {
                 QuoteDetailItem item = items.get(i);
-                PackingLine line = null;
-                if (item.key() != null) {
-                    line = byKey.get(item.key());
-                }
-                if (line == null && pos < pl.getLines().size()) {
-                    line = pl.getLines().get(pos); // 位置回退
-                }
+                PackingLine line = item.key() != null ? byKey.get(item.key()) : null;
                 result.add(new JoinedRow(g.name(), g.hsCode(), item, line,
                         i == 0, count));
-                pos++;
             }
         }
         return result;

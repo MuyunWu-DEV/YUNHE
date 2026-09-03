@@ -83,7 +83,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="line, stat : ${packingList.lines}" th:with="ctx=${plItemByKey != null ? plItemByKey[line.quoteLineKey()] : null}, posItem=${ctx == null and plItemsInOrder != null and stat.index &lt; plItemsInOrder.size() ? plItemsInOrder[stat.index] : null}, eff=${ctx != null ? ctx : posItem}, matched=${ctx != null}">
+                    <tr th:each="line : ${packingList.lines}" th:with="ctx=${plItemByKey != null ? plItemByKey[line.quoteLineKey()] : null}, eff=${ctx}, matched=${ctx != null}">
                         <td>
                             <div>
                                 <div class="fw-bold" th:text="${eff != null ? eff.groupName() : (line.quoteLineKey() ?: '-')}">品名</div>
