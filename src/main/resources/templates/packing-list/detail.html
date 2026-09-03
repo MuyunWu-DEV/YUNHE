@@ -56,15 +56,15 @@
             </dl>
             <dl class="row mb-4">
                 <dt class="col-sm-2">件数</dt>
-                <dd class="col-sm-2" th:text="${packingList.numberOfPackages} ?: '-'">-</dd>
+                <dd class="col-sm-2" th:text="${plTotalPkgs}">-</dd>
                 <dt class="col-sm-2">毛重</dt>
-                <dd class="col-sm-2" th:text="${packingList.grossWeight} ?: '-'">-</dd>
+                <dd class="col-sm-2" th:text="${plTotalGross != null ? T(com.yunhe.website.crm.support.FormatUtil).weight(plTotalGross) : '-'}">-</dd>
                 <dt class="col-sm-2">净重</dt>
-                <dd class="col-sm-2" th:text="${packingList.netWeight} ?: '-'">-</dd>
+                <dd class="col-sm-2" th:text="${plTotalNet != null ? T(com.yunhe.website.crm.support.FormatUtil).weight(plTotalNet) : '-'}">-</dd>
             </dl>
             <dl class="row mb-4">
                 <dt class="col-sm-2">体积(m³)</dt>
-                <dd class="col-sm-4" th:text="${packingList.volume} ?: '-'">-</dd>
+                <dd class="col-sm-4" th:text="${plTotalVol != null ? T(com.yunhe.website.crm.support.FormatUtil).weight(plTotalVol) : '-'}">-</dd>
                 <dt class="col-sm-2">备注</dt>
                 <dd class="col-sm-4" th:text="${packingList.remark} ?: '-'">-</dd>
             </dl>
