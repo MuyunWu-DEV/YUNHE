@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 初始化种子数据：权限、角色、超级管理员账号。
  * <p>所有初始化操作均幂等，可安全重复启动。</p>
+ * <p>默认管理员账号的播种由配置 {@code app.security.seed-default-admin} 控制（默认开启，
+ * 生产建议关闭并由运维用更安全的方式创建管理员）；初始密码从配置
+ * {@code app.security.admin-initial-password} 读取（默认仅用于开发），创建后
+ * {@code mustChangePassword=true}，首次登录强制改密，避免默认凭据长期驻留。</p>
  */
 @Slf4j
 @Component
@@ -30,13 +35,20 @@ public class DataInitializer implements CommandLineRunner {
 
     /** 默认超级管理员账号 */
     private static final String ADMIN_USERNAME = "admin";
-    private static final String ADMIN_PASSWORD = "Admin@123456";
 
     private final SysUserRepository userRepository;
     private final SysRoleRepository roleRepository;
     private final SysPermissionRepository permissionRepository;
     private final CrmTermsLibRepository termsLibRepository;
     private final PasswordEncoder passwordEncoder;
+
+    /** 是否播种默认 admin 账号（prod 建议关闭） */
+    @Value("${app.security.seed-default-admin:true}")
+    private boolean seedDefaultAdmin;
+
+    /** 默认 admin 初始密码（仅开发用；播种的账号必须改密） */
+    @Value("${app.security.admin-initial-password:Admin@123456}")
+    private String adminInitialPassword;
 
     @Override
     @Transactional
@@ -116,6 +128,10 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void initAdminUser() {
+        // S3 密码治理：默认 admin 播种默认关闭于生产（seed-default-admin:false），避免自动建弱凭据账号
+        if (!seedDefaultAdmin) {
+            return;
+        }
         if (userRepository.existsByUsername(ADMIN_USERNAME)) {
             return;
         }
@@ -123,12 +139,15 @@ public class DataInitializer implements CommandLineRunner {
                 .orElseThrow(() -> new IllegalStateException("SUPER_ADMIN 角色未初始化"));
         SysUser admin = new SysUser();
         admin.setUsername(ADMIN_USERNAME);
-        admin.setPassword(passwordEncoder.encode(ADMIN_PASSWORD));
+        admin.setPassword(passwordEncoder.encode(adminInitialPassword));
         admin.setFullName("系统管理员");
         admin.setEnabled(true);
+        // 首次登录强制改密，杜绝默认凭据长期驻留（配合 AccountStatusFilter 的强制改密跳转）
+        admin.setMustChangePassword(true);
         admin.setRoles(new LinkedHashSet<>(Set.of(superAdmin)));
         userRepository.save(admin);
-        log.info("已创建默认管理员账号：{} / {}（请登录后及时修改密码）", ADMIN_USERNAME, ADMIN_PASSWORD);
+        // 日志去敏感：绝不打明文密码，只打用户名并提示须改密
+        log.info("已创建默认管理员账号：{}（首次登录将强制修改密码）", ADMIN_USERNAME);
     }
 
     /** 初始化条款库单例记录（存在则跳过） */

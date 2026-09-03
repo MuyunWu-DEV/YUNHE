@@ -1,5 +1,6 @@
 package com.yunhe.website.config;
 
+import com.yunhe.website.security.auth.AccountStatusFilter;
 import com.yunhe.website.security.auth.LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
 /**
  * Spring Security 配置。
@@ -28,7 +30,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   LoginSuccessHandler loginSuccessHandler) throws Exception {
+                                                   LoginSuccessHandler loginSuccessHandler,
+                                                   AccountStatusFilter accountStatusFilter) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
                         // 静态资源与登录页、错误页允许匿名访问
@@ -46,7 +49,9 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                         .permitAll())
-                .exceptionHandling(ex -> ex.accessDeniedPage("/403"));
+                .exceptionHandling(ex -> ex.accessDeniedPage("/403"))
+                // S1 会话授权实时失效：在授权决策前实时校验账号状态，禁用/锁定即踢出
+                .addFilterBefore(accountStatusFilter, AuthorizationFilter.class);
 
         return http.build();
     }

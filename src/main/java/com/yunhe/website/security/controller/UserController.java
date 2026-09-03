@@ -62,6 +62,7 @@ public class UserController {
     @PreAuthorize("hasAuthority(T(com.yunhe.website.security.Permissions).USER_CREATE)")
     public String create(@Valid @ModelAttribute("userForm") UserForm form,
                          BindingResult bindingResult,
+                         @AuthenticationPrincipal CustomUserDetails currentUser,
                          Model model,
                          RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
@@ -69,7 +70,7 @@ public class UserController {
             return "user/form";
         }
         try {
-            userService.create(form);
+            userService.create(form, currentUser.getUsername());
         } catch (BusinessException e) {
             model.addAttribute("errorMessage", e.getMessage());
             prepareFormModel(model, false);
@@ -100,6 +101,7 @@ public class UserController {
     public String update(@PathVariable Long id,
                          @Valid @ModelAttribute("userForm") UserForm form,
                          BindingResult bindingResult,
+                         @AuthenticationPrincipal CustomUserDetails currentUser,
                          Model model,
                          RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
@@ -107,7 +109,7 @@ public class UserController {
             return "user/form";
         }
         try {
-            userService.update(id, form);
+            userService.update(id, form, currentUser.getUsername());
         } catch (BusinessException e) {
             model.addAttribute("errorMessage", e.getMessage());
             prepareFormModel(model, true);

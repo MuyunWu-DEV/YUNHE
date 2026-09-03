@@ -25,3 +25,8 @@ server:
 logging:
   level:
     root: info
+
+# 生产安全：不自动播种默认 admin 账号（用 DBA/运维建号或显式开启），避免默认凭据入库
+app:
+  security:
+    seed-default-admin: false
