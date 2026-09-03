@@ -669,15 +669,19 @@ a {
    登录页
    ========================================================================== */
 .login-page {
+    position: relative;
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #3b82f6 100%);
+    /* 兜底浅蓝：与 Vanta CLOUDS2「明净蔚蓝」配色接近，避免加载时深蓝→亮蓝的闪变 */
+    background: linear-gradient(135deg, #a8d9ff 0%, #8fceff 50%, #7fc9ff 100%);
 }
 
 .login-card {
+    position: relative;
+    z-index: 1;
     width: 400px;
     max-width: 100%;
     background: #fff;

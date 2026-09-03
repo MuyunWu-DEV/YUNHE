@@ -40,5 +40,47 @@
         <button type="submit" class="btn btn-primary w-100">登 录</button>
     </form>
 </div>
+
+<script src="/js/three.r134.min.js"></script>
+<script src="/js/vanta.clouds2.min.js"></script>
+<script>
+(function () {
+    function fail(msg) {
+        var d = document.createElement('div');
+        d.style.cssText = 'position:fixed;left:12px;bottom:12px;z-index:9999;background:#dc2626;color:#fff;padding:8px 14px;border-radius:8px;font-size:13px;box-shadow:0 4px 12px rgba(0,0,0,.3)';
+        d.textContent = 'Vanta 加载失败：' + msg;
+        document.body.appendChild(d);
+    }
+    function startClouds() {
+        try {
+            if (typeof THREE === 'undefined') return fail('three.js 未加载');
+            if (!window.VANTA || typeof VANTA.CLOUDS2 !== 'function') return fail('VANTA.CLOUDS2 未定义');
+            VANTA.CLOUDS2({
+                el: '.login-page',
+                THREE: THREE,
+                texturePath: '/images/noise.png',
+                backgroundColor: 0x6fb9ef,
+                skyColor: 0x7fc9ff,
+                cloudColor: 0x4f7fc4,
+                lightColor: 0xffffff,
+                speed: 1.0,
+                mouseControls: true,
+                touchControls: true,
+                gyroControls: false,
+                minHeight: 200.00,
+                minWidth: 200.00,
+                scale: 1.00
+            });
+        } catch (e) {
+            fail(e && e.message ? e.message : String(e));
+        }
+    }
+    if (document.readyState === 'complete') {
+        startClouds();
+    } else {
+        window.addEventListener('load', startClouds);
+    }
+})();
+</script>
 </body>
 </html>
