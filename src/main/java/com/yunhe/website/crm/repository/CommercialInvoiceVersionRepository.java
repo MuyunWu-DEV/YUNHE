@@ -14,5 +14,6 @@ public interface CommercialInvoiceVersionRepository extends JpaRepository<Commer
     @Query("select coalesce(max(v.versionNo), 0) from CommercialInvoiceVersion v where v.commercialInvoice.id = :ciId")
     int findMaxVersionNo(@Param("ciId") Long ciId);
 
-    List<CommercialInvoiceVersion> findByCommercialInvoiceIdOrderByVersionNoDesc(Long ciId);
+    /** 版本历史列表（轻量投影，只取列表展示所需列，不加载 pdf/data 大字段） */
+    List<DocVersionSummary> findByCommercialInvoiceIdOrderByVersionNoDesc(Long ciId);
 }

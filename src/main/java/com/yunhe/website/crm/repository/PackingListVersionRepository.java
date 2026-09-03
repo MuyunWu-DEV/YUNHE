@@ -14,5 +14,6 @@ public interface PackingListVersionRepository extends JpaRepository<PackingListV
     @Query("select coalesce(max(v.versionNo), 0) from PackingListVersion v where v.packingList.id = :plId")
     int findMaxVersionNo(@Param("plId") Long plId);
 
-    List<PackingListVersion> findByPackingListIdOrderByVersionNoDesc(Long plId);
+    /** 版本历史列表（轻量投影，只取列表展示所需列，不加载 pdf/data 大字段） */
+    List<DocVersionSummary> findByPackingListIdOrderByVersionNoDesc(Long plId);
 }

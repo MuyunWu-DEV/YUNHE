@@ -14,5 +14,6 @@ public interface ProformaInvoiceVersionRepository extends JpaRepository<Proforma
     @Query("select coalesce(max(v.versionNo), 0) from ProformaInvoiceVersion v where v.proformaInvoice.id = :piId")
     int findMaxVersionNo(@Param("piId") Long piId);
 
-    List<ProformaInvoiceVersion> findByProformaInvoiceIdOrderByVersionNoDesc(Long piId);
+    /** 版本历史列表（轻量投影，只取列表展示所需列，不加载 pdf/data 大字段） */
+    List<DocVersionSummary> findByProformaInvoiceIdOrderByVersionNoDesc(Long piId);
 }

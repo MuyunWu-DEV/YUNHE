@@ -12,6 +12,7 @@ import com.yunhe.website.crm.entity.DocumentStatus;
 import com.yunhe.website.crm.entity.ProformaInvoice;
 import com.yunhe.website.crm.repository.CommercialInvoiceRepository;
 import com.yunhe.website.crm.repository.CommercialInvoiceVersionRepository;
+import com.yunhe.website.crm.repository.DocVersionSummary;
 import com.yunhe.website.crm.repository.ProformaInvoiceRepository;
 import com.yunhe.website.crm.support.CiPdfRenderer;
 import com.yunhe.website.crm.support.DocNumberGenerator;
@@ -201,9 +202,9 @@ public class CommercialInvoiceService {
         }
     }
 
-    /** 版本历史（按版本号降序） */
+    /** 版本历史（按版本号降序，轻量投影，不加载 pdf/data 大字段） */
     @Transactional(readOnly = true)
-    public List<CommercialInvoiceVersion> listVersions(Long id) {
+    public List<DocVersionSummary> listVersions(Long id) {
         return versionRepository.findByCommercialInvoiceIdOrderByVersionNoDesc(id);
     }
 

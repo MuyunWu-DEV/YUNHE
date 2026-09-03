@@ -16,6 +16,7 @@ import com.yunhe.website.crm.entity.ProformaInvoice;
 import com.yunhe.website.crm.entity.QuoteDetailGroup;
 import com.yunhe.website.crm.entity.QuoteDetailItem;
 import com.yunhe.website.crm.entity.Quotation;
+import com.yunhe.website.crm.repository.DocVersionSummary;
 import com.yunhe.website.crm.repository.PackingListRepository;
 import com.yunhe.website.crm.repository.PackingListVersionRepository;
 import com.yunhe.website.crm.repository.ProformaInvoiceRepository;
@@ -230,9 +231,9 @@ public class PackingListService {
         }
     }
 
-    /** 版本历史（按版本号降序） */
+    /** 版本历史（按版本号降序，轻量投影，不加载 pdf/data 大字段） */
     @Transactional(readOnly = true)
-    public List<PackingListVersion> listVersions(Long id) {
+    public List<DocVersionSummary> listVersions(Long id) {
         return versionRepository.findByPackingListIdOrderByVersionNoDesc(id);
     }
 

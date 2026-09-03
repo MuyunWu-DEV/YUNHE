@@ -14,6 +14,7 @@ import com.yunhe.website.crm.entity.Quotation;
 import com.yunhe.website.crm.entity.QuotationStatus;
 import com.yunhe.website.crm.repository.CommercialInvoiceRepository;
 import com.yunhe.website.crm.repository.CustomerRepository;
+import com.yunhe.website.crm.repository.DocVersionSummary;
 import com.yunhe.website.crm.repository.PackingListRepository;
 import com.yunhe.website.crm.repository.ProformaInvoiceRepository;
 import com.yunhe.website.crm.repository.ProformaInvoiceVersionRepository;
@@ -233,9 +234,9 @@ public class ProformaInvoiceService {
         }
     }
 
-    /** 版本历史（按版本号降序） */
+    /** 版本历史（按版本号降序，轻量投影，不加载 pdf/data 大字段） */
     @Transactional(readOnly = true)
-    public List<ProformaInvoiceVersion> listVersions(Long id) {
+    public List<DocVersionSummary> listVersions(Long id) {
         return versionRepository.findByProformaInvoiceIdOrderByVersionNoDesc(id);
     }
 

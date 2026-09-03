@@ -319,58 +319,6 @@ public abstract class AbstractTradePdfRenderer {
         return cell(text, size, Font.BOLD, fg, bg, Element.ALIGN_CENTER, PAD, borderWidth());
     }
 
-    /** 货物表首列：Name: + 名称 + HS Code: + 编码（标签色与值色由子类决定） */
-    protected PdfPCell nameCell(String name, String hsCode, int rowspan, Color labelColor, Color valueColor) {
-        Phrase ph = new Phrase();
-        ph.add(new Chunk("Name:\n", textFont("Name: ", FS_LABEL, Font.BOLD | Font.ITALIC, labelColor)));
-        ph.add(new Chunk(safe(name) + "\n", textFont(safe(name), FS_BODY, Font.NORMAL, valueColor)));
-        ph.add(new Chunk("\n", textFont(" ", FS_MICRO, Font.NORMAL, valueColor)));   // 矮空白行：留一点缝
-        ph.add(new Chunk("HS Code:\n", textFont("HS Code:", FS_LABEL, Font.BOLD | Font.ITALIC, labelColor)));
-        ph.add(new Chunk(safe(hsCode), textFont(safe(hsCode), FS_BODY, Font.NORMAL, valueColor)));
-        PdfPCell c = phraseCell(ph, Element.ALIGN_LEFT, PAD, borderWidth(), null);
-        if (rowspan > 1) c.setRowspan(rowspan);
-        return c;
-    }
-
-    /** 货物表描述单元格：名称（nameColor 加粗）+ 换行描述（descColor） */
-    protected PdfPCell detailCell(String name, String desc, Color nameColor, Color descColor) {
-        PdfPCell c = new PdfPCell();
-        c.setHorizontalAlignment(Element.ALIGN_LEFT);
-        c.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        c.setPadding(PAD);
-        c.setBorderWidth(borderWidth());
-        c.setBorderColor(borderColor());
-
-        String safeDesc = safe(desc);
-        String safeName = safe(name);
-        if (safeDesc.isEmpty()) {
-            c.addElement(blank(9));
-            return c;
-        }
-        if (!safeName.isEmpty()) {
-            Paragraph p = new Paragraph(safeName, textFont(safeName, FS_BODY, Font.BOLD, nameColor));
-            p.setAlignment(Element.ALIGN_LEFT);
-            p.setLeading(0, LEADING);
-            p.setSpacingAfter(3f);
-            c.addElement(p);
-        }
-        // 按换行拆成独立 Paragraph 逐个 addElement（OpenPDF 对含 \n 的单 Paragraph
-        // setLeading 不生效，必须拆行后各自控制 leading + spacingAfter）
-        String[] lines = safeDesc.split("\n", -1);
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
-            Paragraph p = new Paragraph(line.isBlank() ? " " : line,
-                    textFont(line, FS_BODY, Font.NORMAL, descColor));
-            p.setAlignment(Element.ALIGN_LEFT);
-            p.setLeading(0, LEADING); // 行高（控制换行后的子行间距）
-            if (i < lines.length - 1) {
-                p.setSpacingAfter(2f); // 逻辑行之间的额外间距（description 行距）
-            }
-            c.addElement(p);
-        }
-        return c;
-    }
-
     /** 数量单元格（qty + 单位，居中加粗；默认白底填充，CI 可传 null 实现纯线条无填充） */
     protected PdfPCell qtyCell(int qty, String unit, Color numColor, Color unitColor) {
         return qtyCell(qty, unit, numColor, unitColor, WHITE);
