@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head th:replace="~{site/layout :: head(title=${pageTitle})}"></head>
+<body th:replace="~{site/layout :: body(title=${pageTitle}, content=~{::content})}">
+<div th:fragment="content">
+
+    <!-- ======= 横长 Hero 轮播（tesla.cn 1:1 复刻：960px 封顶，文字贴顶 + 双蓝按钮 + 左右箭头 + 底部圆点） ======= -->
+    <section class="hero" id="home">
+        <div class="hero-stage" id="heroStage">
+            <!-- 屏 1 · 双机型（YH-822 + YH-608，对应 tesla「Model 3, Model Y」一屏两车） -->
+            <div class="hero-slide hero-slide--a" data-i="0">
+                <div class="hero-content">
+                    <h1 th:text="#{site.hero.slide1.title}">YH-822, YH-608</h1>
+                    <p class="lede" th:text="#{site.hero.slide1.lede}">High-Speed &amp; High-Heavy-Duty Water Jet Looms</p>
+                    <div class="hero-actions">
+                        <a href="#products" class="btn btn-solid" th:text="#{site.hero.slide1.cta1}">Order YH-822</a>
+                        <a href="#products" class="btn btn-solid" th:text="#{site.hero.slide1.cta2}">Order YH-608</a>
+                    </div>
+                </div>
+            </div>
+            <!-- 屏 2 · 单机型（YH-9100） -->
+            <div class="hero-slide hero-slide--b" data-i="1">
+                <div class="hero-content">
+                    <h1 th:text="#{site.hero.slide2.title}">YH-9100</h1>
+                    <p class="lede" th:text="#{site.hero.slide2.lede}">Air Jet Loom</p>
+                    <div class="hero-actions">
+                        <a href="#products" class="btn btn-solid" th:text="#{site.hero.slide2.cta1}">Order YH-9100</a>
+                        <a href="#products" class="btn btn-light" th:text="#{site.hero.slide2.cta2}">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="hero-nav prev" id="heroPrev" aria-label="previous">&#8249;</button>
+        <button class="hero-nav next" id="heroNext" aria-label="next">&#8250;</button>
+        <div class="hero-dots" id="heroDots">
+            <span class="dot active" data-i="0"></span>
+            <span class="dot" data-i="1"></span>
+        </div>
+    </section>
+
+    <!-- ======= 主页 Products（2 列机型大卡） ======= -->
+    <section class="section" id="products">
+        <div class="prod-wrap">
+            <div class="prod-head">
+                <div>
+                    <h2 th:text="#{site.products.title}">Products</h2>
+                    <p class="lede" th:text="#{site.products.lede}">Water jet &amp; air jet looms for high-speed, energy-saving weaving. Select a model to explore.</p>
+                </div>
+            </div>
+            <div class="card-grid">
+                <!-- 卡片链接暂指向 #contact（询价页待建），建成后替换为机型详情/询价链接 -->
+                <a class="card bg-a" href="#contact">
+                    <span class="label" th:text="#{site.card.a.label}">Water Jet · Heavy-Duty</span>
+                    <div class="card-body">
+                        <div class="card-title" th:text="#{site.card.a.title}">YH-608</div>
+                        <p class="card-lede" th:text="#{site.card.a.lede}">High-Heavy-Duty Water Jet Loom · Reinforced rigid frame · Low vibration.</p>
+                        <div class="card-actions">
+                            <span class="btn btn-solid" th:text="#{site.card.a.cta1}">Order Now</span>
+                            <span class="btn btn-ghost" th:text="#{site.card.a.cta2}">Learn More</span>
+                        </div>
+                    </div>
+                </a>
+                <a class="card bg-b" href="#contact">
+                    <span class="label" th:text="#{site.card.b.label}">Water Jet · High-Speed</span>
+                    <div class="card-body">
+                        <div class="card-title" th:text="#{site.card.b.title}">YH-822</div>
+                        <p class="card-lede" th:text="#{site.card.b.lede}">High-Speed Water Jet Loom · Upgraded high-rigidity platform · Stable run.</p>
+                        <div class="card-actions">
+                            <span class="btn btn-solid" th:text="#{site.card.b.cta1}">Order Now</span>
+                            <span class="btn btn-ghost" th:text="#{site.card.b.cta2}">Learn More</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 锚点占位（Factory/Why/News/Contact 将各自成独立页，主页不展示卡片；先给导航/页脚落点占位） -->
+    <section id="factory" style="display:none"></section>
+    <section id="why" style="display:none"></section>
+    <section id="news" style="display:none"></section>
+    <section id="contact" style="display:none"></section>
+
+</div>
+</body>
+</html>

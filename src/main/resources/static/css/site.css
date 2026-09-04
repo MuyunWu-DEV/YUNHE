@@ -1,0 +1,208 @@
+/* =========================================================================
+   云合官网 · 公开站点样式（特斯拉式极简风 · 白底为主）
+   设计语言：白底吸顶 nav + 横长 Hero 轮播(960px) + 2 列机型大卡 + 白底 footer
+   点缀色统一走 --cta(蓝) / --accent(红) 变量，将来换品牌色只改这里
+   ========================================================================= */
+:root{
+  --accent:#e31937;            /* 强调色（brand dot / 选中反馈） */
+  --ink:#0a0a0a;
+  --paper:#ffffff;
+  --muted:#6b7075;
+  --line:#e6e6e6;
+  --hover:#e5e5e5;            /* 白底控件的悬浮底色 */
+  --panel-pad:clamp(16px,2.4vw,44px);
+  --header-h:56px;
+  --cta:#3457D5;               /* 主按钮蓝（特斯拉订购按钮同款） */
+  --cta-strong:#2A48B8;
+  --veil:linear-gradient(180deg,rgba(0,0,0,0) 32%,rgba(0,0,0,.52) 100%);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","PingFang SC","Microsoft YaHei",Arial,sans-serif;
+  color:var(--ink);background:var(--paper);
+  -webkit-font-smoothing:antialiased;line-height:1.5;
+}
+
+/* ---------- Header（白底吸顶，深字） ---------- */
+header{
+  position:fixed;top:0;left:0;right:0;height:var(--header-h);z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 var(--panel-pad);color:var(--ink);
+  background:#fff;
+}
+header.scrolled{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.brand{display:flex;align-items:baseline;gap:8px;font-weight:600;letter-spacing:.04em}
+.brand .cn{font-size:18px}
+.brand .en{font-size:11px;color:#999;letter-spacing:.18em}
+.brand .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;transform:translateY(-1px)}
+nav{display:flex;gap:clamp(16px,2.6vw,34px)}
+nav a{
+  color:var(--ink);text-decoration:none;font-size:13.5px;opacity:.85;
+  transition:opacity .2s,color .2s;
+}
+nav a:hover{opacity:1;color:var(--cta)}
+/* 悬浮导航项选中反馈（下划线 + 主蓝） */
+nav a.nav-item{position:relative;padding:4px 0}
+nav a.nav-item::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:2px;
+  background:var(--cta);transform:scaleX(0);transition:transform .2s ease;transform-origin:center}
+nav a.nav-item:hover, nav a.nav-item.active{color:var(--cta)}
+nav a.nav-item:hover::after, nav a.nav-item.active::after{transform:scaleX(1)}
+.hdr-right{display:flex;align-items:center;gap:14px}
+.lang{
+  border:1px solid rgba(0,0,0,.28);background:transparent;color:var(--ink);
+  font-size:12px;padding:6px 12px;border-radius:20px;cursor:pointer;
+  text-decoration:none;transition:.2s;
+}
+.lang:hover{border-color:var(--cta);color:var(--cta)}
+.burger{display:none;width:26px;height:18px;background:none;border:0;cursor:pointer;
+  flex-direction:column;justify-content:space-between;padding:0}
+.burger span{display:block;height:2px;width:100%;background:var(--ink);border-radius:2px;transition:.3s}
+.burger.open span:nth-child(1){transform:translateY(8px) rotate(45deg)}
+.burger.open span:nth-child(2){opacity:0}
+.burger.open span:nth-child(3){transform:translateY(-8px) rotate(-45deg)}
+
+/* ---------- Megamenu (特斯拉式全宽悬浮白块 · 按项切换) ---------- */
+.megamenu{
+  position:absolute;top:var(--header-h);left:0;right:0;
+  background:var(--paper);
+  border-bottom:1px solid var(--line);
+  opacity:0;visibility:hidden;transform:translateY(-10px);
+  transition:opacity .22s ease,transform .22s ease,visibility .22s;
+  z-index:45;
+}
+header.nav-hover .megamenu, .megamenu.open{opacity:1;visibility:visible;transform:translateY(0)}
+.mm-inner{max-width:1120px;margin:0 auto;padding:34px var(--panel-pad) 40px}
+.mm-panel{display:none}
+.mm-panel.active{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:30px;align-items:start}
+.mm-col h5{
+  font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:14px;font-weight:600;
+}
+.mm-col a{
+  display:block;color:#333;text-decoration:none;font-size:14px;
+  margin-bottom:11px;line-height:1.35;transition:color .2s,padding-left .2s;
+}
+.mm-col a:hover{color:var(--cta);padding-left:4px}
+.mm-col .ph{color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 12px}
+
+/* ---------- Buttons ---------- */
+.btn{font-size:14px;padding:9px 24px;border-radius:4px;cursor:pointer;
+  text-decoration:none;display:inline-block;transition:.2s;border:1px solid transparent;
+  font-weight:600;line-height:1.4}
+.btn-solid{background:var(--cta);color:#fff;border-color:var(--cta)}
+.btn-solid:hover{background:var(--cta-strong);border-color:var(--cta-strong)}
+/* 次要按钮：白底深字（特斯拉「了解更多」配色） */
+.btn-light{background:#fff;color:#171a20;border-color:#fff}
+.btn-light:hover{background:var(--hover);border-color:var(--hover)}
+
+/* ---------- 横长 Hero（tesla.cn 1:1 复刻） ----------
+   - 满宽大图(960px 封顶)，文字贴顶(48px)，圆点贴底(16px)
+   - 标题 56px/500 白色居中，副标题 20px/400，2×200px 蓝按钮
+   - 左右白圆箭头 + 底部 12px 圆点 + 5s 自动轮播
+   - 背景图位由 .hero-slide 的 background-image 承载（可随时换真图）
+*/
+.hero{position:relative;margin-top:var(--header-h);height:clamp(480px,89vh,960px);min-height:480px;color:#fff;overflow:hidden;background:#0a0a0a}
+.hero-stage{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.hero-stage::-webkit-scrollbar{display:none}
+.hero-slide{flex:0 0 100%;scroll-snap-align:start;position:relative;display:flex;justify-content:center;
+  align-items:flex-start;padding-top:48px;background-size:cover;background-position:center}
+.hero-slide--a{background-image:linear-gradient(180deg,rgba(8,12,20,.32) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%),radial-gradient(120% 130% at 50% 40%,#2a3a55 0%,#0f1623 60%,#05080d 100%)}
+.hero-slide--b{background-image:linear-gradient(180deg,rgba(8,12,20,.32) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%),radial-gradient(120% 130% at 50% 40%,#4a3a2c 0%,#1d1610 60%,#0a0604 100%)}
+.hero-slide::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 100%,rgba(0,0,0,.45) 0%,rgba(0,0,0,0) 60%);pointer-events:none}
+.hero-content{position:relative;z-index:2;text-align:center;max-width:743px;padding:0 32px}
+.hero-content h1{font-size:clamp(34px,5vw,56px);font-weight:500;line-height:1.02;letter-spacing:-.01em;margin:0;text-shadow:0 2px 18px rgba(0,0,0,.18)}
+.hero-content .lede{font-size:clamp(17px,1.6vw,20px);font-weight:400;color:#fff;max-width:60ch;margin:4px auto 0;line-height:1.4;text-shadow:0 1px 8px rgba(0,0,0,.25)}
+.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+.hero-actions .btn{font-size:14px;font-weight:600;padding:10px 24px;border-radius:4px;min-width:200px;text-align:center}
+/* 左右箭头按钮（白圆 · hero 中线） */
+.hero-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:40px;height:40px;border:0;border-radius:50%;
+  background:#fff;color:#171a20;font-size:22px;line-height:1;cursor:pointer;transition:background .2s;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.hero-nav:hover{background:var(--hover)}
+.hero-nav.prev{left:20px}
+.hero-nav.next{right:20px}
+.hero-nav:focus-visible{outline:2px solid var(--cta);outline-offset:2px}
+/* 贴底小圆点 */
+.hero-dots{position:absolute;bottom:16px;left:0;right:0;z-index:3;display:flex;gap:10px;justify-content:center}
+.hero-dots .dot{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.4);cursor:pointer;transition:background .25s,transform .25s;border:0;padding:0}
+.hero-dots .dot.active{background:#fff;transform:scale(1.1)}
+.hero-dots .dot:focus-visible{outline:2px solid var(--cta);outline-offset:2px}
+
+/* ---------- 主页 Products 区块（2 列机型大卡） ---------- */
+.section{padding:clamp(44px,5vw,84px) 0}
+.prod-wrap{width:100%;max-width:calc(1024px * 2 + 28px);margin:0 auto;padding:0 var(--panel-pad)}
+.prod-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:clamp(22px,3vw,34px);flex-wrap:wrap}
+.prod-head h2{font-size:clamp(24px,2.6vw,34px);font-weight:600;letter-spacing:-.01em}
+.prod-head .lede{color:var(--muted);font-size:14px;max-width:52ch;margin-top:8px}
+.card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1024px));gap:28px;justify-content:center}
+.card{position:relative;border-radius:10px;overflow:hidden;min-height:clamp(360px,44vw,520px);background-size:cover;background-position:center;color:#fff;display:block;text-decoration:none}
+.card::before{content:"";position:absolute;inset:0;background:var(--veil);z-index:1}
+.card .label{position:absolute;top:18px;left:22px;z-index:2;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.75);font-weight:600}
+.card-body{position:absolute;left:0;right:0;bottom:0;padding:clamp(20px,2.6vw,34px);z-index:2}
+.card-title{font-size:clamp(24px,2.6vw,36px);font-weight:600;line-height:1.1;margin-bottom:10px;letter-spacing:-.01em}
+.card-lede{font-size:clamp(13px,1.2vw,15px);color:rgba(255,255,255,.85);max-width:44ch;margin-bottom:20px;line-height:1.5}
+.card-actions{display:flex;gap:10px;flex-wrap:wrap}
+.card-actions .btn{font-size:13px;padding:7px 20px;font-weight:600}
+.card-actions .btn-ghost{background:#fff;color:#171a20;border-color:#fff}
+.card-actions .btn-ghost:hover{background:var(--hover);border-color:var(--hover)}
+.bg-a{background:linear-gradient(135deg,#2c3a4f 0%,#1a2533 55%,#0d141d 100%)}
+.bg-b{background:linear-gradient(135deg,#4f3a2c 0%,#33251a 55%,#1d140d 100%)}
+
+/* ---------- Footer（白底浅灰文字） ---------- */
+footer{background:var(--paper);border-top:1px solid var(--line);padding:44px var(--panel-pad) 22px;color:#333}
+.f-cols{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:28px;max-width:1200px;margin:0 auto}
+.f-cols h4{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#111;margin-bottom:14px;font-weight:600}
+.f-cols a{display:block;color:#777;text-decoration:none;font-size:13px;margin-bottom:10px;transition:.2s}
+.f-cols a:hover{color:var(--cta)}
+.f-bottom{max-width:1200px;margin:30px auto 0;border-top:1px solid var(--line);padding-top:18px;
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12px;color:#aaa}
+
+/* ---------- 响应式：三端（PC >1024 / 平板 821-1024 / 手机 ≤820） ---------- */
+/* 平板（横屏 iPad 等）：保留完整 nav，收紧间距、hero 略矮、卡片 gap 缩小、footer 4 列 */
+@media(max-width:1024px){
+  nav{gap:clamp(12px,1.8vw,22px)}
+  nav a{font-size:13px}
+  .hero{height:clamp(440px,80vh,780px)}
+  .hero-content h1{font-size:clamp(30px,5.2vw,48px)}
+  .card-grid{gap:20px}
+  .card{min-height:clamp(320px,42vw,440px)}
+  .card-title{font-size:clamp(22px,3vw,30px)}
+  .f-cols{grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}
+}
+
+/* 手机（含 iPad 竖屏）：汉堡菜单、hero 紧凑、卡片单列、footer 2 列、megamenu 全屏 */
+@media(max-width:820px){
+  nav{display:none}
+  .burger{display:flex}
+  .hero{height:clamp(420px,68vh,640px);min-height:420px}
+  .hero-content{padding:0 20px}
+  .hero-content h1{font-size:clamp(30px,8vw,40px)}
+  .hero-content .lede{font-size:16px}
+  .hero-actions{flex-direction:column;align-items:center;gap:10px;margin-top:20px}
+  .hero-actions .btn{min-width:220px;max-width:280px;width:100%}
+  .hero-nav{display:none}
+  .hero-dots .dot{width:10px;height:10px}
+  .section{padding:36px 0}
+  .prod-head h2{font-size:24px}
+  .card-grid{grid-template-columns:1fr}
+  .card{min-height:clamp(300px,64vw,400px)}
+  .card-title{font-size:26px}
+  .f-cols{grid-template-columns:repeat(2,1fr);gap:22px}
+  .f-bottom{flex-direction:column;align-items:center;text-align:center;gap:8px}
+  .megamenu{top:var(--header-h);max-height:calc(100vh - var(--header-h));overflow:auto}
+  .mm-inner{padding:16px var(--panel-pad) 22px}
+  .mm-panel,.mm-panel.active{display:block}
+  .mm-col{border-bottom:1px solid var(--line);padding:13px 0}
+  .mm-col:last-child{border-bottom:0}
+  .mm-col h5{margin-bottom:8px}
+  .mm-col a{font-size:15px;margin-bottom:9px}
+}
+
+/* 小屏手机（≤380px）：进一步收紧 */
+@media(max-width:380px){
+  .hero{height:clamp(400px,72vh,560px)}
+  .hero-content h1{font-size:28px}
+  .hero-actions .btn{min-width:180px;max-width:240px}
+  .f-cols{grid-template-columns:1fr;gap:18px}
+}

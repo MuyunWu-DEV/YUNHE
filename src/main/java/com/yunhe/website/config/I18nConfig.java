@@ -1,7 +1,9 @@
 package com.yunhe.website.config;
 
 import java.util.Locale;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -35,5 +37,18 @@ public class I18nConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
+    }
+
+    /**
+     * 合并站点独立国际化文件（{@code messages_site} / {@code messages_site_en}），
+     * 与后台 {@code messages} 共存，互不污染。
+     */
+    @Bean
+    public MessageSource messageSource() {
+        ReloadableResourceBundleMessageSource ms = new ReloadableResourceBundleMessageSource();
+        ms.setBasenames("classpath:messages", "classpath:messages_site");
+        ms.setDefaultEncoding("UTF-8");
+        ms.setCacheSeconds(3600);
+        return ms;
     }
 }

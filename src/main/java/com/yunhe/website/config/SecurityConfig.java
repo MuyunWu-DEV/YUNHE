@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 静态资源与登录页、错误页允许匿名访问
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico", "/webjars/**").permitAll()
+                        .requestMatchers("/", "/site/**").permitAll()
                         .requestMatchers("/login", "/error").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form

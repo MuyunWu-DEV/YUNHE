@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="${title} + ' - YUNHE'">YUNHE</title>
+    <meta name="description" th:content="#{site.meta.description}"/>
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}"/>
+    <link th:href="@{/css/site.css}" rel="stylesheet"/>
+</head>
+<body th:fragment="body(title, content)">
+<header id="hdr">
+    <div class="brand">
+        <span class="dot"></span>
+        <span class="cn" th:text="#{site.brand.cn}">云合</span>
+        <span class="en" th:text="#{site.brand.en}">YUNHE</span>
+    </div>
+
+    <nav id="nav" class="nav-links">
+        <a class="nav-item" data-mm="products" th:href="@{/#products}"  th:text="#{site.nav.products}">Products</a>
+        <a class="nav-item" data-mm="factory"  th:href="@{/#factory}" th:text="#{site.nav.factory}">Factory</a>
+        <a class="nav-item" data-mm="why"      th:href="@{/#why}"     th:text="#{site.nav.why}">Why YUNHE</a>
+        <a class="nav-item" data-mm="news"     th:href="@{/#news}"    th:text="#{site.nav.news}">News</a>
+        <a class="nav-item" data-mm="contact"  th:href="@{/#contact}" th:text="#{site.nav.contact}">Contact</a>
+    </nav>
+
+    <div class="hdr-right">
+        <a class="lang" th:href="@{/(lang=${#locale.language == 'en' ? 'zh' : 'en'})}"
+           th:text="${#locale.language == 'en'} ? '中文' : 'EN'">中文</a>
+        <button class="burger" id="burger" aria-label="menu"><span></span><span></span><span></span></button>
+    </div>
+
+    <div class="megamenu" id="megamenu">
+        <div class="mm-inner">
+
+            <!-- Products（文字链接，悬浮白块按项切换） -->
+            <div class="mm-panel" data-panel="products">
+                <div class="mm-col">
+                    <h5 th:text="#{site.nav.products}">Products</h5>
+                    <a th:href="@{/#products}" th:text="#{site.model.a.name}">YH-608 High-Heavy-Duty Water Jet Loom</a>
+                    <a th:href="@{/#products}" th:text="#{site.model.b.name}">YH-822 High-Speed Water Jet Loom</a>
+                    <a th:href="@{/#products}" th:text="#{site.model.c.name}">YH-9100 Air Jet Loom</a>
+                </div>
+                <div class="mm-col">
+                    <h5 th:text="#{site.footer.products}">Categories</h5>
+                    <a href="#" th:text="#{site.footer.productWaterJet}">Water Jet Loom</a>
+                    <a href="#" th:text="#{site.footer.productAirJet}">Air Jet Loom</a>
+                    <a href="#" th:text="#{site.footer.productJacquard}">Jacquard Loom</a>
+                </div>
+            </div>
+
+            <!-- Factory -->
+            <div class="mm-panel" data-panel="factory">
+                <div class="mm-col">
+                    <h5 th:text="#{site.nav.factory}">Factory</h5>
+                    <a th:href="@{/#factory}" th:text="#{site.factory.kicker}">FACTORY · IN-HOUSE</a>
+                    <a th:href="@{/#why}" th:text="#{site.nav.why}">Why YUNHE</a>
+                </div>
+                <div class="mm-col">
+                    <h5 th:text="#{site.factory.title}">Capabilities</h5>
+                    <p class="ph" th:text="#{site.factory.lede}">Every machine is assembled on platform and test-run 24h before shipment.</p>
+                </div>
+            </div>
+
+            <!-- Why YUNHE (占位：子页待建) -->
+            <div class="mm-panel" data-panel="why">
+                <div class="mm-col">
+                    <h5 th:text="#{site.nav.why}">Why YUNHE</h5>
+                    <p class="ph" th:text="#{site.placeholder.comingSoon}">Page coming soon — content below is placeholder.</p>
+                    <a href="#" th:text="#{site.why.1.t}">20+ Years</a>
+                    <p class="ph" th:text="#{site.why.1.d}">Dedicated to water jet loom R&amp;D and manufacturing.</p>
+                    <a href="#" th:text="#{site.why.2.t}">7200 Sets / Year</a>
+                    <p class="ph" th:text="#{site.why.2.d}">Stable capacity, on-time delivery.</p>
+                    <a href="#" th:text="#{site.why.3.t}">Global Service</a>
+                    <p class="ph" th:text="#{site.why.3.d}">Online &amp; on-site support, local technician training.</p>
+                </div>
+            </div>
+
+            <!-- News (占位：子页待建) -->
+            <div class="mm-panel" data-panel="news">
+                <div class="mm-col">
+                    <h5 th:text="#{site.nav.news}">News</h5>
+                    <p class="ph" th:text="#{site.placeholder.comingSoon}">Page coming soon — content below is placeholder.</p>
+                    <a href="#" th:text="#{site.news.title}">Latest News &amp; Trade Shows</a>
+                    <a href="#" th:text="#{site.news.cta}">Read More</a>
+                </div>
+            </div>
+
+            <!-- Contact -->
+            <div class="mm-panel" data-panel="contact">
+                <div class="mm-col">
+                    <h5 th:text="#{site.nav.contact}">Contact</h5>
+                    <a th:href="@{/#contact}" th:text="#{site.contact.whatsapp}">WhatsApp</a>
+                    <a th:href="@{/#contact}" th:text="#{site.contact.email}">Email</a>
+                    <a th:href="@{/#contact}" th:text="#{site.contact.address}">Wangtai, Qingdao, China</a>
+                </div>
+                <div class="mm-col">
+                    <h5 th:text="#{site.footer.language}">Language</h5>
+                    <a th:href="@{/(lang='en')}" th:text="#{site.footer.english}">English</a>
+                    <a th:href="@{/(lang='zh')}" th:text="#{site.footer.chinese}">中文</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</header>
+
+<div th:replace="${content}"></div>
+
+<footer>
+    <div class="f-cols">
+        <div>
+            <h4 th:text="#{site.footer.products}">Products</h4>
+            <a href="#" th:text="#{site.footer.productWaterJet}">Water Jet Loom</a>
+            <a href="#" th:text="#{site.footer.productAirJet}">Air Jet Loom</a>
+            <a href="#" th:text="#{site.footer.productJacquard}">Jacquard Loom</a>
+        </div>
+        <div>
+            <h4 th:text="#{site.footer.company}">Company</h4>
+            <a href="#" th:text="#{site.footer.about}">About YUNHE</a>
+            <a href="#" th:text="#{site.footer.news}">News</a>
+            <a href="#" th:text="#{site.footer.careers}">Careers</a>
+        </div>
+        <div>
+            <h4 th:text="#{site.footer.support}">Support</h4>
+            <a href="#" th:text="#{site.footer.docs}">Documentation</a>
+            <a href="#" th:text="#{site.footer.faq}">FAQ</a>
+            <a href="#" th:text="#{site.footer.warranty}">Warranty</a>
+        </div>
+        <div>
+            <h4 th:text="#{site.footer.contact}">Contact</h4>
+            <a href="#" th:text="#{site.footer.whatsapp}">WhatsApp</a>
+            <a href="#" th:text="#{site.footer.email}">Email</a>
+            <a href="#" th:text="#{site.footer.findus}">Find Us</a>
+        </div>
+        <div>
+            <h4 th:text="#{site.footer.language}">Language</h4>
+            <a th:href="@{/(lang='en')}" th:text="#{site.footer.english}">English</a>
+            <a th:href="@{/(lang='zh')}" th:text="#{site.footer.chinese}">中文</a>
+        </div>
+    </div>
+    <div class="f-bottom">
+        <span th:text="#{site.footer.copyright}">© 2026 QINGDAO YUNHE INTELLIGENT MANUFACTURING CO., LTD.</span>
+        <span th:text="#{site.footer.bottom}">Privacy · Terms · Sitemap</span>
+    </div>
+</footer>
+
+<script th:src="@{/js/site.js}"></script>
+</body>
+</html>
