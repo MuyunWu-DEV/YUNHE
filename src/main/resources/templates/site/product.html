@@ -21,15 +21,15 @@
             </a>
             <a class="meet-card bg-m3" href="#">
                 <span class="meet-plus">+</span>
-                <span class="meet-label" th:text="#${prefix + 'meet3.label'}">品质保障</span>
+                <span class="meet-label" th:text="#{${prefix + 'meet3.label'}}">品质保障</span>
             </a>
             <a class="meet-card bg-m4" href="#">
                 <span class="meet-plus">+</span>
-                <span class="meet-label" th:text="#${prefix + 'meet4.label'}">智能控制</span>
+                <span class="meet-label" th:text="#{${prefix + 'meet4.label'}}">智能控制</span>
             </a>
             <a class="meet-card bg-m5" href="#">
                 <span class="meet-plus">+</span>
-                <span class="meet-label" th:text="#${prefix + 'meet5.label'}">应用领域</span>
+                <span class="meet-label" th:text="#{${prefix + 'meet5.label'}}">应用领域</span>
             </a>
         </div>
     </section>
@@ -46,8 +46,8 @@
     <section class="dspecs">
         <div class="dspecs-inner">
             <div class="dspec" th:each="i : ${#numbers.sequence(1,4)}">
-                <div class="dspec-v" th:text="#${prefix + 'spec' + i + '.value'}">2300 m/min</div>
-                <div class="dspec-l" th:text="#${prefix + 'spec' + i + '.label'}">入纬率</div>
+                <div class="dspec-v" th:text="#{${prefix + 'spec' + i + '.value'}}">2300 m/min</div>
+                <div class="dspec-l" th:text="#{${prefix + 'spec' + i + '.label'}}">入纬率</div>
             </div>
         </div>
     </section>
@@ -57,8 +57,8 @@
         <div class="dfeat-grid">
             <div class="dfeat-item" th:each="icon, iter : ${featureIcons}">
                 <div class="dfeat-icon" th:text="${icon}">⚡</div>
-                <h3 th:text="#${prefix + 'feature' + iter.count + '.title'}">高速入纬</h3>
-                <p th:text="#${prefix + 'feature' + iter.count + '.desc'}">描述</p>
+                <h3 th:text="#{${prefix + 'feature' + iter.count + '.title'}}">高速入纬</h3>
+                <p th:text="#{${prefix + 'feature' + iter.count + '.desc'}}">描述</p>
             </div>
         </div>
     </section>
@@ -69,8 +69,8 @@
         <table class="dtable-t">
             <tbody>
                 <tr th:each="i : ${#numbers.sequence(1,10)}">
-                    <td class="dtable-l" th:text="#${prefix + 'table' + i + '.label'}">项目</td>
-                    <td class="dtable-v" th:text="#${prefix + 'table' + i + '.value'}">参数</td>
+                    <td class="dtable-l" th:text="#{${prefix + 'table' + i + '.label'}}">项目</td>
+                    <td class="dtable-v" th:text="#{${prefix + 'table' + i + '.value'}}">参数</td>
                 </tr>
             </tbody>
         </table>
@@ -78,8 +78,8 @@
 
     <!-- ===== 询价 CTA ===== -->
     <section class="dcta">
-        <h2 th:text="#${prefix + 'ctaTitle'}">了解详细参数与价格</h2>
-        <p th:text="#${prefix + 'ctaLede'}">我们的销售工程师将在 24 小时内为您定制方案。</p>
+        <h2 th:text="#{${prefix + 'ctaTitle'}}">了解详细参数与价格</h2>
+        <p th:text="#{${prefix + 'ctaLede'}}">我们的销售工程师将在 24 小时内为您定制方案。</p>
         <div class="dcta-actions">
             <a href="#contact" class="btn btn-light">WhatsApp</a>
             <a href="mailto:export@yunhe-loom.com" class="btn btn-outline-white">发送邮件</a>
