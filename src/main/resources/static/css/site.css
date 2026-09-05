@@ -246,6 +246,17 @@ footer{background:var(--paper);border-top:1px solid var(--line);padding:44px var
 .dhero h2{font-size:clamp(26px,3.4vw,40px);font-weight:600;margin:0 0 14px;letter-spacing:-.005em}
 .dhero .lede{color:var(--muted);font-size:16px;max-width:58ch;margin:0 auto;line-height:1.5}
 
+/* ---------- 大幅产品图区（全宽横幅 · 真机大图就位后替换 .dhero-img 的 background-image 即可） ---------- */
+.dhero-img{position:relative;width:100%;
+  height:clamp(320px,54vh,560px);
+  background-size:cover;background-position:center;
+  /* 占位渐变（与 .bg-m* 调性一致，待真机图后替换为 url(...)） */
+  background-image:linear-gradient(180deg,rgba(8,12,20,.18) 0%,rgba(8,12,20,.55) 100%),
+    radial-gradient(120% 130% at 50% 38%,#2f4466 0%,#16233a 55%,#070b12 100%)}
+.dhero-img-cap{position:absolute;right:var(--panel-pad);bottom:18px;
+  color:rgba(255,255,255,.55);font-size:13px;font-weight:500;letter-spacing:.3em;
+  text-transform:uppercase;pointer-events:none}
+
 /* ---------- 关键规格条（4 项 · 浅灰底 · 大数字） ---------- */
 .dspecs{background:#f6f6f6;padding:clamp(38px,5vh,60px) var(--panel-pad)}
 .dspecs-inner{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;
