@@ -17,11 +17,11 @@
     </div>
 
     <nav id="nav" class="nav-links">
-        <a class="nav-item" data-mm="products" th:href="@{/#products}"  th:text="#{site.nav.products}">Products</a>
-        <a class="nav-item" data-mm="factory"  th:href="@{/#factory}" th:text="#{site.nav.factory}">Factory</a>
-        <a class="nav-item" data-mm="why"      th:href="@{/#why}"     th:text="#{site.nav.why}">Why YUNHE</a>
-        <a class="nav-item" data-mm="news"     th:href="@{/#news}"    th:text="#{site.nav.news}">News</a>
-        <a class="nav-item" data-mm="contact"  th:href="@{/#contact}" th:text="#{site.nav.contact}">Contact</a>
+        <a class="nav-item" data-mm="products"   th:href="@{/#products}"    th:text="#{site.nav.product}">Product</a>
+        <a class="nav-item" data-mm="about"      th:href="@{/#about}"       th:text="#{site.nav.aboutUs}">About Us</a>
+        <a class="nav-item" data-mm="service"    th:href="@{/#service}"     th:text="#{site.nav.service}">Service</a>
+        <a class="nav-item" data-mm="governance" th:href="@{/#governance}"  th:text="#{site.nav.governance}">Governance</a>
+        <a class="nav-item" data-mm="references" th:href="@{/#references}"  th:text="#{site.nav.references}">References</a>
     </nav>
 
     <div class="hdr-right">
@@ -33,10 +33,10 @@
     <div class="megamenu" id="megamenu">
         <div class="mm-inner">
 
-            <!-- Products（文字链接，悬浮白块按项切换） -->
+            <!-- Products（保留原面板） -->
             <div class="mm-panel" data-panel="products">
                 <div class="mm-col">
-                    <h5 th:text="#{site.nav.products}">Products</h5>
+                    <h5 th:text="#{site.nav.product}">Product</h5>
                     <a th:href="@{/#products}" th:text="#{site.model.a.name}">YH-608 High-Heavy-Duty Water Jet Loom</a>
                     <a th:href="@{/#products}" th:text="#{site.model.b.name}">YH-822 High-Speed Water Jet Loom</a>
                     <a th:href="@{/#products}" th:text="#{site.model.c.name}">YH-9100 Air Jet Loom</a>
@@ -49,24 +49,15 @@
                 </div>
             </div>
 
-            <!-- Factory -->
-            <div class="mm-panel" data-panel="factory">
+            <!-- About Us（三块：Group Overview / Our Values / Contact） -->
+            <div class="mm-panel" data-panel="about">
                 <div class="mm-col">
-                    <h5 th:text="#{site.nav.factory}">Factory</h5>
+                    <h5 th:text="#{site.about.groupOverview}">Group Overview</h5>
                     <a th:href="@{/#factory}" th:text="#{site.factory.kicker}">FACTORY · IN-HOUSE</a>
-                    <a th:href="@{/#why}" th:text="#{site.nav.why}">Why YUNHE</a>
-                </div>
-                <div class="mm-col">
-                    <h5 th:text="#{site.factory.title}">Capabilities</h5>
                     <p class="ph" th:text="#{site.factory.lede}">Every machine is assembled on platform and test-run 24h before shipment.</p>
                 </div>
-            </div>
-
-            <!-- Why YUNHE (占位：子页待建) -->
-            <div class="mm-panel" data-panel="why">
                 <div class="mm-col">
-                    <h5 th:text="#{site.nav.why}">Why YUNHE</h5>
-                    <p class="ph" th:text="#{site.placeholder.comingSoon}">Page coming soon — content below is placeholder.</p>
+                    <h5 th:text="#{site.about.ourValues}">Our Values</h5>
                     <a href="#" th:text="#{site.why.1.t}">20+ Years</a>
                     <p class="ph" th:text="#{site.why.1.d}">Dedicated to water jet loom R&amp;D and manufacturing.</p>
                     <a href="#" th:text="#{site.why.2.t}">7200 Sets / Year</a>
@@ -74,30 +65,35 @@
                     <a href="#" th:text="#{site.why.3.t}">Global Service</a>
                     <p class="ph" th:text="#{site.why.3.d}">Online &amp; on-site support, local technician training.</p>
                 </div>
-            </div>
-
-            <!-- News (占位：子页待建) -->
-            <div class="mm-panel" data-panel="news">
-                <div class="mm-col">
-                    <h5 th:text="#{site.nav.news}">News</h5>
-                    <p class="ph" th:text="#{site.placeholder.comingSoon}">Page coming soon — content below is placeholder.</p>
-                    <a href="#" th:text="#{site.news.title}">Latest News &amp; Trade Shows</a>
-                    <a href="#" th:text="#{site.news.cta}">Read More</a>
-                </div>
-            </div>
-
-            <!-- Contact -->
-            <div class="mm-panel" data-panel="contact">
                 <div class="mm-col">
                     <h5 th:text="#{site.nav.contact}">Contact</h5>
                     <a th:href="@{/#contact}" th:text="#{site.contact.whatsapp}">WhatsApp</a>
                     <a th:href="@{/#contact}" th:text="#{site.contact.email}">Email</a>
                     <a th:href="@{/#contact}" th:text="#{site.contact.address}">Wangtai, Qingdao, China</a>
                 </div>
+            </div>
+
+            <!-- Service（占位：子页待建） -->
+            <div class="mm-panel" data-panel="service">
                 <div class="mm-col">
-                    <h5 th:text="#{site.footer.language}">Language</h5>
-                    <a th:href="@{/(lang='en')}" th:text="#{site.footer.english}">English</a>
-                    <a th:href="@{/(lang='zh')}" th:text="#{site.footer.chinese}">中文</a>
+                    <h5 th:text="#{site.nav.service}">Service</h5>
+                    <p class="ph" th:text="#{site.placeholder.comingSoon}">Page coming soon — content below is placeholder.</p>
+                </div>
+            </div>
+
+            <!-- Governance（占位：子页待建） -->
+            <div class="mm-panel" data-panel="governance">
+                <div class="mm-col">
+                    <h5 th:text="#{site.nav.governance}">Governance</h5>
+                    <p class="ph" th:text="#{site.placeholder.comingSoon}">Page coming soon — content below is placeholder.</p>
+                </div>
+            </div>
+
+            <!-- References（占位：子页待建） -->
+            <div class="mm-panel" data-panel="references">
+                <div class="mm-col">
+                    <h5 th:text="#{site.nav.references}">References</h5>
+                    <p class="ph" th:text="#{site.placeholder.comingSoon}">Page coming soon — content below is placeholder.</p>
                 </div>
             </div>
 
