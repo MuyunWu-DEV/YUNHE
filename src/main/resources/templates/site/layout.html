@@ -20,8 +20,7 @@
         <a class="nav-item" data-mm="products"   th:href="@{/#products}"    th:text="#{site.nav.product}">Product</a>
         <a class="nav-item" data-mm="about"      th:href="@{/#about}"       th:text="#{site.nav.aboutUs}">About Us</a>
         <a class="nav-item" data-mm="service"    th:href="@{/#service}"     th:text="#{site.nav.service}">Service</a>
-        <a class="nav-item" data-mm="governance" th:href="@{/#governance}"  th:text="#{site.nav.governance}">Governance</a>
-        <a class="nav-item" data-mm="references" th:href="@{/#references}"  th:text="#{site.nav.references}">References</a>
+        <a class="nav-item" data-mm="references" th:href="@{/references}"   th:text="#{site.nav.references}">References</a>
     </nav>
 
     <div class="hdr-right">
@@ -73,7 +72,7 @@
                 </div>
             </div>
 
-            <!-- Service（占位：子页待建） -->
+            <!-- Service（占位：子页暂不实现） -->
             <div class="mm-panel" data-panel="service">
                 <div class="mm-col">
                     <h5 th:text="#{site.nav.service}">Service</h5>
@@ -81,19 +80,12 @@
                 </div>
             </div>
 
-            <!-- Governance（占位：子页待建） -->
-            <div class="mm-panel" data-panel="governance">
-                <div class="mm-col">
-                    <h5 th:text="#{site.nav.governance}">Governance</h5>
-                    <p class="ph" th:text="#{site.placeholder.comingSoon}">Page coming soon — content below is placeholder.</p>
-                </div>
-            </div>
-
-            <!-- References（占位：子页待建） -->
+            <!-- References（客户案例） -->
             <div class="mm-panel" data-panel="references">
                 <div class="mm-col">
                     <h5 th:text="#{site.nav.references}">References</h5>
-                    <p class="ph" th:text="#{site.placeholder.comingSoon}">Page coming soon — content below is placeholder.</p>
+                    <a th:href="@{/references}" th:text="#{site.refs.panel.caseStudies}">Case Studies</a>
+                    <p class="ph" th:text="#{site.refs.panel.lede}">Representative weaving applications and client projects.</p>
                 </div>
             </div>
 

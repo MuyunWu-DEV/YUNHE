@@ -76,6 +76,13 @@ public class SiteController {
         return "site/about-contact";
     }
 
+    /** References · 客户案例：{@code /references} */
+    @GetMapping("/references")
+    public String references(Model model) {
+        model.addAttribute("pageTitle", "References · QINGDAO YUNHE");
+        return "site/references";
+    }
+
     private boolean hasLangCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
