@@ -77,31 +77,29 @@
     });
   }
 
-  // 首屏横滑 hero 轮播（自动播 5s，hover/focus 暂停，圆点/箭头切换 + scroll-snap 同步）
-  var stage = document.getElementById('heroStage');
-  var heroDots = document.querySelectorAll('#heroDots .dot');
-  var prev = document.getElementById('heroPrev');
-  var next = document.getElementById('heroNext');
-  if (stage && heroDots.length) {
-    var cur = 0, total = heroDots.length;
-    var autoTimer = null;
+  // 可复用的横滑轮播组件（自动播 5s，hover/focus 暂停，圆点/箭头切换 + scroll-snap 同步）
+  // 用法：createCarousel({ stage, dots, prev, next })，支持一页多实例互不干扰
+  function createCarousel(cfg) {
+    var stage = cfg.stage;
+    var dots = cfg.dots || [];
+    if (!stage || !dots.length) return;
+    var cur = 0, total = dots.length, autoTimer = null;
     var show = function (n) {
       cur = (n + total) % total;
       stage.scrollTo({ left: stage.clientWidth * cur, behavior: 'smooth' });
-      heroDots.forEach(function (d, k) { d.classList.toggle('active', k === cur); });
+      dots.forEach(function (d, k) { d.classList.toggle('active', k === cur); });
     };
     var startAuto = function () { if (!autoTimer) autoTimer = setInterval(function () { show(cur + 1); }, 5000); };
     var stopAuto = function () { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } };
     var restartAuto = function () { stopAuto(); startAuto(); };
-
-    if (prev) prev.addEventListener('click', function () { show(cur - 1); restartAuto(); });
-    if (next) next.addEventListener('click', function () { show(cur + 1); restartAuto(); });
-    heroDots.forEach(function (d, k) { d.addEventListener('click', function () { show(k); restartAuto(); }); });
+    if (cfg.prev) cfg.prev.addEventListener('click', function () { show(cur - 1); restartAuto(); });
+    if (cfg.next) cfg.next.addEventListener('click', function () { show(cur + 1); restartAuto(); });
+    dots.forEach(function (d, k) { d.addEventListener('click', function () { show(k); restartAuto(); }); });
     stage.addEventListener('scroll', function () {
       var w = stage.clientWidth;
       if (!w) return;
       var ni = Math.round(stage.scrollLeft / w);
-      if (ni !== cur) { cur = ni; heroDots.forEach(function (d, k2) { d.classList.toggle('active', k2 === cur); }); }
+      if (ni !== cur) { cur = ni; dots.forEach(function (d, k2) { d.classList.toggle('active', k2 === cur); }); }
     });
     startAuto();
     stage.addEventListener('mouseenter', stopAuto);
@@ -110,6 +108,28 @@
     stage.addEventListener('focusout', startAuto);
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) stopAuto(); else startAuto();
+    });
+  }
+
+  // 首页首屏 hero 轮播
+  var heroStage = document.getElementById('heroStage');
+  if (heroStage) {
+    createCarousel({
+      stage: heroStage,
+      dots: Array.prototype.slice.call(document.querySelectorAll('#heroDots .dot')),
+      prev: document.getElementById('heroPrev'),
+      next: document.getElementById('heroNext')
+    });
+  }
+
+  // About(Group Overview) 顶部全宽轮播
+  var aboutStage = document.getElementById('aboutStage');
+  if (aboutStage) {
+    createCarousel({
+      stage: aboutStage,
+      dots: Array.prototype.slice.call(document.querySelectorAll('#aboutDots .dot')),
+      prev: document.getElementById('aboutPrev'),
+      next: document.getElementById('aboutNext')
     });
   }
 })();
