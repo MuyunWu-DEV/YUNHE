@@ -133,17 +133,6 @@
     });
   }
 
-  // Contact(/about/contact) 顶部全宽轮播
-  var contactStage = document.getElementById('contactStage');
-  if (contactStage) {
-    createCarousel({
-      stage: contactStage,
-      dots: Array.prototype.slice.call(document.querySelectorAll('#contactDots .dot')),
-      prev: document.getElementById('contactPrev'),
-      next: document.getElementById('contactNext')
-    });
-  }
-
   // References(/references) 顶部全宽轮播
   var refStage = document.getElementById('refStage');
   if (refStage) {
