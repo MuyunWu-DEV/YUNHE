@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head th:replace="~{site/layout :: head(title=${pageTitle})}"></head>
+<body th:replace="~{site/layout :: body(title=${pageTitle}, content=~{::content})}">
+<div th:fragment="content">
+
+    <!-- ===== 顶部「遇见 X」5 张图卡区 · 430×500 · 宽度不够手动横滑，不自动播放 ===== -->
+    <section class="meet">
+        <div class="meet-head">
+            <h1 th:text="#{${prefix + 'meetTitle'}}">遇见 YH-608</h1>
+            <p class="lede" th:text="#{${prefix + 'meetLede'}}">了解 YH-608 的核心性能与技术优势。</p>
+        </div>
+        <div class="meet-row" id="meetRow">
+            <a class="meet-card bg-m1" href="#">
+                <span class="meet-plus">+</span>
+                <span class="meet-label" th:text="#{${prefix + 'meet1.label'}}">外观设计</span>
+            </a>
+            <a class="meet-card bg-m2" href="#">
+                <span class="meet-plus">+</span>
+                <span class="meet-label" th:text="#{${prefix + 'meet2.label'}}">重磅织造</span>
+            </a>
+            <a class="meet-card bg-m3" href="#">
+                <span class="meet-plus">+</span>
+                <span class="meet-label" th:text="#${prefix + 'meet3.label'}">品质保障</span>
+            </a>
+            <a class="meet-card bg-m4" href="#">
+                <span class="meet-plus">+</span>
+                <span class="meet-label" th:text="#${prefix + 'meet4.label'}">智能控制</span>
+            </a>
+            <a class="meet-card bg-m5" href="#">
+                <span class="meet-plus">+</span>
+                <span class="meet-label" th:text="#${prefix + 'meet5.label'}">应用领域</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- ===== 详情 Hero · 模型名 + tagline ===== -->
+    <section class="section dhero">
+        <div class="dhero-inner">
+            <h2 th:text="#{${prefix + 'name'}}">YH-608 高速重磅喷水织机</h2>
+            <p class="lede" th:text="#{${prefix + 'tagline'}}">为重磅织物而生的高速生产专家</p>
+        </div>
+    </section>
+
+    <!-- ===== 关键规格条 · 4 项 ===== -->
+    <section class="dspecs">
+        <div class="dspecs-inner">
+            <div class="dspec" th:each="i : ${#numbers.sequence(1,4)}">
+                <div class="dspec-v" th:text="#${prefix + 'spec' + i + '.value'}">2300 m/min</div>
+                <div class="dspec-l" th:text="#${prefix + 'spec' + i + '.label'}">入纬率</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== 核心特性网格 · 6 项（图标 + 标题 + 描述） ===== -->
+    <section class="section dfeat">
+        <div class="dfeat-grid">
+            <div class="dfeat-item" th:each="icon, iter : ${featureIcons}">
+                <div class="dfeat-icon" th:text="${icon}">⚡</div>
+                <h3 th:text="#${prefix + 'feature' + iter.count + '.title'}">高速入纬</h3>
+                <p th:text="#${prefix + 'feature' + iter.count + '.desc'}">描述</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== 技术参数表 · 10 行 ===== -->
+    <section class="section dtable">
+        <h2>技术参数</h2>
+        <table class="dtable-t">
+            <tbody>
+                <tr th:each="i : ${#numbers.sequence(1,10)}">
+                    <td class="dtable-l" th:text="#${prefix + 'table' + i + '.label'}">项目</td>
+                    <td class="dtable-v" th:text="#${prefix + 'table' + i + '.value'}">参数</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ===== 询价 CTA ===== -->
+    <section class="dcta">
+        <h2 th:text="#${prefix + 'ctaTitle'}">了解详细参数与价格</h2>
+        <p th:text="#${prefix + 'ctaLede'}">我们的销售工程师将在 24 小时内为您定制方案。</p>
+        <div class="dcta-actions">
+            <a href="#contact" class="btn btn-light">WhatsApp</a>
+            <a href="mailto:export@yunhe-loom.com" class="btn btn-outline-white">发送邮件</a>
+        </div>
+    </section>
+
+</div>
+</body>
+</html>

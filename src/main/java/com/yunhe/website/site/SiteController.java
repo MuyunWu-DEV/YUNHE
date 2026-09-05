@@ -2,10 +2,15 @@ package com.yunhe.website.site;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.view.RedirectView;
+
+import java.util.List;
 
 /**
  * 企业官网（前台）控制器。
@@ -14,6 +19,12 @@ import org.springframework.web.servlet.view.RedirectView;
  */
 @Controller
 public class SiteController {
+
+    /** 支持的机型 ID（白名单；新增机型需同步扩 i18n 与模板） */
+    private static final List<String> VALID_MODELS = List.of("yh-608", "yh-822", "yh-9100");
+
+    /** 详情页特性图标（6 项，与模板 th:each 顺序一一对应；与机型无关的固定列表） */
+    private static final List<String> FEATURE_ICONS = List.of("⚡", "🔧", "📏", "💡", "🛡️", "🌍");
 
     /** 首页：横长 Hero 轮播 + 机型大卡（特斯拉式）企业官网 */
     @GetMapping("/")
@@ -24,6 +35,24 @@ public class SiteController {
         }
         model.addAttribute("pageTitle", "QINGDAO YUNHE · Water Jet Loom Manufacturer");
         return "site/home";
+    }
+
+    /**
+     * 产品详情页：{@code /products/{modelId}}。
+     * <p>全部文案走 i18n（{@code site.product.{modelId}.*}），模板用 {@code #{${prefix + '...'}}}
+     * 动态拼接查表；规格条/特性/参数表用 {@code th:each} 编号渲染，模型数据零硬编码在模板里。</p>
+     */
+    @GetMapping("/products/{modelId}")
+    public String product(@PathVariable String modelId, Model model) {
+        if (!VALID_MODELS.contains(modelId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        String prefix = "site.product." + modelId + ".";
+        model.addAttribute("modelId", modelId);
+        model.addAttribute("prefix", prefix);
+        model.addAttribute("featureIcons", FEATURE_ICONS);
+        model.addAttribute("pageTitle", "QINGDAO YUNHE · " + modelId.toUpperCase());
+        return "site/product";
     }
 
     private boolean hasLangCookie(HttpServletRequest request) {
