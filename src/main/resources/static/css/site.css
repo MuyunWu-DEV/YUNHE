@@ -392,22 +392,30 @@ footer{background:var(--paper);border-top:1px solid var(--line);padding:44px var
    References（客户案例页 · /references）
    列表卡片：左侧序号 + 右侧正文（名称/机型/描述），纸白底分隔
    ========================================================================= */
-.ref-list{display:flex;flex-direction:column;gap:14px;margin-top:30px}
-.ref-card{display:flex;gap:22px;align-items:flex-start;
-  background:#fff;border:1px solid var(--line);border-radius:12px;
-  padding:24px 26px;box-shadow:0 1px 3px rgba(0,0,0,.03);transition:border-color .2s,transform .2s}
-.ref-card:hover{border-color:var(--cta);transform:translateY(-2px)}
-.ref-no{font-size:15px;font-weight:600;color:var(--cta);letter-spacing:.02em;
-  min-width:34px;padding-top:3px}
-.ref-body h3{font-size:17px;font-weight:600;color:var(--ink);margin:0 0 6px;letter-spacing:-.005em}
-.ref-model{font-size:12.5px;color:var(--cta);font-weight:600;margin:0 0 8px;letter-spacing:.02em}
-.ref-body p{font-size:14px;color:var(--muted);line-height:1.7;margin:0}
-/* References 所在块为浅灰底（.a-block--alt）时给卡片加对比 */
-.refs-block{background:#f6f6f6}
-@media(max-width:820px){
-  .ref-card{gap:16px;padding:20px}
-}
-@media(max-width:380px){
-  .ref-card{flex-direction:column;gap:8px}
-  .ref-no{min-width:0}
-}
+/* References（/references）— 4 列卡片网格
+   每张卡：媒体区(渐变占位) + 右下播放按钮 + 机型徽标行 + 标题 + 描述，无跳转链接 */
+.ref-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:34px}
+.ref-card{position:relative;display:flex;flex-direction:column;background:#fff;
+  border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  box-shadow:0 1px 3px rgba(0,0,0,.04);transition:transform .25s,border-color .25s,box-shadow .25s}
+.ref-card:hover{transform:translateY(-3px);border-color:var(--line);box-shadow:0 6px 22px rgba(0,0,0,.07)}
+.ref-media{position:relative;aspect-ratio:4/3;background-size:cover;background-position:center}
+.rm-1{background-image:linear-gradient(180deg,rgba(8,12,20,.18) 0%,rgba(8,12,20,.62) 80%),radial-gradient(120% 130% at 50% 40%,#2a3a55 0%,#0f1623 65%,#05080d 100%)}
+.rm-2{background-image:linear-gradient(180deg,rgba(8,12,20,.18) 0%,rgba(8,12,20,.62) 80%),radial-gradient(120% 130% at 50% 40%,#3a2f55 0%,#1a1223 65%,#0b070d 100%)}
+.rm-3{background-image:linear-gradient(180deg,rgba(8,12,20,.18) 0%,rgba(8,12,20,.62) 80%),radial-gradient(120% 130% at 50% 40%,#1f4a44 0%,#0d2420 65%,#040c0a 100%)}
+.ref-play{position:absolute;right:14px;bottom:14px;width:42px;height:42px;border-radius:50%;
+  background:#fff;color:var(--ink);border:0;cursor:default;font-size:0;line-height:0;
+  box-shadow:0 2px 8px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center}
+.ref-play::before{content:"";display:block;width:0;height:0;
+  border-left:11px solid var(--ink);border-top:7px solid transparent;border-bottom:7px solid transparent;margin-left:3px}
+.ref-foot{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 6px;background:#fff}
+.ref-flag{display:inline-flex;align-items:center;gap:8px;height:26px;padding:0 12px;border-radius:20px;
+  background:#f3f4f6;color:var(--ink);font-size:12px;font-weight:600;letter-spacing:.02em}
+.ref-playline{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;
+  border:1.5px solid var(--ink);color:var(--ink);font-size:10px;line-height:1}
+.ref-body{padding:6px 18px 22px;background:#fff}
+.ref-body h3{font-size:16px;font-weight:600;color:var(--ink);margin:0 0 8px;letter-spacing:-.005em}
+.ref-body p{font-size:13.5px;color:var(--muted);line-height:1.65;margin:0}
+@media(max-width:1024px){.ref-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:820px){.ref-grid{grid-template-columns:repeat(2,1fr);gap:18px}}
+@media(max-width:380px){.ref-grid{grid-template-columns:1fr}}
