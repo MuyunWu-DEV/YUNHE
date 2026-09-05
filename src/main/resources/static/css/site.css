@@ -303,3 +303,67 @@ footer{background:var(--paper);border-top:1px solid var(--line);padding:44px var
   .dspecs-inner{grid-template-columns:1fr;gap:18px}
   .dcta-actions .btn{min-width:160px;max-width:240px;width:100%}
 }
+
+/* =========================================================================
+   About 子页（/about · /about/values · /about/contact）
+   设计对齐产品详情页：页面 Hero(浅底小帽) + 分段内容块 + 蓝底 CTA
+   ========================================================================= */
+.a-hero{background:var(--paper);text-align:center;
+  padding:calc(var(--header-h) + clamp(34px,5vh,64px)) var(--panel-pad) clamp(26px,4vh,44px);
+  border-bottom:1px solid var(--line)}
+.a-hero .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--cta);font-weight:600;margin-bottom:14px}
+.a-hero h1{font-size:clamp(25px,3.6vw,40px);font-weight:600;letter-spacing:-.01em;
+  margin:0 0 14px;color:var(--ink)}
+.a-hero .lede{color:var(--muted);font-size:16px;max-width:62ch;margin:0 auto;line-height:1.65}
+
+/* 分段内容块：纸白 / 浅灰 交替 */
+.a-block{padding:clamp(44px,6vh,76px) var(--panel-pad);background:var(--paper)}
+.a-block--alt{background:#f6f6f6}
+.a-inner{max-width:1024px;margin:0 auto}
+.a-block h2{font-size:clamp(21px,2.4vw,28px);font-weight:600;margin:0 0 16px;
+  letter-spacing:-.005em;color:var(--ink)}
+.a-block .lede{color:var(--muted);font-size:15px;line-height:1.75;max-width:78ch}
+
+/* 双栏正文 */
+.a-cols{display:grid;grid-template-columns:repeat(2,1fr);gap:30px;margin-top:8px}
+.a-cols p{color:var(--muted);font-size:14.5px;line-height:1.85;margin:0}
+
+/* 数据条（白底隔线分隔 · 4 格） */
+.a-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:var(--line);margin-top:36px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.a-stat{background:#fff;padding:26px 18px;text-align:center}
+.a-stat .v{font-size:clamp(23px,2.6vw,31px);font-weight:600;color:var(--ink);letter-spacing:-.01em}
+.a-stat .l{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+
+/* 能力 / 价值观复用 .dfeat-grid 卡片（首块在浅灰底上需补 max-width） */
+.a-cards{padding:clamp(44px,6vh,76px) var(--panel-pad);background:var(--paper)}
+.a-cards--alt{background:#f6f6f6}
+.a-cards h2{text-align:center;font-size:clamp(21px,2.4vw,28px);font-weight:600;
+  margin:0 0 8px;color:var(--ink)}
+.a-cards > .lede{text-align:center;color:var(--muted);font-size:15px;margin:0 auto 40px;
+  max-width:66ch;line-height:1.6}
+.a-cards .dfeat-grid{gap:32px 34px}
+.a-cards--alt .dfeat-item{background:#fff;border:1px solid var(--line);border-radius:10px;
+  padding:26px 24px;box-shadow:0 1px 3px rgba(0,0,0,.03)}
+.a-cards .dfeat-icon{font-size:22px;margin-bottom:16px}
+
+/* 联系页：双栏联系方式 */
+.a-contact{display:grid;grid-template-columns:1fr 1fr;gap:10px 46px}
+.a-contact .row{padding:22px 0;border-bottom:1px solid var(--line);display:flex;
+  flex-direction:column;gap:6px}
+.a-contact .row:first-child{border-top:0}
+.a-contact .k{font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-weight:600}
+.a-contact .val{font-size:16px;font-weight:500;color:var(--ink);word-break:break-word}
+.a-note{margin-top:34px;color:var(--muted);font-size:14.5px;line-height:1.7;max-width:72ch}
+
+/* About 页响应式 */
+@media(max-width:820px){
+  .a-cols{grid-template-columns:1fr;gap:22px}
+  .a-stats{grid-template-columns:repeat(2,1fr)}
+  .a-contact{grid-template-columns:1fr}
+}
+@media(max-width:380px){
+  .a-stats{grid-template-columns:1fr}
+}

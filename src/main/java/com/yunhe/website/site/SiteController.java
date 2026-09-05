@@ -55,6 +55,27 @@ public class SiteController {
         return "site/product";
     }
 
+    /** About · 集团概览：{@code /about}（About megamenu「Group Overview」落点） */
+    @GetMapping("/about")
+    public String aboutGroup(Model model) {
+        model.addAttribute("pageTitle", "About · QINGDAO YUNHE");
+        return "site/about";
+    }
+
+    /** About · 我们的价值观：{@code /about/values} */
+    @GetMapping("/about/values")
+    public String aboutValues(Model model) {
+        model.addAttribute("pageTitle", "Our Values · QINGDAO YUNHE");
+        return "site/about-values";
+    }
+
+    /** About · 联系我们：{@code /about/contact} */
+    @GetMapping("/about/contact")
+    public String aboutContact(Model model) {
+        model.addAttribute("pageTitle", "Contact · QINGDAO YUNHE");
+        return "site/about-contact";
+    }
+
     private boolean hasLangCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {

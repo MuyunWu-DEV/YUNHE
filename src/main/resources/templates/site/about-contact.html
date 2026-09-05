@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head th:replace="~{site/layout :: head(title=${pageTitle})}"></head>
+<body th:replace="~{site/layout :: body(title=${pageTitle}, content=~{::content})}">
+<div th:fragment="content">
+
+    <!-- ===== Contact · 页面 Hero ===== -->
+    <section class="a-hero">
+        <div class="kicker" th:text="#{site.about.contact.kicker}">CONTACT</div>
+        <h1 th:text="#{site.about.contact.title}">联系我们</h1>
+        <p class="lede" th:text="#{site.about.contact.heroLede}">关于机型选型、报价、交期或技术支持，欢迎通过以下方式与我们联系。</p>
+    </section>
+
+    <!-- ===== 联系方式 ===== -->
+    <section class="a-block">
+        <div class="a-inner">
+            <h2 th:text="#{site.about.contact.methodsTitle}">联系方式</h2>
+            <div class="a-contact">
+                <div class="row">
+                    <span class="k" th:text="#{site.about.contact.m1.k}">WhatsApp</span>
+                    <span class="val" th:text="#{site.about.contact.m1.v}">+86 198 5714 7744</span>
+                </div>
+                <div class="row">
+                    <span class="k" th:text="#{site.about.contact.m2.k}">Email</span>
+                    <span class="val" th:text="#{site.about.contact.m2.v}">export@yunhe-loom.com</span>
+                </div>
+                <div class="row">
+                    <span class="k" th:text="#{site.about.contact.m3.k}">Address</span>
+                    <span class="val" th:text="#{site.about.contact.m3.v}">中国·青岛·王台镇</span>
+                </div>
+                <div class="row">
+                    <span class="k" th:text="#{site.about.contact.m4.k}">Response Time</span>
+                    <span class="val" th:text="#{site.about.contact.m4.v}">销售工程师将在 24 小时内回复</span>
+                </div>
+            </div>
+            <p class="a-note" th:text="#{site.about.contact.note}">为更快地响应，请在留言时尽量提供：目标织物品种、织造幅宽、所需台数与目标市场。我们将据此为您推荐合适机型与方案。</p>
+        </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <section class="dcta">
+        <h2 th:text="#{site.about.contact.ctaTitle}">准备好开始了吗？</h2>
+        <p th:text="#{site.about.contact.ctaLede}">选择您方便的方式，与我们讨论您的织造需求。</p>
+        <div class="dcta-actions">
+            <a href="https://wa.me/8619857147744" class="btn btn-light" th:text="#{site.about.contact.ctaWa}">WhatsApp 咨询</a>
+            <a href="mailto:export@yunhe-loom.com" class="btn btn-outline-white" th:text="#{site.about.contact.ctaMail}">发送邮件</a>
+        </div>
+    </section>
+
+</div>
+</body>
+</html>

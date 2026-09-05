@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head th:replace="~{site/layout :: head(title=${pageTitle})}"></head>
+<body th:replace="~{site/layout :: body(title=${pageTitle}, content=~{::content})}">
+<div th:fragment="content">
+
+    <!-- ===== Our Values · 页面 Hero ===== -->
+    <section class="a-hero">
+        <div class="kicker" th:text="#{site.about.values.kicker}">OUR VALUES</div>
+        <h1 th:text="#{site.about.values.title}">我们的价值观</h1>
+        <p class="lede" th:text="#{site.about.values.heroLede}">我们把可靠性、精密与长期服务做进每一台织机与每一段合作。</p>
+    </section>
+
+    <!-- ===== 价值观卡片（6 项） ===== -->
+    <section class="a-cards">
+        <div class="dfeat-grid">
+            <div class="dfeat-item">
+                <div class="dfeat-icon">🛡️</div>
+                <h3 th:text="#{site.about.values.v1.t}">可靠</h3>
+                <p th:text="#{site.about.values.v1.d}">以稳定运行与可维护性为设计底线，减少产线停机。</p>
+            </div>
+            <div class="dfeat-item">
+                <div class="dfeat-icon">🎯</div>
+                <h3 th:text="#{site.about.values.v2.t}">精密</h3>
+                <p th:text="#{site.about.values.v2.d}">关键零件自产加工，保证装配一致与织造品质可复现。</p>
+            </div>
+            <div class="dfeat-item">
+                <div class="dfeat-icon">🤝</div>
+                <h3 th:text="#{site.about.values.v3.t}">客户为先</h3>
+                <p th:text="#{site.about.values.v3.d}">从选型到售后，围绕客户的实际织造需求提供支持。</p>
+            </div>
+            <div class="dfeat-item">
+                <div class="dfeat-icon">💡</div>
+                <h3 th:text="#{site.about.values.v4.t}">创新</h3>
+                <p th:text="#{site.about.values.v4.d}">持续优化电子控制、节能与自动化水平，紧跟织造趋势。</p>
+            </div>
+            <div class="dfeat-item">
+                <div class="dfeat-icon">🌱</div>
+                <h3 th:text="#{site.about.values.v5.t}">节能</h3>
+                <p th:text="#{site.about.values.v5.d}">以节能设计降低水电消耗，帮助客户控制运营成本。</p>
+            </div>
+            <div class="dfeat-item">
+                <div class="dfeat-icon">🔁</div>
+                <h3 th:text="#{site.about.values.v6.t}">长期伙伴</h3>
+                <p th:text="#{site.about.values.v6.d}">以透明沟通与稳定供货，与客户建立可持续的合作关系。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <section class="dcta">
+        <h2 th:text="#{site.about.values.ctaTitle}">认可这些价值观？一起合作</h2>
+        <p th:text="#{site.about.values.ctaLede}">告诉我们您的织造需求，我们将为您匹配合适机型与方案。</p>
+        <div class="dcta-actions">
+            <a href="https://wa.me/8619857147744" class="btn btn-light">WhatsApp</a>
+            <a href="mailto:export@yunhe-loom.com" class="btn btn-outline-white" th:text="#{site.about.values.ctaMail}">发送邮件</a>
+        </div>
+    </section>
+
+</div>
+</body>
+</html>
