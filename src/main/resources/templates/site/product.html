@@ -4,36 +4,6 @@
 <body th:replace="~{site/layout :: body(title=${pageTitle}, content=~{::content})}">
 <div th:fragment="content">
 
-    <!-- ===== 顶部「遇见 X」5 张图卡区 · 430×500 · 宽度不够手动横滑，不自动播放 ===== -->
-    <section class="meet">
-        <div class="meet-head">
-            <h1 th:text="#{${prefix + 'meetTitle'}}">遇见 YH-608</h1>
-            <p class="lede" th:text="#{${prefix + 'meetLede'}}">了解 YH-608 的核心性能与技术优势。</p>
-        </div>
-        <div class="meet-row" id="meetRow">
-            <a class="meet-card bg-m1" href="#">
-                <span class="meet-plus">+</span>
-                <span class="meet-label" th:text="#{${prefix + 'meet1.label'}}">外观设计</span>
-            </a>
-            <a class="meet-card bg-m2" href="#">
-                <span class="meet-plus">+</span>
-                <span class="meet-label" th:text="#{${prefix + 'meet2.label'}}">重磅织造</span>
-            </a>
-            <a class="meet-card bg-m3" href="#">
-                <span class="meet-plus">+</span>
-                <span class="meet-label" th:text="#{${prefix + 'meet3.label'}}">品质保障</span>
-            </a>
-            <a class="meet-card bg-m4" href="#">
-                <span class="meet-plus">+</span>
-                <span class="meet-label" th:text="#{${prefix + 'meet4.label'}}">智能控制</span>
-            </a>
-            <a class="meet-card bg-m5" href="#">
-                <span class="meet-plus">+</span>
-                <span class="meet-label" th:text="#{${prefix + 'meet5.label'}}">应用领域</span>
-            </a>
-        </div>
-    </section>
-
     <!-- ===== 详情 Hero · 模型名 + tagline ===== -->
     <section class="section dhero">
         <div class="dhero-inner">
@@ -42,8 +12,8 @@
         </div>
     </section>
 
-    <!-- ===== 大幅产品图区 · 全宽横幅（真机大图就位后替换背景即可） ===== -->
-    <section class="dhero-img" aria-label="machine photo">
+    <!-- ===== 大幅产品图区 · 全宽横幅（按 modelId 切换真机大图；CSS 在 .dhero-img-yh-608 / -822 / -9100） ===== -->
+    <section class="dhero-img" th:classappend="${'dhero-img-' + modelId}" aria-label="machine photo">
         <span class="dhero-img-cap" th:text="#{${prefix + 'name'}}">YH-608</span>
     </section>
 
