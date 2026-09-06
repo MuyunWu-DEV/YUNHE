@@ -106,7 +106,7 @@ header.nav-hover .megamenu, .megamenu.open{opacity:1;visibility:visible;transfor
 .hero-slide{flex:0 0 100%;scroll-snap-align:start;position:relative;display:flex;justify-content:center;
   align-items:flex-start;padding-top:48px;background-size:cover;background-position:center}
 .hero-slide--a{background-image:linear-gradient(180deg,rgba(8,12,20,.28) 0%,rgba(8,12,20,.55) 70%,rgba(8,12,20,.78) 100%),url(/images/hero_01.jpg);background-size:cover;background-position:center}
-.hero-slide--b{background-image:linear-gradient(180deg,rgba(8,12,20,.32) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%),radial-gradient(120% 130% at 50% 40%,#4a3a2c 0%,#1d1610 60%,#0a0604 100%)}
+.hero-slide--b{background-image:linear-gradient(180deg,rgba(8,12,20,.28) 0%,rgba(8,12,20,.55) 70%,rgba(8,12,20,.78) 100%),url(/images/hero_2.jpg);background-size:cover;background-position:center}
 .hero-slide--c{background-image:linear-gradient(180deg,rgba(8,12,20,.28) 0%,rgba(8,12,20,.55) 70%,rgba(8,12,20,.78) 100%),url(/images/showroom.jpg);background-size:cover;background-position:center}
 .hero-slide::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 100%,rgba(0,0,0,.45) 0%,rgba(0,0,0,0) 60%);pointer-events:none}
 .hero-content{position:relative;z-index:2;text-align:center;max-width:743px;padding:0 32px}
