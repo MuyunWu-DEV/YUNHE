@@ -1,0 +1,33 @@
+# ============================================================
+# .dockerignore — 控制 docker compose build 的 build context 大小
+# build context = 项目根（compose build.context=..）
+# 注意：不能忽略 target/（deploy/Dockerfile 需 COPY target/*.jar）
+# ============================================================
+
+.git
+.gitignore
+.dockerignore
+.idea
+*.log
+build.log
+build_*.log
+app_run.log
+db_*.txt
+mvn_*.log
+NotoSansSC-Regular.otf
+*.md
+
+# 字体全字库源（8MB+，只用于本地重裁，不进镜像）
+src/main/resources/fonts/_src/
+
+# 草稿/临时产物（项目根下历史调试文件）
+compare_pi.py
+diag_font.py
+verify_*.py
+*.svg
+borders_crop.png
+footer_line_crop.png
+item_desc_crop.png
+*.pdf
+ci_original_page1.png
+original_page1.png
