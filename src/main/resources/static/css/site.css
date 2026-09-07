@@ -223,15 +223,15 @@ footer{background:var(--paper);border-top:1px solid var(--line);padding:44px var
 
 /* ---------- 大幅产品图区（全宽横幅 · 模板按 modelId 给 .dhero-img 追加 .dhero-img-{modelId} 切换真机大图） ---------- */
 .dhero-img{position:relative;width:100%;
-  height:clamp(320px,54vh,560px);
+  height:clamp(340px,60vh,640px);
   background-size:cover;background-position:center;
   background-color:#0b1118;
   /* 底部压暗叠层只写一次；真机图由各机型 class 经 --dhero-img 注入（none 兜底：未知机型仅留深色） */
   background-image:var(--photo-overlay),var(--dhero-img,none)}
 /* 机型图：与主页卡片同样的底部压暗叠层（见上方 .dhero-img），此处仅切换 url */
-.dhero-img-yh-608{--dhero-img:url(/images/608.jpg)}
-.dhero-img-yh-822{--dhero-img:url(/images/822.jpg)}
-.dhero-img-yh-9100{--dhero-img:url(/images/9100.jpg)}
+.dhero-img-yh608{--dhero-img:url(/images/608.jpg)}
+.dhero-img-yh822{--dhero-img:url(/images/822.jpg)}
+.dhero-img-yh9100{--dhero-img:url(/images/9100.jpg)}
 .dhero-img-cap{position:absolute;right:var(--panel-pad);bottom:18px;
   color:rgba(255,255,255,.55);font-size:13px;font-weight:500;letter-spacing:.3em;
   text-transform:uppercase;pointer-events:none}
@@ -349,10 +349,10 @@ footer{background:var(--paper);border-top:1px solid var(--line);padding:44px var
 /* 复用首页 .hero/.hero-stage/.hero-slide/.hero-content/.hero-nav/.hero-dots 视觉，
    仅缩短高度 + 给 4 帧专属渐变占位图（真图就位后把 .ag-N 的 background-image 换成 url 即可） */
 .a-gallery{margin-top:var(--header-h);height:clamp(380px,62vh,600px);min-height:380px}
-.ag-1{background-image:linear-gradient(180deg,rgba(8,12,20,.3) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%),radial-gradient(120% 130% at 50% 38%,#2a3a55 0%,#0f1623 62%,#05080d 100%)}
-.ag-2{background-image:linear-gradient(180deg,rgba(8,12,20,.3) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%),radial-gradient(120% 130% at 50% 38%,#3a2f55 0%,#1a1223 62%,#0b070d 100%)}
-.ag-3{background-image:linear-gradient(180deg,rgba(8,12,20,.3) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%),radial-gradient(120% 130% at 50% 38%,#1f4a44 0%,#0d2420 62%,#040c0a 100%)}
-.ag-4{background-image:linear-gradient(180deg,rgba(8,12,20,.3) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%),radial-gradient(120% 130% at 50% 38%,#4a3a2c 0%,#241a10 62%,#0a0604 100%)}
+.ag-1{background-image:linear-gradient(180deg,rgba(8,12,20,.3) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%),url(/images/factory.jpg);background-size:cover;background-position:center}
+.ag-2{background-image:linear-gradient(180deg,rgba(8,12,20,.3) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%),url(/images/cnc.jpg);background-size:cover;background-position:center}
+.ag-3{background-image:linear-gradient(180deg,rgba(8,12,20,.3) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%),url(/images/assembly.jpg);background-size:cover;background-position:center}
+.ag-4{background-image:linear-gradient(180deg,rgba(8,12,20,.3) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%),url(/images/testing.jpg);background-size:cover;background-position:center}
 .a-gallery .hero-content h1{font-size:clamp(26px,3.4vw,42px);font-weight:600}
 .a-gallery .hero-content .lede{max-width:54ch}
 
@@ -378,9 +378,15 @@ footer{background:var(--paper);border-top:1px solid var(--line);padding:44px var
   box-shadow:0 1px 3px rgba(0,0,0,.04);transition:transform .25s,border-color .25s,box-shadow .25s}
 .ref-card:hover{transform:translateY(-3px);border-color:var(--line);box-shadow:0 6px 22px rgba(0,0,0,.07)}
 .ref-media{position:relative;aspect-ratio:4/3;background-size:cover;background-position:center}
-.rm-1{background-image:linear-gradient(180deg,rgba(8,12,20,.18) 0%,rgba(8,12,20,.62) 80%),radial-gradient(120% 130% at 50% 40%,#2a3a55 0%,#0f1623 65%,#05080d 100%)}
-.rm-2{background-image:linear-gradient(180deg,rgba(8,12,20,.18) 0%,rgba(8,12,20,.62) 80%),radial-gradient(120% 130% at 50% 40%,#3a2f55 0%,#1a1223 65%,#0b070d 100%)}
-.rm-3{background-image:linear-gradient(180deg,rgba(8,12,20,.18) 0%,rgba(8,12,20,.62) 80%),radial-gradient(120% 130% at 50% 40%,#1f4a44 0%,#0d2420 65%,#040c0a 100%)}
+.rm-1{background-image:url(/images/case-01.jpg)}
+.rm-2{background-image:url(/images/case-02.jpg)}
+.rm-3{background-image:url(/images/case-03.jpg)}
+.rm-4{background-image:url(/images/case-07.jpg)}
+.rm-5{background-image:url(/images/case-08.jpg)}
+.rm-6{background-image:url(/images/case-09.jpg)}
+.rm-7{background-image:url(/images/case-04.jpg)}
+.rm-8{background-image:url(/images/case-05.jpg)}
+.rm-9{background-image:url(/images/case-06.jpg)}
 .ref-foot{display:flex;align-items:center;padding:14px 18px 6px;background:#fff}
 .ref-flag{display:inline-flex;align-items:center;gap:8px;height:26px;padding:0 12px;border-radius:20px;
   background:#f3f4f6;color:var(--ink);font-size:12px;font-weight:600;letter-spacing:.02em}

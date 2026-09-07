@@ -7,14 +7,14 @@
     <!-- ===== 详情 Hero · 模型名 + tagline ===== -->
     <section class="section dhero">
         <div class="dhero-inner">
-            <h2 th:text="#{${prefix + 'name'}}">YH-608 高速重磅喷水织机</h2>
+            <h2 th:text="#{${prefix + 'name'}}">YH608 高速重磅喷水织机</h2>
             <p class="lede" th:text="#{${prefix + 'tagline'}}">为重磅织物而生的高速生产专家</p>
         </div>
     </section>
 
-    <!-- ===== 大幅产品图区 · 全宽横幅（按 modelId 切换真机大图；CSS 在 .dhero-img-yh-608 / -822 / -9100） ===== -->
+    <!-- ===== 大幅产品图区 · 全宽横幅（按 modelId 切换真机大图；CSS 在 .dhero-img-yh{608,822,9100}） ===== -->
     <section class="dhero-img" th:classappend="${'dhero-img-' + modelId}" aria-label="machine photo">
-        <span class="dhero-img-cap" th:text="#{${prefix + 'name'}}">YH-608</span>
+        <span class="dhero-img-cap" th:text="#{${prefix + 'name'}}">YH608</span>
     </section>
 
     <!-- ===== 关键规格条 · 4 项 ===== -->
@@ -27,6 +27,20 @@
         </div>
     </section>
 
+    <!-- ===== 技术参数表 · 11 行 ===== -->
+    <section class="section dtable">
+        <h2>技术参数</h2>
+        <table class="dtable-t">
+            <tbody>
+            <tr th:each="i : ${#numbers.sequence(1,11)}"
+                th:if="${not #strings.isEmpty(#messages.msgOrNull(prefix + 'table' + i + '.label'))}">
+                <td class="dtable-l" th:text="#{${prefix + 'table' + i + '.label'}}">项目</td>
+                <td class="dtable-v" th:text="#{${prefix + 'table' + i + '.value'}}">参数</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
     <!-- ===== 核心特性网格 · 6 项（图标 + 标题 + 描述） ===== -->
     <section class="section dfeat">
         <div class="dfeat-grid">
@@ -36,19 +50,6 @@
                 <p th:text="#{${prefix + 'feature' + iter.count + '.desc'}}">描述</p>
             </div>
         </div>
-    </section>
-
-    <!-- ===== 技术参数表 · 10 行 ===== -->
-    <section class="section dtable">
-        <h2>技术参数</h2>
-        <table class="dtable-t">
-            <tbody>
-                <tr th:each="i : ${#numbers.sequence(1,10)}">
-                    <td class="dtable-l" th:text="#{${prefix + 'table' + i + '.label'}}">项目</td>
-                    <td class="dtable-v" th:text="#{${prefix + 'table' + i + '.value'}}">参数</td>
-                </tr>
-            </tbody>
-        </table>
     </section>
 
     <!-- ===== 询价 CTA ===== -->

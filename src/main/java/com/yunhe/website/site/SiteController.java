@@ -21,7 +21,7 @@ import java.util.List;
 public class SiteController {
 
     /** 支持的机型 ID（白名单；新增机型需同步扩 i18n 与模板） */
-    private static final List<String> VALID_MODELS = List.of("yh-608", "yh-822", "yh-9100");
+    private static final List<String> VALID_MODELS = List.of("yh608", "yh822", "yh9100");
 
     /** 详情页特性图标（6 项，与模板 th:each 顺序一一对应；与机型无关的固定列表） */
     private static final List<String> FEATURE_ICONS = List.of("⚡", "🔧", "📏", "💡", "🛡️", "🌍");
@@ -51,7 +51,7 @@ public class SiteController {
         model.addAttribute("modelId", modelId);
         model.addAttribute("prefix", prefix);
         model.addAttribute("featureIcons", FEATURE_ICONS);
-        model.addAttribute("pageTitle", "QINGDAO YUNHE · " + modelId.toUpperCase());
+        model.addAttribute("pageTitle", "QINGDAO YUNHE · " + modelId.replace("-", "").toUpperCase());
         return "site/product";
     }
 
