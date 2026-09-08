@@ -57,6 +57,10 @@ public class I18nConfig implements WebMvcConfigurer {
         ms.setBasenames("classpath:messages", "classpath:messages_site");
         ms.setDefaultEncoding("UTF-8");
         ms.setCacheSeconds(3600);
+        // 关键：禁止回退到"系统默认 locale"。默认 fallbackToSystemLocale=true，
+        // 在英文系统(如服务器 en_US Linux)上，zh_CN 找不到专属 bundle 时会回退到 en，
+        // 导致中文官网在线上渲染成英文。关闭后 zh_CN 正确回退到 messages_site_zh(中文)。
+        ms.setFallbackToSystemLocale(false);
         return ms;
     }
 }
