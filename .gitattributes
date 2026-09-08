@@ -1,7 +1,0 @@
-# 强制 shell / Docker 脚本使用 LF 行尾（Windows checkout 也保持 LF，避免 CRLF 在 Linux 执行报 \r）
-deploy/deploy.sh      text eol=lf
-deploy/Dockerfile     text eol=lf
-deploy/docker-compose.yml text eol=lf
-deploy/.env.example   text eol=lf
-*.sh                  text eol=lf
-Dockerfile            text eol=lf

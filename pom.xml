@@ -158,4 +158,46 @@
             </plugin>
         </plugins>
     </build>
+
+    <!-- 部署包：默认激活（activeByDefault=true），mvn package 即额外产出
+         target/yunhe-website-<version>-deploy.tar.gz，
+         内含 可执行 jar + deploy/ 全部脚本/配置，拷到服务器解压即可运行 install.sh。
+         注意：
+           - assembly 在 spring-boot repackage 之后执行（主 build 插件在前，
+             本 profile 插件合并到末尾），保证打进包的是可执行 fat-jar。
+           - activeByDefault 只在【未用 -P 显式激活任何 profile】时生效；
+             若只要普通 jar 且不带其它 profile，可用： mvn package -P!deploy
+           - 若日后为别的用途显式 -Pother，本 profile 会被一并关闭，需显式 -Pother,deploy -->
+    <profiles>
+        <profile>
+            <id>deploy</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <version>3.7.1</version>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>deploy/assembly-deploy.xml</descriptor>
+                            </descriptors>
+                            <finalName>${project.build.finalName}</finalName>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>make-deploy-tar</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

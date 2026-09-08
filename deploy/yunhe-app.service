@@ -1,0 +1,52 @@
+# ============================================================
+# YUNHE Website (Spring Boot) — systemd 服务
+# 部署方式：本地 mvn package → 拷 jar 到 __APP_DIR__ → deploy/install.sh 安装本 unit
+# 运行用户 __APP_USER__，环境变量来自 __APP_DIR__/.env
+#
+# 常用命令：
+#   systemctl start/stop/restart/status yunhe-app
+#   journalctl -u yunhe-app -f            # 实时日志
+#   journalctl -u yunhe-app -e            # 末尾日志
+# ============================================================
+
+[Unit]
+Description=YUNHE Website (Spring Boot app)
+# 依赖 MySQL：本机 mysql 服务先就绪
+After=network.target mysql.service mysqld.service
+Wants=mysql.service
+
+[Service]
+Type=simple
+# 运行用户（install.sh 创建；专用低权，不跑 root）
+User=__APP_USER__
+Group=__APP_USER__
+WorkingDirectory=__APP_DIR__
+
+# 读取应用环境变量（DB_URL / DB_USERNAME / DB_PASSWORD / SPRING_* 等）
+EnvironmentFile=-__APP_DIR__/.env
+
+# Java 启动。JAVA_OPTS 在 .env 中配置；显式切 prod profile；
+# DB_URL/SERVER_PORT/SPRING_* 由 EnvironmentFile 注入、优先级高于 yml。
+ExecStart=/usr/bin/env bash -c 'exec java $JAVA_OPTS -jar __APP_DIR__/yunhe-website.jar --spring.profiles.active=prod'
+
+# 优雅停机：先 SIGTERM 给 Spring 收尾
+ExecStop=/bin/kill -s TERM $MAINPID
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+# 失败自动重启（指数退避，最多 5 次/10s 间隔后停止，避免 crash loop 打满 CPU）
+Restart=on-failure
+RestartSec=5
+
+# 日志交 journald，自动轮转不撑爆磁盘
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=yunhe-app
+
+# 资源与安全加固
+LimitNOFILE=65536
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

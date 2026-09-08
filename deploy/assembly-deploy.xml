@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  YUNHE 部署压缩包描述符
+  作用：把已 repackage 的可执行 jar 与 deploy/ 下全部脚本/配置
+       打成一个平铺的 tar.gz，拷到服务器解压即可执行 install.sh。
+  产物：target/yunhe-website-<version>-deploy.tar.gz
+-->
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0 https://maven.apache.org/xsd/assembly-2.2.0.xsd">
+
+    <id>deploy</id>
+
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+
+    <!-- 不要生成以 finalName 命名的顶层目录，解压后文件直接平铺 -->
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <fileSets>
+        <!-- 可执行脚本：保留 0755，解压后即可 ./install.sh -->
+        <fileSet>
+            <directory>${project.basedir}/deploy</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>install.sh</include>
+                <include>start.sh</include>
+                <include>stop.sh</include>
+            </includes>
+            <fileMode>0755</fileMode>
+            <directoryMode>0755</directoryMode>
+        </fileSet>
+
+        <!-- 配置文件：0644 -->
+        <fileSet>
+            <directory>${project.basedir}/deploy</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>yunhe-app.service</include>
+                <include>.env.example</include>
+            </includes>
+            <fileMode>0644</fileMode>
+        </fileSet>
+    </fileSets>
+
+    <files>
+        <!-- Spring Boot repackage 后的可执行 jar，重命名进包根 -->
+        <file>
+            <source>${project.build.directory}/${project.build.finalName}.jar</source>
+            <outputDirectory>/</outputDirectory>
+            <destName>yunhe-website.jar</destName>
+        </file>
+    </files>
+
+</assembly>
