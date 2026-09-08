@@ -2,6 +2,8 @@
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
+    <!-- SEO：登录页不进入索引（另由 X-Robots-Tag 响应头兜底） -->
+    <meta name="robots" content="noindex, nofollow"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>登录 - YUNHE 管理后台</title>
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}"/>

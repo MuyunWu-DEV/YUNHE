@@ -1,6 +1,7 @@
 package com.yunhe.website.config;
 
 import java.util.Locale;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
@@ -10,15 +11,19 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
+import com.yunhe.website.site.SiteDefaultLangInterceptor;
 
 /**
  * 国际化配置：语言解析与切换。
  * <p>消息源由 Spring Boot 自动配置（basename 默认 {@code messages}、UTF-8），无需额外定义 MessageSource。</p>
  */
 @Configuration
+@RequiredArgsConstructor
 public class I18nConfig implements WebMvcConfigurer {
 
-    /** 用 Cookie 记忆语言，默认中文 */
+    private final SiteDefaultLangInterceptor siteDefaultLangInterceptor;
+
+    /** 用 Cookie 记忆语言，默认中文（后台为中文界面；官网默认英文由 SiteDefaultLangInterceptor 单独收敛） */
     @Bean
     public LocaleResolver localeResolver() {
         CookieLocaleResolver resolver = new CookieLocaleResolver("lang");
@@ -37,6 +42,9 @@ public class I18nConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
+        // 官网默认英文收敛（无偏好访问重定向到 ?lang=en，保证 SEO 收英文权威页）
+        registry.addInterceptor(siteDefaultLangInterceptor)
+                .addPathPatterns("/", "/products/**", "/about/**", "/references");
     }
 
     /**

@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /crm/
+Disallow: /login
+Disallow: /logout
+Disallow: /profile/
+Disallow: /403
+
+# 官网公开页面默认允许抓取；后台、登录页等内部/鉴权页面禁止收录。
+# 权威站点（https://www.cnyunhe.ltd）的规范语言版本 URL 见 sitemap。
+Sitemap: https://www.cnyunhe.ltd/sitemap.xml

@@ -4,7 +4,51 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title th:text="${title} + ' - YUNHE'">YUNHE</title>
-    <meta name="description" th:content="#{site.meta.description}"/>
+    <!-- SEO meta：description 每页可覆盖(pageDesc)，缺省用全站描述 -->
+    <meta name="description" th:content="${pageDesc} ?: #{site.meta.description}"/>
+    <meta name="robots" content="index, follow, max-image-preview:large"/>
+    <!-- 权威 URL：消除 ?lang 参数带来的重复内容；中文版为 ?lang=zh -->
+    <link rel="canonical" th:href="${seoCanonicalUrl}"/>
+    <link rel="alternate" th:hreflang="en" th:href="${seoEnUrl}"/>
+    <link rel="alternate" th:hreflang="zh-Hans" th:href="${seoZhUrl}"/>
+    <link rel="alternate" th:hreflang="x-default" th:href="${seoEnUrl}"/>
+    <!-- Open Graph / Twitter Card -->
+    <meta property="og:type" content="website"/>
+    <meta property="og:site_name" content="QINGDAO YUNHE"/>
+    <meta property="og:locale" th:content="${#locale.language == 'zh'} ? 'zh_CN' : 'en_US'"/>
+    <meta property="og:title" th:content="${title}"/>
+    <meta property="og:description" th:content="${pageDesc} ?: #{site.meta.description}"/>
+    <meta property="og:url" th:content="${seoCanonicalUrl}"/>
+    <meta property="og:image" th:content="${seoOgImage}"/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:title" th:content="${title}"/>
+    <meta name="twitter:description" th:content="${pageDesc} ?: #{site.meta.description}"/>
+    <meta name="twitter:image" th:content="${seoOgImage}"/>
+    <!-- 结构化数据：Organization + WebSite -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "name": "Qingdao Yunhe Intelligent Manufacturing Co., Ltd.",
+          "url": "https://www.cnyunhe.ltd/",
+          "logo": "https://www.cnyunhe.ltd/favicon.ico",
+          "description": "QINGDAO YUNHE manufactures high-speed water jet and air jet looms for weaving mills worldwide.",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "sales"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "url": "https://www.cnyunhe.ltd/",
+          "name": "QINGDAO YUNHE",
+          "inLanguage": ["en", "zh"]
+        }
+      ]
+    }
+    </script>
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}"/>
     <link th:href="@{/css/site.css}" rel="stylesheet"/>
 </head>

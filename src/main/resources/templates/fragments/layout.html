@@ -4,6 +4,8 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:fragment="head(title)">
     <meta charset="UTF-8"/>
+    <!-- SEO：后台页面禁止被搜索引擎收录（另由 X-Robots-Tag 响应头兜底） -->
+    <meta name="robots" content="noindex, nofollow"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title th:text="${title} + ' - YUNHE 管理后台'">YUNHE 管理后台</title>
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}"/>

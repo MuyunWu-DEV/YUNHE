@@ -1,16 +1,19 @@
 package com.yunhe.website.site;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * 企业官网（前台）控制器。
@@ -18,7 +21,10 @@ import java.util.List;
  * 通过 {@code ?lang=zh} / {@code ?lang=en} 或 Cookie 切换语言。</p>
  */
 @Controller
+@RequiredArgsConstructor
 public class SiteController {
+
+    private final MessageSource messageSource;
 
     /** 支持的机型 ID（白名单；新增机型需同步扩 i18n 与模板） */
     private static final List<String> VALID_MODELS = List.of("yh608", "yh822", "yh9100");
@@ -26,14 +32,42 @@ public class SiteController {
     /** 详情页特性图标（6 项，与模板 th:each 顺序一一对应；与机型无关的固定列表） */
     private static final List<String> FEATURE_ICONS = List.of("⚡", "🔧", "📏", "💡", "🛡️", "🌍");
 
+    /** 生产标准域名（canonical / hreflang / OG 的绝对前缀；不含结尾斜杠） */
+    private static final String SITE_BASE = "https://www.cnyunhe.ltd";
+
+    /** 全站默认 Open Graph 分享图（各页可在 handler 里以 seoOgImage 覆盖） */
+    private static final String DEFAULT_OG_IMAGE = SITE_BASE + "/images/hero_01.jpg";
+
+    /**
+     * 为官网每个渲染请求注入 SEO 上下文（canonical / hreflang / OG）。
+     * <p>语言 URL 策略：英文为权威（无参 URL），中文版为同一路径加 {@code ?lang=zh}。
+     * canonical 自指当前语言版本；en 与 zh 经 hreflang 声明交替，x-default 指向英文。
+     * 基于请求 {@code requestURI}（不含 query）推导，避免引入 ?lang 重复内容。</p>
+     */
+    @ModelAttribute
+    public void addSiteSeo(Model model, HttpServletRequest request) {
+        String path = request.getRequestURI(); // 如 "/"、"/products/yh608"（不含 query）
+        Locale loc = LocaleContextHolder.getLocale();
+        boolean zh = loc != null && "zh".equalsIgnoreCase(loc.getLanguage());
+        String enUrl = SITE_BASE + path;
+        String zhUrl = SITE_BASE + path + "?lang=zh";
+        model.addAttribute("seoEnUrl", enUrl);
+        model.addAttribute("seoZhUrl", zhUrl);
+        model.addAttribute("seoCanonicalUrl", zh ? zhUrl : enUrl);
+        model.addAttribute("seoOgImage", DEFAULT_OG_IMAGE);
+    }
+
+    /** 按当前 locale 解析站内 SEO description 消息 key */
+    private String desc(String key) {
+        return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
+    }
+
     /** 首页：横长 Hero 轮播 + 机型大卡（特斯拉式）企业官网 */
     @GetMapping("/")
-    public Object home(HttpServletRequest request, Model model) {
-        // 公开官网默认英文：既无 lang 参数也无 lang Cookie 时，重定向到 ?lang=en
-        if (request.getParameter("lang") == null && !hasLangCookie(request)) {
-            return new RedirectView("/?lang=en");
-        }
+    public String home(Model model) {
+        // 无语言偏好的访问已由 SiteDefaultLangInterceptor 重定向到 ?lang=en（保证 SEO 收英文权威页）
         model.addAttribute("pageTitle", "QINGDAO YUNHE · Water Jet Loom Manufacturer");
+        model.addAttribute("pageDesc", desc("site.meta.desc.home"));
         return "site/home";
     }
 
@@ -52,6 +86,9 @@ public class SiteController {
         model.addAttribute("prefix", prefix);
         model.addAttribute("featureIcons", FEATURE_ICONS);
         model.addAttribute("pageTitle", "QINGDAO YUNHE · " + modelId.replace("-", "").toUpperCase());
+        model.addAttribute("pageDesc", desc("site.meta.desc.product." + modelId));
+        // 产品页分享图用对应机型实拍（覆盖 @ModelAttribute 默认 hero 图）
+        model.addAttribute("seoOgImage", SITE_BASE + "/images/" + modelId + ".jpg");
         return "site/product";
     }
 
@@ -59,6 +96,7 @@ public class SiteController {
     @GetMapping("/about")
     public String aboutGroup(Model model) {
         model.addAttribute("pageTitle", "About · QINGDAO YUNHE");
+        model.addAttribute("pageDesc", desc("site.meta.desc.about"));
         return "site/about";
     }
 
@@ -66,6 +104,7 @@ public class SiteController {
     @GetMapping("/about/values")
     public String aboutValues(Model model) {
         model.addAttribute("pageTitle", "Our Values · QINGDAO YUNHE");
+        model.addAttribute("pageDesc", desc("site.meta.desc.values"));
         return "site/about-values";
     }
 
@@ -73,6 +112,7 @@ public class SiteController {
     @GetMapping("/about/contact")
     public String aboutContact(Model model) {
         model.addAttribute("pageTitle", "Contact · QINGDAO YUNHE");
+        model.addAttribute("pageDesc", desc("site.meta.desc.contact"));
         return "site/about-contact";
     }
 
@@ -80,19 +120,7 @@ public class SiteController {
     @GetMapping("/references")
     public String references(Model model) {
         model.addAttribute("pageTitle", "References · QINGDAO YUNHE");
+        model.addAttribute("pageDesc", desc("site.meta.desc.references"));
         return "site/references";
-    }
-
-    private boolean hasLangCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return false;
-        }
-        for (Cookie c : cookies) {
-            if ("lang".equals(c.getName())) {
-                return true;
-            }
-        }
-        return false;
     }
 }

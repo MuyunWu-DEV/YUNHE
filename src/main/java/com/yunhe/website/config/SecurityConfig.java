@@ -36,6 +36,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 静态资源与登录页、错误页允许匿名访问
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico", "/webjars/**").permitAll()
+                        // SEO：robots.txt / sitemap.xml 需匿名可达（搜索引擎抓取）
+                        .requestMatchers("/robots.txt", "/sitemap.xml").permitAll()
                         .requestMatchers("/", "/site/**", "/products/**", "/about/**", "/references").permitAll()
                         .requestMatchers("/login", "/error").permitAll()
                         .anyRequest().authenticated())
