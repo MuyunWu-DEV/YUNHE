@@ -131,7 +131,50 @@ mysqldump -u yunhe_app -p yunhe > yunhe-$(date +%F).sql
 
 ---
 
-## 七、常见问题
+## 七、nginx 反向代理 + HTTPS（域名接入）
+
+应用侧已开启 `server.forward-headers-strategy: framework`（application-prod.yml），
+**nginx 必须传 `X-Forwarded-Proto`/`X-Forwarded-Host`**，否则语言拦截器的 302 会降级成 http（被 403，Googlebot 无法抓取）。
+
+```nginx
+# 80 端口：全部 301 收敛到 https://www（apex + www）
+server {
+    listen 80;
+    server_name cnyunhe.ltd www.cnyunhe.ltd;
+    return 301 https://www.cnyunhe.ltd$request_uri;
+}
+
+# 443：主站（www）
+server {
+    listen 443 ssl;
+    server_name www.cnyunhe.ltd;
+    # ssl_certificate ...;（证书需覆盖 apex + www 或单独签发）
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;   # 应用按此还原 https（必须）
+        proxy_set_header X-Forwarded-Host  $host;
+    }
+}
+
+# 443：apex → www
+server {
+    listen 443 ssl;
+    server_name cnyunhe.ltd;
+    return 301 https://www.cnyunhe.ltd$request_uri;
+}
+```
+
+改完 `nginx -t && systemctl reload nginx`。验收：四个入口
+`http(s)://cnyunhe.ltd`、`http(s)://www.cnyunhe.ltd` 全部 301 收敛到
+`https://www.cnyunhe.ltd/?lang=en` 后 200。
+
+---
+
+## 八、常见问题
 
 | 现象 | 处理 |
 |---|---|
