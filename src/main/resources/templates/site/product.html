@@ -29,7 +29,7 @@
 
     <!-- ===== 技术参数表 · 11 行 ===== -->
     <section class="section dtable">
-        <h2>技术参数</h2>
+        <h2 th:text="#{site.product.table.title}">技术参数</h2>
         <table class="dtable-t">
             <tbody>
             <tr th:each="i : ${#numbers.sequence(1,11)}"
@@ -57,8 +57,8 @@
         <h2 th:text="#{${prefix + 'ctaTitle'}}">了解详细参数与价格</h2>
         <p th:text="#{${prefix + 'ctaLede'}}">我们的销售工程师将在 24 小时内为您定制方案。</p>
         <div class="dcta-actions">
-            <a href="https://wa.me/8619857147744" class="btn btn-light">WhatsApp</a>
-            <a href="mailto:wmy440724@gmail.com" class="btn btn-outline-white">发送邮件</a>
+            <a href="https://wa.me/8619857147744" class="btn btn-light" th:text="#{site.product.cta.whatsapp}">WhatsApp</a>
+            <a href="mailto:wmy440724@gmail.com" class="btn btn-outline-white" th:text="#{site.product.cta.email}">发送邮件</a>
         </div>
     </section>
 

@@ -55,6 +55,8 @@ public class SiteController {
         model.addAttribute("seoZhUrl", zhUrl);
         model.addAttribute("seoCanonicalUrl", zh ? zhUrl : enUrl);
         model.addAttribute("seoOgImage", DEFAULT_OG_IMAGE);
+        // 当前路径（不含 query）：语言切换链接据此保留所在页面，仅替换 lang 参数
+        model.addAttribute("currentPath", request.getRequestURI());
     }
 
     /** 按当前 locale 解析站内 SEO description 消息 key */

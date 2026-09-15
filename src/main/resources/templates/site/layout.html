@@ -70,7 +70,7 @@
     </nav>
 
     <div class="hdr-right">
-        <a class="lang" th:href="@{/(lang=${#locale.language == 'en' ? 'zh' : 'en'})}"
+        <a class="lang" th:href="@{${currentPath}(lang=${#locale.language == 'en' ? 'zh' : 'en'})}"
            th:text="${#locale.language == 'en'} ? '中文' : 'EN'">中文</a>
         <button class="burger" id="burger" aria-label="menu"><span></span><span></span><span></span></button>
     </div>
