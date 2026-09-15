@@ -19,6 +19,9 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
+/* 背景图通用工具类：真 <img> 铺满容器（SEO alt / 图片搜索收录 / lazy），
+   叠层渐变由容器 ::before 承载（z-index:1 在图上、文字下） */
+.cover-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;z-index:0}
 body{
   font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","PingFang SC","Microsoft YaHei",Arial,sans-serif;
   color:var(--ink);background:var(--paper);
@@ -99,16 +102,13 @@ header.nav-hover .megamenu, .megamenu.open{opacity:1;visibility:visible;transfor
    - 满宽大图(960px 封顶)，文字贴顶(48px)，圆点贴底(16px)
    - 标题 56px/500 白色居中，副标题 20px/400，2×200px 蓝按钮
    - 左右白圆箭头 + 底部 12px 圆点 + 5s 自动轮播
-   - 背景图位由 .hero-slide 的 background-image 承载（可随时换真图）
+   - 背景图改为 .hero-slide 内 <img class=cover-img>（首页首张 fetchpriority=high，其余 lazy）
 */
 .hero{position:relative;margin-top:var(--header-h);height:clamp(480px,89vh,960px);min-height:480px;color:#fff;overflow:hidden;background:#0a0a0a}
 .hero-stage{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
 .hero-stage::-webkit-scrollbar{display:none}
 .hero-slide{flex:0 0 100%;scroll-snap-align:start;position:relative;display:flex;justify-content:center;
-  align-items:flex-start;padding-top:48px;background-size:cover;background-position:center}
-.hero-slide--a{background-image:url(/images/hero_01.jpg);background-size:cover;background-position:center}
-.hero-slide--b{background-image:url(/images/9100.jpg);background-size:cover;background-position:center}
-.hero-slide--c{background-image:url(/images/showroom.jpg);background-size:cover;background-position:center}
+  align-items:flex-start;padding-top:48px;background:#0a0a0a}
 .hero-content{position:relative;z-index:2;text-align:center;max-width:743px;padding:0 32px}
 .hero-content :is(h1,h2){font-size:clamp(34px,5vw,56px);font-weight:500;line-height:1.02;letter-spacing:-.01em;margin:0;text-shadow:0 2px 18px rgba(0,0,0,.18)}
 .hero-content .lede{font-size:clamp(17px,1.6vw,20px);font-weight:400;color:#fff;max-width:60ch;margin:4px auto 0;line-height:1.4;text-shadow:0 1px 8px rgba(0,0,0,.25)}
@@ -135,8 +135,9 @@ header.nav-hover .megamenu, .megamenu.open{opacity:1;visibility:visible;transfor
 .prod-head h2{font-size:clamp(24px,2.6vw,34px);font-weight:600;letter-spacing:-.01em}
 .prod-head .lede{color:var(--muted);font-size:14px;max-width:52ch;margin-top:8px}
 .card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1024px));gap:28px;justify-content:center}
-.card{position:relative;border-radius:10px;overflow:hidden;min-height:clamp(360px,44vw,520px);background-size:cover;background-position:center;color:#fff;display:block;text-decoration:none}
-.card::before{content:"";position:absolute;inset:0;background:var(--veil);z-index:1}
+.card{position:relative;border-radius:10px;overflow:hidden;min-height:clamp(360px,44vw,520px);color:#fff;display:block;text-decoration:none;background:#0a0a0a}
+/* 压暗叠层（底部 veil + 真机图 photo-overlay 合并为 ::before，位于 <img> 之上、文字之下） */
+.card::before{content:"";position:absolute;inset:0;background:var(--veil),var(--photo-overlay);z-index:1}
 .card .label{position:absolute;top:18px;left:22px;z-index:2;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.75);font-weight:600}
 .card-body{position:absolute;left:0;right:0;bottom:0;padding:clamp(20px,2.6vw,34px);z-index:2}
 .card-title{font-size:clamp(24px,2.6vw,36px);font-weight:600;line-height:1.1;margin-bottom:10px;letter-spacing:-.01em}
@@ -145,9 +146,7 @@ header.nav-hover .megamenu, .megamenu.open{opacity:1;visibility:visible;transfor
 .card-actions .btn{font-size:13px;padding:7px 20px;font-weight:600}
 .card-actions .btn-ghost{background:#fff;color:#171a20;border-color:#fff}
 .card-actions .btn-ghost:hover{background:var(--hover);border-color:var(--hover)}
-.bg-a{background-image:var(--photo-overlay),url(/images/608.jpg)}
-.bg-b{background-image:var(--photo-overlay),url(/images/822.jpg)}
-.bg-c{background-image:var(--photo-overlay),url(/images/9100.jpg);background-size:cover;background-position:center}
+/* 机型图改由 .card 内 <img class=cover-img> 提供（bg-a/b/c 类仅保留 HTML 语义标记） */
 
 /* ---------- Footer（白底浅灰文字） ---------- */
 footer{background:var(--paper);border-top:1px solid var(--line);padding:44px var(--panel-pad) 22px;color:#333}
@@ -221,18 +220,13 @@ footer{background:var(--paper);border-top:1px solid var(--line);padding:44px var
 .dhero h1{font-size:clamp(26px,3.4vw,40px);font-weight:600;margin:0 0 14px;letter-spacing:-.005em}
 .dhero .lede{color:var(--muted);font-size:16px;max-width:58ch;margin:0 auto;line-height:1.5}
 
-/* ---------- 大幅产品图区（全宽横幅 · 模板按 modelId 给 .dhero-img 追加 .dhero-img-{modelId} 切换真机大图） ---------- */
+/* ---------- 大幅产品图区（全宽横幅 · 真机大图由 <img class=cover-img> 提供） ---------- */
 .dhero-img{position:relative;width:100%;
   height:clamp(340px,60vh,640px);
-  background-size:cover;background-position:center;
-  background-color:#0b1118;
-  /* 底部压暗叠层只写一次；真机图由各机型 class 经 --dhero-img 注入（none 兜底：未知机型仅留深色） */
-  background-image:var(--photo-overlay),var(--dhero-img,none)}
-/* 机型图：与主页卡片同样的底部压暗叠层（见上方 .dhero-img），此处仅切换 url */
-.dhero-img-yh608{--dhero-img:url(/images/608.jpg)}
-.dhero-img-yh822{--dhero-img:url(/images/822.jpg)}
-.dhero-img-yh9100{--dhero-img:url(/images/9100.jpg)}
-.dhero-img-cap{position:absolute;right:var(--panel-pad);bottom:18px;
+  background-color:#0b1118}
+/* 底部压暗叠层（位于 <img> 之上、右下角图注之下） */
+.dhero-img::before{content:"";position:absolute;inset:0;background:var(--photo-overlay);z-index:1}
+.dhero-img-cap{position:absolute;right:var(--panel-pad);bottom:18px;z-index:2;
   color:rgba(255,255,255,.55);font-size:13px;font-weight:500;letter-spacing:.3em;
   text-transform:uppercase;pointer-events:none}
 
@@ -346,13 +340,11 @@ footer{background:var(--paper);border-top:1px solid var(--line);padding:44px var
 .a-note{margin-top:34px;color:var(--muted);font-size:14.5px;line-height:1.7;max-width:72ch}
 
 /* ---------- About(Group Overview) 顶部全宽工厂/场景轮播 ---------- */
-/* 复用首页 .hero/.hero-stage/.hero-slide/.hero-content/.hero-nav/.hero-dots 视觉，
-   仅缩短高度 + 给 4 帧专属渐变占位图（真图就位后把 .ag-N 的 background-image 换成 url 即可） */
+/* 复用首页 .hero/.hero-stage/.hero-slide/.hero-content/.hero-nav/.hero-dots 视觉。
+   4 帧工厂真图由 <img class=cover-img> 提供；专属压暗渐变移至 ::before（图上、文字下） */
 .a-gallery{margin-top:var(--header-h);height:clamp(380px,62vh,600px);min-height:380px}
-.ag-1{background-image:linear-gradient(180deg,rgba(8,12,20,.3) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%),url(/images/factory.jpg);background-size:cover;background-position:center}
-.ag-2{background-image:linear-gradient(180deg,rgba(8,12,20,.3) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%),url(/images/cnc.jpg);background-size:cover;background-position:center}
-.ag-3{background-image:linear-gradient(180deg,rgba(8,12,20,.3) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%),url(/images/assembly.jpg);background-size:cover;background-position:center}
-.ag-4{background-image:linear-gradient(180deg,rgba(8,12,20,.3) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%),url(/images/testing.jpg);background-size:cover;background-position:center}
+.a-gallery .hero-slide::before{content:"";position:absolute;inset:0;z-index:1;
+  background:linear-gradient(180deg,rgba(8,12,20,.3) 0%,rgba(8,12,20,.62) 70%,rgba(8,12,20,.85) 100%)}
 .a-gallery .hero-content :is(h1,h2){font-size:clamp(26px,3.4vw,42px);font-weight:600}
 .a-gallery .hero-content .lede{max-width:54ch}
 
@@ -377,16 +369,8 @@ footer{background:var(--paper);border-top:1px solid var(--line);padding:44px var
   border:1px solid var(--line);border-radius:14px;overflow:hidden;
   box-shadow:0 1px 3px rgba(0,0,0,.04);transition:transform .25s,border-color .25s,box-shadow .25s}
 .ref-card:hover{transform:translateY(-3px);border-color:var(--line);box-shadow:0 6px 22px rgba(0,0,0,.07)}
-.ref-media{position:relative;aspect-ratio:4/3;background-size:cover;background-position:center}
-.rm-1{background-image:url(/images/case-01.jpg)}
-.rm-2{background-image:url(/images/case-02.jpg)}
-.rm-3{background-image:url(/images/case-03.jpg)}
-.rm-4{background-image:url(/images/case-07.jpg)}
-.rm-5{background-image:url(/images/case-08.jpg)}
-.rm-6{background-image:url(/images/case-09.jpg)}
-.rm-7{background-image:url(/images/case-04.jpg)}
-.rm-8{background-image:url(/images/case-05.jpg)}
-.rm-9{background-image:url(/images/case-06.jpg)}
+.ref-media{position:relative;aspect-ratio:4/3;background:#f3f4f6}
+/* 案例实拍图由 .ref-media 内 <img class=cover-img> 提供（alt 走案例标题 i18n） */
 .ref-foot{display:flex;align-items:center;padding:14px 18px 6px;background:#fff}
 .ref-flag{display:inline-flex;align-items:center;gap:8px;height:26px;padding:0 12px;border-radius:20px;
   background:#f3f4f6;color:var(--ink);font-size:12px;font-weight:600;letter-spacing:.02em}

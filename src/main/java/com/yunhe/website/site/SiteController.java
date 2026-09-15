@@ -126,11 +126,14 @@ public class SiteController {
         model.addAttribute("featureIcons", FEATURE_ICONS);
         model.addAttribute("pageTitle", "QINGDAO YUNHE · " + modelId.replace("-", "").toUpperCase());
         model.addAttribute("pageDesc", desc("site.meta.desc.product." + modelId));
-        // 产品页分享图用对应机型实拍（覆盖 @ModelAttribute 默认 hero 图）
-        String modelImage = SITE_BASE + "/images/" + modelId + ".jpg";
+        // 产品页分享图用对应机型实拍（覆盖 @ModelAttribute 默认 hero 图）。
+        // 物理文件名不含 yh 前缀：yh608→/images/608.jpg（与 static/images 实际文件对齐）
+        String modelImage = SITE_BASE + "/images/" + modelId.replaceFirst("^yh", "") + ".jpg";
+        String modelImagePath = "/images/" + modelId.replaceFirst("^yh", "") + ".jpg";
         model.addAttribute("seoOgImage", modelImage);
-        // 首屏大图 preload（CSS .dhero-img-{modelId} 背景）
+        // 首屏大图 preload（LCP），模板 img 同源同 URL
         model.addAttribute("lcpImage", modelImage);
+        model.addAttribute("modelImage", modelImagePath);
         // Product 结构化数据（JSON-LD，按当前语言输出机型名与描述）
         model.addAttribute("productJsonLd", buildProductJsonLd(prefix, modelImage));
         return "site/product";

@@ -9,6 +9,7 @@
         <div class="hero-stage" id="heroStage">
             <!-- 屏 1 · 双机型（YH822 + YH608，对应 tesla「Model 3, Model Y」一屏两车） -->
             <div class="hero-slide hero-slide--a" data-i="0">
+                <img class="cover-img" th:src="@{/images/hero_01.jpg}" th:alt="#{site.img.hero1.alt}" fetchpriority="high"/>
                 <div class="hero-content">
                     <h1 th:text="#{site.hero.slide1.title}">YH822, YH608</h1>
                     <p class="lede" th:text="#{site.hero.slide1.lede}">High-Speed &amp; High-Heavy-Duty Water Jet Looms</p>
@@ -20,6 +21,7 @@
             </div>
             <!-- 屏 2 · 单机型（YH9100） -->
             <div class="hero-slide hero-slide--b" data-i="1">
+                <img class="cover-img" th:src="@{/images/9100.jpg}" th:alt="#{site.img.hero2.alt}" loading="lazy"/>
                 <div class="hero-content">
                     <h2 th:text="#{site.hero.slide2.title}">YH9100</h2>
                     <p class="lede" th:text="#{site.hero.slide2.lede}">Air Jet Loom</p>
@@ -31,6 +33,7 @@
             </div>
             <!-- 屏 3 · 工厂与展厅实景（真机照片） -->
             <div class="hero-slide hero-slide--c" data-i="2">
+                <img class="cover-img" th:src="@{/images/showroom.jpg}" th:alt="#{site.img.hero3.alt}" loading="lazy"/>
                 <div class="hero-content">
                     <h2 th:text="#{site.hero.slide3.title}">云合智造 · 工厂与展厅</h2>
                     <p class="lede" th:text="#{site.hero.slide3.lede}">Factory &amp; Showroom · 自主研发 · 自有机加工 · 平台化装配</p>
@@ -62,6 +65,7 @@
             <div class="card-grid">
                 <!-- 卡片本身不可点：Order Now → WhatsApp，Learn More → /products/{model}（机型详情） -->
                 <div class="card bg-a">
+                    <img class="cover-img" th:src="@{/images/608.jpg}" th:alt="#{site.card.a.title} + ' · ' + #{site.card.a.label}" loading="lazy"/>
                     <span class="label" th:text="#{site.card.a.label}">Water Jet · Heavy-Duty</span>
                     <div class="card-body">
                         <div class="card-title" th:text="#{site.card.a.title}">YH608</div>
@@ -73,6 +77,7 @@
                     </div>
                 </div>
                 <div class="card bg-b">
+                    <img class="cover-img" th:src="@{/images/822.jpg}" th:alt="#{site.card.b.title} + ' · ' + #{site.card.b.label}" loading="lazy"/>
                     <span class="label" th:text="#{site.card.b.label}">Water Jet · High-Speed</span>
                     <div class="card-body">
                         <div class="card-title" th:text="#{site.card.b.title}">YH822</div>
@@ -85,6 +90,7 @@
                 </div>
                 <!-- YH9100 喷气织机：与上方两张水喷卡同尺寸的半宽卡（右侧留空） -->
                 <div class="card bg-c">
+                    <img class="cover-img" th:src="@{/images/9100.jpg}" th:alt="#{site.card.c.title} + ' · ' + #{site.card.c.label}" loading="lazy"/>
                     <span class="label" th:text="#{site.card.c.label}">Air Jet</span>
                     <div class="card-body">
                         <div class="card-title" th:text="#{site.card.c.title}">YH9100</div>

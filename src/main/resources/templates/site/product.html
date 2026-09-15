@@ -12,8 +12,9 @@
         </div>
     </section>
 
-    <!-- ===== 大幅产品图区 · 全宽横幅（按 modelId 切换真机大图；CSS 在 .dhero-img-yh{608,822,9100}） ===== -->
-    <section class="dhero-img" th:classappend="${'dhero-img-' + modelId}" aria-label="machine photo">
+    <!-- ===== 大幅产品图区 · 全宽横幅（真机大图带 alt 改善图片搜索收录；压暗叠层由 CSS ::before 承载） ===== -->
+    <section class="dhero-img">
+        <img class="cover-img" th:src="${modelImage}" th:alt="#{${prefix + 'name'}}" fetchpriority="high"/>
         <span class="dhero-img-cap" th:text="#{${prefix + 'name'}}">YH608</span>
     </section>
 
