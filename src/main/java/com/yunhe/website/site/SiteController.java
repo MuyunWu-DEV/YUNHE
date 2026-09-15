@@ -1,5 +1,6 @@
 package com.yunhe.website.site;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
@@ -12,8 +13,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * 企业官网（前台）控制器。
@@ -25,6 +28,9 @@ import java.util.Locale;
 public class SiteController {
 
     private final MessageSource messageSource;
+
+    /** JSON-LD 序列化（Product 结构化数据用，保证字段值正确转义） */
+    private final ObjectMapper objectMapper;
 
     /** 支持的机型 ID（白名单；新增机型需同步扩 i18n 与模板） */
     private static final List<String> VALID_MODELS = List.of("yh608", "yh822", "yh9100");
@@ -64,12 +70,43 @@ public class SiteController {
         return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
     }
 
+    /**
+     * 生成产品页 Product JSON-LD（序列化后的 JSON 字符串，模板原样输出）。
+     * <p>B2B 无公开价格，不声明 offers；brand/manufacturer 指向公司主体，
+     * name/description 按当前语言取 i18n，便于 Google 以访客语言理解机型。</p>
+     */
+    private String buildProductJsonLd(String prefix, String imageUrl) {
+        try {
+            Map<String, Object> org = new LinkedHashMap<>();
+            org.put("@type", "Organization");
+            org.put("name", "Qingdao Yunhe Intelligent Manufacturing Co., Ltd.");
+            org.put("url", SITE_BASE + "/");
+            Map<String, Object> brand = new LinkedHashMap<>();
+            brand.put("@type", "Brand");
+            brand.put("name", "QINGDAO YUNHE");
+            Map<String, Object> product = new LinkedHashMap<>();
+            product.put("@context", "https://schema.org");
+            product.put("@type", "Product");
+            product.put("name", desc(prefix + "name"));
+            product.put("description", desc(prefix + "tagline"));
+            product.put("image", imageUrl);
+            product.put("brand", brand);
+            product.put("manufacturer", org);
+            return objectMapper.writeValueAsString(product);
+        } catch (Exception e) {
+            // 结构化数据失败不应影响页面渲染
+            return null;
+        }
+    }
+
     /** 首页：横长 Hero 轮播 + 机型大卡（特斯拉式）企业官网 */
     @GetMapping("/")
     public String home(Model model) {
         // 无语言偏好的访问已由 SiteDefaultLangInterceptor 重定向到 ?lang=en（保证 SEO 收英文权威页）
         model.addAttribute("pageTitle", "QINGDAO YUNHE · Water Jet Loom Manufacturer");
         model.addAttribute("pageDesc", desc("site.meta.desc.home"));
+        // 首屏 Hero 第一屏背景图（CSS .hero-slide--a），preload 改善 LCP
+        model.addAttribute("lcpImage", SITE_BASE + "/images/hero_01.jpg");
         return "site/home";
     }
 
@@ -90,7 +127,12 @@ public class SiteController {
         model.addAttribute("pageTitle", "QINGDAO YUNHE · " + modelId.replace("-", "").toUpperCase());
         model.addAttribute("pageDesc", desc("site.meta.desc.product." + modelId));
         // 产品页分享图用对应机型实拍（覆盖 @ModelAttribute 默认 hero 图）
-        model.addAttribute("seoOgImage", SITE_BASE + "/images/" + modelId + ".jpg");
+        String modelImage = SITE_BASE + "/images/" + modelId + ".jpg";
+        model.addAttribute("seoOgImage", modelImage);
+        // 首屏大图 preload（CSS .dhero-img-{modelId} 背景）
+        model.addAttribute("lcpImage", modelImage);
+        // Product 结构化数据（JSON-LD，按当前语言输出机型名与描述）
+        model.addAttribute("productJsonLd", buildProductJsonLd(prefix, modelImage));
         return "site/product";
     }
 

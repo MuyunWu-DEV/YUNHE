@@ -1,61 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- YUNHE 企业官网权威 URL（英文默认；中文版为同路径 ?lang=zh，见页面 hreflang，不在 sitemap 重复列避免判为重复内容） -->
+<!-- YUNHE 企业官网权威 URL（英文默认；中文版为同路径 ?lang=zh，不在 sitemap 重复列避免判为重复内容）。
+     hreflang 与页面 head 统一为 en / zh-Hans / x-default（x-default 指向英文权威页）。 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
         <loc>https://www.cnyunhe.ltd/</loc>
-        <lastmod>2026-09-08</lastmod>
+        <lastmod>2026-09-15</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://www.cnyunhe.ltd/?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://www.cnyunhe.ltd/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://www.cnyunhe.ltd/?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cnyunhe.ltd/"/>
     </url>
     <url>
         <loc>https://www.cnyunhe.ltd/products/yh608</loc>
-        <lastmod>2026-09-08</lastmod>
+        <lastmod>2026-09-15</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://www.cnyunhe.ltd/products/yh608?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://www.cnyunhe.ltd/products/yh608"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://www.cnyunhe.ltd/products/yh608?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cnyunhe.ltd/products/yh608"/>
     </url>
     <url>
         <loc>https://www.cnyunhe.ltd/products/yh822</loc>
-        <lastmod>2026-09-08</lastmod>
+        <lastmod>2026-09-15</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://www.cnyunhe.ltd/products/yh822?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://www.cnyunhe.ltd/products/yh822"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://www.cnyunhe.ltd/products/yh822?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cnyunhe.ltd/products/yh822"/>
     </url>
     <url>
         <loc>https://www.cnyunhe.ltd/products/yh9100</loc>
-        <lastmod>2026-09-08</lastmod>
+        <lastmod>2026-09-15</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://www.cnyunhe.ltd/products/yh9100?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://www.cnyunhe.ltd/products/yh9100"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://www.cnyunhe.ltd/products/yh9100?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cnyunhe.ltd/products/yh9100"/>
     </url>
     <url>
         <loc>https://www.cnyunhe.ltd/about</loc>
-        <lastmod>2026-09-08</lastmod>
+        <lastmod>2026-09-15</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://www.cnyunhe.ltd/about?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://www.cnyunhe.ltd/about"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://www.cnyunhe.ltd/about?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cnyunhe.ltd/about"/>
     </url>
     <url>
         <loc>https://www.cnyunhe.ltd/about/values</loc>
-        <lastmod>2026-09-08</lastmod>
+        <lastmod>2026-09-15</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.5</priority>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://www.cnyunhe.ltd/about/values?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://www.cnyunhe.ltd/about/values"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://www.cnyunhe.ltd/about/values?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cnyunhe.ltd/about/values"/>
     </url>
     <url>
         <loc>https://www.cnyunhe.ltd/about/contact</loc>
-        <lastmod>2026-09-08</lastmod>
+        <lastmod>2026-09-15</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.6</priority>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://www.cnyunhe.ltd/about/contact?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://www.cnyunhe.ltd/about/contact"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://www.cnyunhe.ltd/about/contact?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cnyunhe.ltd/about/contact"/>
     </url>
     <url>
         <loc>https://www.cnyunhe.ltd/references</loc>
-        <lastmod>2026-09-08</lastmod>
+        <lastmod>2026-09-15</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://www.cnyunhe.ltd/references?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://www.cnyunhe.ltd/references"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://www.cnyunhe.ltd/references?lang=zh"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cnyunhe.ltd/references"/>
     </url>
 </urlset>

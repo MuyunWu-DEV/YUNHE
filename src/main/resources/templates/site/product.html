@@ -7,7 +7,7 @@
     <!-- ===== 详情 Hero · 模型名 + tagline ===== -->
     <section class="section dhero">
         <div class="dhero-inner">
-            <h2 th:text="#{${prefix + 'name'}}">YH608 高速重磅喷水织机</h2>
+            <h1 th:text="#{${prefix + 'name'}}">YH608 高速重磅喷水织机</h1>
             <p class="lede" th:text="#{${prefix + 'tagline'}}">为重磅织物而生的高速生产专家</p>
         </div>
     </section>
@@ -51,6 +51,9 @@
             </div>
         </div>
     </section>
+
+    <!-- ===== Product 结构化数据（Google rich result；JSON 由控制器按当前语言序列化） ===== -->
+    <script type="application/ld+json" th:if="${productJsonLd}" th:utext="${productJsonLd}"></script>
 
     <!-- ===== 询价 CTA ===== -->
     <section class="dcta">

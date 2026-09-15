@@ -37,7 +37,16 @@
           "description": "QINGDAO YUNHE manufactures high-speed water jet and air jet looms for weaving mills worldwide.",
           "contactPoint": {
             "@type": "ContactPoint",
-            "contactType": "sales"
+            "contactType": "sales",
+            "telephone": "+86-198-5714-7744",
+            "email": "wmy440724@gmail.com",
+            "availableLanguage": ["en", "zh"]
+          },
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Qingdao",
+            "addressRegion": "Shandong",
+            "addressCountry": "CN"
           }
         },
         {
@@ -50,6 +59,8 @@
     }
     </script>
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}"/>
+    <!-- LCP 预加载：首页/产品页由 handler 注入首屏大图，提前拉取改善 LCP -->
+    <link rel="preload" as="image" th:if="${lcpImage}" th:href="${lcpImage}"/>
     <link th:href="@{/css/site.css}" rel="stylesheet"/>
 </head>
 <body th:fragment="body(title, content)">
@@ -82,9 +93,9 @@
             <div class="mm-panel" data-panel="products">
                 <div class="mm-col">
                     <h5 th:text="#{site.nav.product}">Product</h5>
-                    <a th:href="@{/#products}" th:text="#{site.model.a.name}">YH608 High-Heavy-Duty Water Jet Loom</a>
-                    <a th:href="@{/#products}" th:text="#{site.model.b.name}">YH822 High-Speed Water Jet Loom</a>
-                    <a th:href="@{/#products}" th:text="#{site.model.c.name}">YH9100 Air Jet Loom</a>
+                    <a th:href="@{/products/yh608}" th:text="#{site.model.a.name}">YH608 High-Heavy-Duty Water Jet Loom</a>
+                    <a th:href="@{/products/yh822}" th:text="#{site.model.b.name}">YH822 High-Speed Water Jet Loom</a>
+                    <a th:href="@{/products/yh9100}" th:text="#{site.model.c.name}">YH9100 Air Jet Loom</a>
                 </div>
                 <!-- 右边 Categories 列隐藏（2026-09-07）
                 <div class="mm-col">
