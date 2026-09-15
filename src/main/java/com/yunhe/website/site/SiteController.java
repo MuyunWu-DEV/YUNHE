@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -34,6 +35,9 @@ public class SiteController {
 
     /** 支持的机型 ID（白名单；新增机型需同步扩 i18n 与模板） */
     private static final List<String> VALID_MODELS = List.of("yh608", "yh822", "yh9100");
+
+    /** FAQ 条目数（联系页 FAQ 区与 FAQPage JSON-LD 共用；对应 i18n key site.faq.q{1..N}） */
+    private static final int FAQ_COUNT = 5;
 
     /** 详情页特性图标（6 项，与模板 th:each 顺序一一对应；与机型无关的固定列表） */
     private static final List<String> FEATURE_ICONS = List.of("⚡", "🔧", "📏", "💡", "🛡️", "🌍");
@@ -99,6 +103,64 @@ public class SiteController {
         }
     }
 
+    /**
+     * 生成联系页 FAQPage JSON-LD（按当前语言取 {@code site.faq.q{i}} / {@code site.faq.a{i}}）。
+     * <p>问答正文即 i18n 资源里的可见 FAQ 文案，结构化数据与页面内容强一致（Google 要求二者匹配）。</p>
+     */
+    private String buildFaqJsonLd() {
+        try {
+            List<Map<String, Object>> mainEntity = new ArrayList<>();
+            for (int i = 1; i <= FAQ_COUNT; i++) {
+                Map<String, Object> qa = new LinkedHashMap<>();
+                qa.put("@type", "Question");
+                qa.put("name", desc("site.faq.q" + i));
+                Map<String, Object> answer = new LinkedHashMap<>();
+                answer.put("@type", "Answer");
+                answer.put("text", desc("site.faq.a" + i));
+                qa.put("acceptedAnswer", answer);
+                mainEntity.add(qa);
+            }
+            Map<String, Object> faq = new LinkedHashMap<>();
+            faq.put("@context", "https://schema.org");
+            faq.put("@type", "FAQPage");
+            faq.put("mainEntity", mainEntity);
+            return objectMapper.writeValueAsString(faq);
+        } catch (Exception e) {
+            // 结构化数据失败不应影响页面渲染
+            return null;
+        }
+    }
+
+    /**
+     * 生成产品页 BreadcrumbList JSON-LD（首页 › 产品 › 当前机型）。
+     * <p>Products 层落点为首页产品区锚点（官网无 /products 列表页）。</p>
+     */
+    private String buildBreadcrumbJsonLd(String modelId, String modelName) {
+        try {
+            List<Map<String, Object>> items = new ArrayList<>();
+            items.add(listItem(1, desc("site.crumb.home"), SITE_BASE + "/"));
+            items.add(listItem(2, desc("site.crumb.products"), SITE_BASE + "/#products"));
+            items.add(listItem(3, modelName, SITE_BASE + "/products/" + modelId));
+            Map<String, Object> bc = new LinkedHashMap<>();
+            bc.put("@context", "https://schema.org");
+            bc.put("@type", "BreadcrumbList");
+            bc.put("itemListElement", items);
+            return objectMapper.writeValueAsString(bc);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** BreadcrumbList 的单个 ListItem */
+    private Map<String, Object> listItem(int position, String name, String url) {
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("@type", "ListItem");
+        item.put("position", position);
+        item.put("name", name);
+        item.put("item", url);
+        return item;
+    }
+
     /** 首页：横长 Hero 轮播 + 机型大卡（特斯拉式）企业官网 */
     @GetMapping("/")
     public String home(Model model) {
@@ -137,6 +199,8 @@ public class SiteController {
         model.addAttribute("modelImage", modelImagePath);
         // Product 结构化数据（JSON-LD，按当前语言输出机型名与描述）
         model.addAttribute("productJsonLd", buildProductJsonLd(prefix, modelImage));
+        // BreadcrumbList 结构化数据（首页 › 产品 › 当前机型）
+        model.addAttribute("breadcrumbJsonLd", buildBreadcrumbJsonLd(modelId, desc(prefix + "name")));
         return "site/product";
     }
 
@@ -161,6 +225,8 @@ public class SiteController {
     public String aboutContact(Model model) {
         model.addAttribute("pageTitle", "Contact Us | Get a Water Jet Loom Quote | YUNHE");
         model.addAttribute("pageDesc", desc("site.meta.desc.contact"));
+        // FAQPage 结构化数据（与页面可见 FAQ 文案同源，按当前语言输出）
+        model.addAttribute("faqJsonLd", buildFaqJsonLd());
         return "site/about-contact";
     }
 

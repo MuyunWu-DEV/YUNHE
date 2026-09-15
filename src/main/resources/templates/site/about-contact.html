@@ -37,6 +37,20 @@
         </div>
     </section>
 
+    <!-- ===== FAQ（采购高频问题；可见文案与 FAQPage JSON-LD 同源，吃问题型长尾词） ===== -->
+    <section class="a-block a-block--alt">
+        <div class="a-inner">
+            <h2 th:text="#{site.faq.title}">Frequently Asked Questions</h2>
+            <div class="faq-list">
+                <div class="faq-item" th:each="i : ${#numbers.sequence(1, 5)}">
+                    <h3 class="faq-q" th:text="#{'site.faq.q' + ${i}}">Question</h3>
+                    <p class="faq-a" th:text="#{'site.faq.a' + ${i}}">Answer</p>
+                </div>
+            </div>
+        </div>
+        <script type="application/ld+json" th:if="${faqJsonLd}" th:utext="${faqJsonLd}"></script>
+    </section>
+
     <!-- ===== CTA ===== -->
     <section class="dcta">
         <h2 th:text="#{site.about.contact.ctaTitle}">准备好开始了吗？</h2>

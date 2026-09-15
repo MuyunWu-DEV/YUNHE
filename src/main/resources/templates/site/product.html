@@ -55,6 +55,8 @@
 
     <!-- ===== Product 结构化数据（Google rich result；JSON 由控制器按当前语言序列化） ===== -->
     <script type="application/ld+json" th:if="${productJsonLd}" th:utext="${productJsonLd}"></script>
+    <!-- ===== BreadcrumbList 结构化数据（首页 › 产品 › 当前机型） ===== -->
+    <script type="application/ld+json" th:if="${breadcrumbJsonLd}" th:utext="${breadcrumbJsonLd}"></script>
 
     <!-- ===== 询价 CTA ===== -->
     <section class="dcta">
