@@ -23,6 +23,10 @@ server:
   error:
     include-message: never
     include-stacktrace: never
+  # nginx 反代后还原真实协议/域名（需 nginx 传 X-Forwarded-Proto / X-Forwarded-Host）：
+  # 官网默认语言拦截器的相对重定向（sendRedirect("/?lang=en")）由容器按请求协议拼绝对 Location，
+  # 不还原时应用误以为 http，302 到 http://www... 被 nginx 403 → Googlebot「无法抓取」
+  forward-headers-strategy: framework
 
 logging:
   level:
