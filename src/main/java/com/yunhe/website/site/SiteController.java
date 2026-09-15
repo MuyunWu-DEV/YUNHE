@@ -103,7 +103,7 @@ public class SiteController {
     @GetMapping("/")
     public String home(Model model) {
         // 无语言偏好的访问已由 SiteDefaultLangInterceptor 重定向到 ?lang=en（保证 SEO 收英文权威页）
-        model.addAttribute("pageTitle", "QINGDAO YUNHE · Water Jet Loom Manufacturer");
+        model.addAttribute("pageTitle", "Water Jet Loom & Air Jet Loom Manufacturer | YUNHE");
         model.addAttribute("pageDesc", desc("site.meta.desc.home"));
         // 首屏 Hero 第一屏背景图（CSS .hero-slide--a），preload 改善 LCP
         model.addAttribute("lcpImage", SITE_BASE + "/images/hero_01.jpg");
@@ -124,7 +124,8 @@ public class SiteController {
         model.addAttribute("modelId", modelId);
         model.addAttribute("prefix", prefix);
         model.addAttribute("featureIcons", FEATURE_ICONS);
-        model.addAttribute("pageTitle", "QINGDAO YUNHE · " + modelId.replace("-", "").toUpperCase());
+        // SEO title 用机型全名（含品类词 water jet loom），而非裸型号
+        model.addAttribute("pageTitle", desc(prefix + "name") + " | YUNHE");
         model.addAttribute("pageDesc", desc("site.meta.desc.product." + modelId));
         // 产品页分享图用对应机型实拍（覆盖 @ModelAttribute 默认 hero 图）。
         // 物理文件名不含 yh 前缀：yh608→/images/608.jpg（与 static/images 实际文件对齐）
@@ -142,7 +143,7 @@ public class SiteController {
     /** About · 集团概览：{@code /about}（About megamenu「Group Overview」落点） */
     @GetMapping("/about")
     public String aboutGroup(Model model) {
-        model.addAttribute("pageTitle", "About · QINGDAO YUNHE");
+        model.addAttribute("pageTitle", "About Us | Water Jet Loom Factory in Qingdao | YUNHE");
         model.addAttribute("pageDesc", desc("site.meta.desc.about"));
         return "site/about";
     }
@@ -150,7 +151,7 @@ public class SiteController {
     /** About · 我们的价值观：{@code /about/values} */
     @GetMapping("/about/values")
     public String aboutValues(Model model) {
-        model.addAttribute("pageTitle", "Our Values · QINGDAO YUNHE");
+        model.addAttribute("pageTitle", "Our Values | Reliable Loom Manufacturing | YUNHE");
         model.addAttribute("pageDesc", desc("site.meta.desc.values"));
         return "site/about-values";
     }
@@ -158,7 +159,7 @@ public class SiteController {
     /** About · 联系我们：{@code /about/contact} */
     @GetMapping("/about/contact")
     public String aboutContact(Model model) {
-        model.addAttribute("pageTitle", "Contact · QINGDAO YUNHE");
+        model.addAttribute("pageTitle", "Contact Us | Get a Water Jet Loom Quote | YUNHE");
         model.addAttribute("pageDesc", desc("site.meta.desc.contact"));
         return "site/about-contact";
     }
@@ -166,7 +167,7 @@ public class SiteController {
     /** References · 客户案例：{@code /references} */
     @GetMapping("/references")
     public String references(Model model) {
-        model.addAttribute("pageTitle", "References · QINGDAO YUNHE");
+        model.addAttribute("pageTitle", "Water Jet Loom Installations & Case Studies | YUNHE");
         model.addAttribute("pageDesc", desc("site.meta.desc.references"));
         return "site/references";
     }

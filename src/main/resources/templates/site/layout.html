@@ -3,7 +3,7 @@
 <head th:fragment="head(title)">
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title th:text="${title} + ' - YUNHE'">YUNHE</title>
+    <title th:text="${title}">YUNHE</title>
     <!-- SEO meta：description 每页可覆盖(pageDesc)，缺省用全站描述 -->
     <meta name="description" th:content="${pageDesc} ?: #{site.meta.description}"/>
     <meta name="robots" content="index, follow, max-image-preview:large"/>
