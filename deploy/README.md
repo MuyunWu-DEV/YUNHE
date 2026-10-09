@@ -90,8 +90,8 @@ sudo ./stop.sh
 
 1. 编辑 `/opt/yunhe/.env`，临时开启播种并设初始密码：
    ```
-   SPRING_APP_SECURITY_SEED_DEFAULT_ADMIN=true
-   SPRING_APP_SECURITY_ADMIN_INITIAL_PASSWORD=<临时强密码>
+   APP_SECURITY_SEED_DEFAULT_ADMIN=true
+   APP_SECURITY_ADMIN_INITIAL_PASSWORD=<临时强密码>
    ```
 2. 重启：`sudo systemctl restart yunhe-app`
 3. 看日志确认已建号：`sudo journalctl -u yunhe-app -e`（搜「已创建默认管理员账号：admin」）
