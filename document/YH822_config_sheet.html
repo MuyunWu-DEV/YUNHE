@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YH822 Water Jet Loom — Configuration Sheet</title>
+<style>
+  :root{
+    --ink:#1f2933; --muted:#6b7785; --line:#e3e8ef; --bg:#f5f7fa;
+    --accent:#1f4e79; --accent-soft:#eaf1f8;
+    --good:#2e7d32; --warn:#b26a00; --shadow:0 1px 3px rgba(16,24,40,.08),0 1px 2px rgba(16,24,40,.06);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,"Microsoft YaHei",sans-serif;
+    font-size:14px; line-height:1.5;
+  }
+  .wrap{max-width:960px; margin:0 auto; padding:20px 16px 48px;}
+  header.top{
+    background:#fff; border:1px solid var(--line); border-radius:10px;
+    padding:14px 18px; box-shadow:var(--shadow); margin-bottom:16px;
+  }
+  .top-row{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  .brand{font-weight:700; letter-spacing:.08em; color:var(--accent); font-size:15px;}
+  .brand small{display:block; font-weight:400; letter-spacing:0; color:var(--muted); font-size:11px; margin-top:2px;}
+  h1{font-size:18px; margin:0; font-weight:700;}
+  .tag{display:inline-flex; align-items:center; gap:6px; background:var(--accent-soft);
+    color:var(--accent); border-radius:999px; padding:3px 10px; font-size:12px; font-weight:600;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;}
+  .card{background:#fff; border:1px solid var(--line); border-radius:10px; padding:16px 18px;
+    box-shadow:var(--shadow); margin-bottom:16px;}
+  .card h2{font-size:14px; margin:0 0 12px; color:var(--accent);
+    border-bottom:2px solid var(--accent); padding-bottom:6px; display:inline-block;}
+  .hint{font-size:12px; color:var(--muted); margin:0 0 12px;}
+  table.spec{width:100%; border-collapse:collapse; font-size:13px;}
+  table.spec th,table.spec td{border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top;}
+  table.spec th{background:#f0f3f7; font-weight:600; width:34%; white-space:nowrap;}
+  .sub{color:var(--muted); font-size:12px;}
+  .fill{height:24px;}
+  .strike{text-decoration:line-through; color:var(--muted);}
+  .price-big{font-size:22px; font-weight:700; color:var(--ink); white-space:nowrap;}
+  .price-tbl td{text-align:right; font-variant-numeric:tabular-nums;}
+  .price-tbl tr.final th{font-weight:700;}
+  .price-tbl tr.final th,.price-tbl tr.final td{border-top:2px solid var(--ink);}
+  .price-title{font-size:13px; font-weight:700; color:var(--ink); margin:16px 0 8px; letter-spacing:.3px;}
+
+  /* Part 2 — hand checklist */
+  .checklist{font-size:13px;}
+  .item{margin-bottom:12px;}
+  .item:last-child{margin-bottom:0;}
+  .item-h{font-weight:600; color:var(--accent); margin-bottom:5px; font-size:13px;}
+  .opts{display:flex; flex-wrap:wrap; align-items:center; gap:6px 24px;}
+  .qfill{display:inline-flex; align-items:center; white-space:nowrap;}
+  .opt{display:inline-flex; align-items:center; gap:7px;}
+  .chk{width:14px; height:14px; border:1.5px solid #555; border-radius:2px; display:inline-block; flex:0 0 auto;}
+  .delta{font-style:normal; font-size:12px;}
+  .delta.plus{color:var(--warn);} .delta.minus{color:var(--good);}
+  .qty{margin-top:6px; margin-bottom:6px; font-size:13px; color:var(--ink);}
+  .u{display:inline-block; border-bottom:1px solid #555; width:80px; height:15px; vertical-align:middle; margin-right:4px;}
+
+  .notes{margin-top:12px; border-top:1px solid var(--line); padding-top:10px; font-size:12px; color:var(--muted); line-height:1.55;}
+  .notes-title{font-weight:700; color:var(--accent); margin-bottom:6px; font-size:11px; letter-spacing:.05em; text-transform:uppercase;}
+  .notes-list{margin:0; padding-left:18px;}
+  .notes-list li{margin-bottom:3px; break-inside:avoid;}
+  .notes-list b{color:var(--ink); font-weight:600;}
+  .cust{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;}
+  .cust input,.cust textarea{width:100%; padding:8px 10px; border:1px solid var(--line);
+    border-radius:8px; font-size:13px; font-family:inherit;}
+  .cust textarea{grid-column:1 / -1; min-height:220px; resize:vertical;}
+  .actions{display:flex; gap:10px; margin-top:4px;}
+  button.btn{border:1px solid var(--accent); background:var(--accent); color:#fff;
+    padding:9px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;}
+  button.btn:hover{filter:brightness(1.05);}
+  @media (max-width:600px){ .cust{grid-template-columns:1fr;} .top-row{flex-direction:column; align-items:flex-start;} }
+  @media print{
+    body{background:#fff;} .wrap{max-width:none; padding:0;}
+    .card,.top{box-shadow:none; border-color:#bbb;}
+    .actions{display:none;}
+    table.spec th{background:#fff;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="top-row">
+      <div class="brand">YUNHE<small>QINGDAO YUNHE INTELLIGENT MANUFACTURING CO., LTD.</small></div>
+      <div style="text-align:right">
+        <h1>Configuration Sheet</h1>
+        <span class="tag"><span class="dot"></span>Water Jet Loom</span>
+      </div>
+    </div>
+    <div class="notes">
+      <div class="notes-title">Notes</div>
+      <ul class="notes-list">
+        <li>If the electronic system is Sanhe, direct-drive motor and electronic let-off / take-up system each require an extra $100.</li>
+        <li>DD Motor (Servo) = Direct-drive Servo Motor. India customers may call it <b>X-motor</b>.</li>
+        <li>All prices in USD, FOB Qingdao. Payment / delivery / validity to be confirmed separately.</li>
+        <li>This sheet is for requirement confirmation only and is not a final quotation.</li>
+      </ul>
+    </div>
+  </header>
+
+
+  <!-- 1. Configuration checklist (print & tick by hand) -->
+  <section class="card">
+    <h2>1. Configuration Checklist</h2>
+    <p class="hint">Tick the boxes by hand to indicate the selected configuration.</p>
+    <div class="checklist">
+
+      <div class="item">
+        <div class="item-h">1. Model</div>
+        <div class="opts">
+          <span class="opt"><i class="chk"></i>YH822</span>
+          <span class="opt"><i class="chk"></i>YH608 <em class="delta plus">(+$300)</em></span>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-h">2. Working Width</div>
+        <div class="opts">
+          <span class="opt"><i class="chk"></i>190 cm</span>
+          <span class="opt"><i class="chk"></i>Other: ____________</span>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-h">3. Electronic System</div>
+        <div class="opts">
+          <span class="opt"><i class="chk"></i>Xinliao Electronic System with Double Feeders, Double Nozzles</span>
+          <span class="opt"><i class="chk"></i>Sanhe Electronic System with Double Feeders, Double Nozzles</span>
+          <span class="opt"><i class="chk"></i>Other: <span class="u" style="width:320px"></span></span>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-h">4. Main Motor</div>
+        <div class="opts">
+          <span class="opt"><i class="chk"></i>DD Motor (Servo)</span>
+          <span class="opt"><i class="chk"></i>Asynchronous Motor <em class="delta minus">(−$300)</em></span>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-h">5. Let-off / Take-up System</div>
+        <div class="opts">
+          <span class="opt"><i class="chk"></i>MLO / MTU</span>
+          <span class="opt"><i class="chk"></i>ELO / ETU <em class="delta plus">(+$450)</em></span>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-h">6. Shedding Device &amp; Shafts</div>
+        <div class="opts">
+          <span class="opt"><i class="chk"></i>NPW 410 Cam - 10 shafts</span>
+          <span class="opt"><i class="chk"></i>NPW 410 Cam - 8 shafts <em class="delta minus">(−$200)</em></span>
+          <span class="opt"><i class="chk"></i>NPW 411 Cam - 12 shafts <em class="delta plus">(+$250)</em></span>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-h">7. Heald Frame</div>
+        <div class="opts">
+          <span class="qfill"><span class="u"></span>× Heald Frame</span>
+          <span class="opt"><i class="chk"></i>Niupai</span>
+          <span class="opt"><i class="chk"></i>Yunhe</span>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-h">8. Beam</div>
+        <div class="opts">
+          <span class="qfill"><span class="u"></span>× Beam</span>
+          <span class="opt"><i class="chk"></i>Beam (800mm 32 kg, 12mm 100kg)</span>
+          <span class="opt"><i class="chk"></i>Beam (800mm 32 kg, 14mm 114kg)</span>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-h">9. Reed</div>
+        <div class="qty"><span class="u"></span>× Reed</div>
+      </div>
+
+      <div class="item">
+        <div class="item-h">10. Cloth Roller</div>
+        <div class="opts">
+          <span class="qfill"><span class="u"></span>× Cloth Roller</span>
+          <span class="opt"><i class="chk"></i>Iron</span>
+          <span class="opt"><i class="chk"></i>Aluminum</span>
+          <span class="opt"><i class="chk"></i>Aluminum with support</span>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-h">11. Heald Wire</div>
+        <div class="qty"><span class="u"></span>× Heald Wire</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 2. Confirmed configuration & price (fill in by hand) -->
+  <section class="card">
+    <h2>2. Confirmed Configuration &amp; Price</h2>
+    <p class="hint">Fill in the confirmed specification and price by hand.</p>
+    <table class="spec">
+      <tr><th>1. Model</th><td class="fill"></td></tr>
+      <tr><th>2. Working Width</th><td class="fill"></td></tr>
+      <tr><th>3. Electronic System</th><td class="fill"></td></tr>
+      <tr><th>4. Main Motor</th><td class="fill"></td></tr>
+      <tr><th>5. Let-off / Take-up System</th><td class="fill"></td></tr>
+      <tr><th>6. Shedding Device &amp; Shafts</th><td class="fill"></td></tr>
+      <tr><th>7. Heald Frame</th><td class="fill"></td></tr>
+      <tr><th>8. Beam</th><td class="fill"></td></tr>
+      <tr><th>9. Reed</th><td class="fill"></td></tr>
+      <tr><th>10. Cloth Roller</th><td class="fill"></td></tr>
+      <tr><th>11. Heald Wire</th><td class="fill"></td></tr>
+    </table>
+    <table class="spec" style="margin-top:14px; width:60%;">
+      <tr><th>Unit Price (FOB Qingdao)</th><td class="fill"></td></tr>
+      <tr><th>Quantity (sets)</th><td class="fill"></td></tr>
+      <tr><th>Total Amount</th><td class="fill"></td></tr>
+    </table>
+  </section>
+
+  <!-- 3. Customer & remarks -->
+  <section class="card">
+    <h2>3. Customer &amp; Remarks</h2>
+    <div class="cust">
+      <input placeholder="Customer Name" />
+      <input placeholder="Contact / Email" />
+      <textarea placeholder="Special requirements"></textarea>
+    </div>
+  </section>
+
+  <!-- 4. Standard configuration (standard reference) -->
+  <section class="card">
+    <h2>4. Standard Configuration</h2>
+    <table class="spec">
+      <tr><th>1. Model</th><td>YH822</td></tr>
+      <tr><th>2. Working Width</th><td>190 cm</td></tr>
+      <tr><th>3. Electronic System</th><td>Xinliao Electronic System with Double Feeders, Double Nozzles</td></tr>
+      <tr><th>4. Main Motor</th><td>DD Motor (Servo)</td></tr>
+      <tr><th>5. Let-off / Take-up System</th><td>MLO / MTU</td></tr>
+      <tr><th>6. Shedding Device &amp; Shafts</th><td>NPW 410 Cam with 10 Shafts</td></tr>
+      <tr><th>7. Heald Frame</th><td>10 Niupai Heald Frame</td></tr>
+      <tr><th>8. Beam</th><td>2 × Beam (12 mm, 115 kg)</td></tr>
+      <tr><th>9. Reed</th><td>2 × Reed</td></tr>
+      <tr><th>10. Cloth Roller</th><td>2 × Iron Cloth Roller</td></tr>
+      <tr><th>11. Heald Wire</th><td>15,000 × ZC Heald Wire</td></tr>
+    </table>
+    <p class="price-title">Pricing Reference (FOB Qingdao)</p>
+    <p class="hint" style="margin:0 0 8px;">Based on exchange rate USD : CNY = 6.7</p>
+    <table class="spec price-tbl" style="width:100%;">
+      <tr><th>Suggested Market Price</th><td><span class="strike">USD 8,500.00</span></td></tr>
+      <tr><th>Factory Discount</th><td>USD 150.00</td></tr>
+      <tr class="final"><th>Your Price</th><td class="price-big">USD 8,350.00</td></tr>
+    </table>
+  </section>
+
+  <div class="actions" style="justify-content:flex-end;">
+    <button class="btn" onclick="window.print()">Print / Save as PDF</button>
+  </div>
+
+</div>
+</body>
+</html>
