@@ -3,7 +3,6 @@ package com.yunhe.website.crm.dto.request;
 import com.yunhe.website.crm.entity.CustomerPriority;
 import com.yunhe.website.crm.entity.CustomerTag;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ public class CustomerForm {
     private String name;
 
     @NotBlank(message = "手机号不能为空")
-    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
+    @Size(max = 20, message = "手机号不能超过 20 个字符")
     private String phone;
 
     @Size(max = 100, message = "公司不能超过 100 个字符")
