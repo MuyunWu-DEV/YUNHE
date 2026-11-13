@@ -329,8 +329,6 @@ public class PackingListService {
         int year = date.getYear();
         int month = date.getMonthValue();
         int seq = sequenceStore.next(PackingList.NO_PREFIX, year, month);
-        packingList.setPackingYear(year);
-        packingList.setSeq(seq);
         packingList.setPackingNo(DocNumberGenerator.generate(PackingList.NO_PREFIX, year, month, seq));
     }
 

@@ -237,8 +237,6 @@ public class CommercialInvoiceService {
         int year = date.getYear();
         int month = date.getMonthValue();
         int seq = sequenceStore.next(CommercialInvoice.NO_PREFIX, year, month);
-        invoice.setInvoiceYear(year);
-        invoice.setSeq(seq);
         invoice.setInvoiceNo(DocNumberGenerator.generate(CommercialInvoice.NO_PREFIX, year, month, seq));
     }
 

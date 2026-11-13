@@ -33,14 +33,6 @@ public class ProformaInvoice extends BaseEntity {
     @Column(name = "invoice_number", nullable = false, unique = true, length = 50)
     private String invoiceNumber;
 
-    /** 年份（单据号中的年份部分） */
-    @Column(name = "invoice_year", nullable = false)
-    private int invoiceYear;
-
-    /** 月度序列号（单据号中的序号部分） */
-    @Column(nullable = false)
-    private int seq;
-
     /** 发票日期 */
     @Column(name = "invoice_date")
     private LocalDate invoiceDate;

@@ -103,8 +103,6 @@ public class SalesOrderService {
         int year = date.getYear();
         int month = date.getMonthValue();
         int seq = sequenceStore.next(SalesOrder.NO_PREFIX, year, month);
-        order.setOrderYear(year);
-        order.setSeq(seq);
         order.setOrderNo(DocNumberGenerator.generate(SalesOrder.NO_PREFIX, year, month, seq));
     }
 

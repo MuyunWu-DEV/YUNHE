@@ -40,14 +40,6 @@ public class PackingList extends BaseEntity {
     @Column(name = "packing_no", nullable = false, unique = true, length = 50)
     private String packingNo;
 
-    /** 年份（单据号中的年份部分） */
-    @Column(name = "packing_year", nullable = false)
-    private int packingYear;
-
-    /** 月度序列号（单据号中的序号部分） */
-    @Column(nullable = false)
-    private int seq;
-
     /** 装箱日期 */
     @Column(name = "packing_date")
     private LocalDate packingDate;

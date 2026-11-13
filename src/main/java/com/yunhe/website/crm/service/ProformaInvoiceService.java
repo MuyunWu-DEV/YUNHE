@@ -279,13 +279,11 @@ public class ProformaInvoiceService {
         updateCustomerFromBuyer(invoice.getCustomer(), details.buyer());
     }
 
-    /** 生成发票号：YHPI-YYYYMM-00X → YHPI202611001，序号按月原子递增（数据库端并发安全） */
+    /** 生成发票号：YHPI202611001，序号按月原子递增（数据库端并发安全） */
     private void assignInvoiceNumber(ProformaInvoice invoice, LocalDate date) {
         int year = date.getYear();
         int month = date.getMonthValue();
         int seq = sequenceStore.next(ProformaInvoice.NO_PREFIX, year, month);
-        invoice.setInvoiceYear(year);
-        invoice.setSeq(seq);
         invoice.setInvoiceNumber(DocNumberGenerator.generate(ProformaInvoice.NO_PREFIX, year, month, seq));
     }
 

@@ -35,14 +35,6 @@ public class SalesOrder extends BaseEntity {
     @Column(name = "order_no", nullable = false, unique = true, length = 50)
     private String orderNo;
 
-    /** 年份（单据号中的年份部分） */
-    @Column(name = "order_year", nullable = false)
-    private int orderYear;
-
-    /** 月度序列号（单据号中的序号部分） */
-    @Column(nullable = false)
-    private int seq;
-
     /** 订单日期 */
     @Column(name = "order_date")
     private LocalDate orderDate;
