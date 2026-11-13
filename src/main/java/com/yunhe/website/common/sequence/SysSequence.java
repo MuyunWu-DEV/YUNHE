@@ -11,7 +11,7 @@ import lombok.Setter;
 /**
  * 系统序号表（通用原子自增计数器的支撑实体）。
  *
- * <p>以任意字符串为 key（如 {@code YHPI-2026}、{@code CUSTOMER}、{@code TICKET}），
+ * <p>以任意字符串为 key（如 {@code YHPI-202611}、{@code CUSTOMER}、{@code TICKET}），
  * 维护「当前已分配的最大序号」，通过 MySQL 原子
  * {@code INSERT ... ON DUPLICATE KEY UPDATE ... LAST_INSERT_ID(...)} 递增，
  * 为各类业务编号（单据号、客户号、工单号等）提供并发安全的取号能力
@@ -27,7 +27,7 @@ import lombok.Setter;
 @Table(name = "sys_sequence")
 public class SysSequence {
 
-    /** 序号键：业务自定义的任意字符串，如 YHPI-2026、CUSTOMER */
+    /** 序号键：业务自定义的任意字符串，如 YHPI-202611、CUSTOMER */
     @Id
     @Column(name = "seq_key", nullable = false, length = 64)
     private String seqKey;

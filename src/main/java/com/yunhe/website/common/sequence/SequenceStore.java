@@ -36,7 +36,7 @@ public class SequenceStore {
     /**
      * 按任意 key 原子自增，返回新序号（从 1 开始）。
      *
-     * @param key 业务自定义的序号键，如 {@code YHPI-2026}、{@code CUSTOMER}
+     * @param key 业务自定义的序号键，如 {@code YHPI-202611}（前缀-年月）、{@code CUSTOMER}
      * @return 该 key 下的自增序号，如 1、2、3……
      */
     public int next(String key) {
@@ -54,17 +54,6 @@ public class SequenceStore {
             }
         });
         return seq == null ? 1 : seq;
-    }
-
-    /**
-     * 便捷重载：按「前缀-年份」自增，用于按年重置的年度编号（如单据号 {@code YHPI-2026}）。
-     *
-     * @param prefix 编号前缀，如 {@code YHPI}
-     * @param year   年份
-     * @return 该前缀在该年份内的自增序号
-     */
-    public int next(String prefix, int year) {
-        return next(prefix + "-" + year);
     }
 
     /**
