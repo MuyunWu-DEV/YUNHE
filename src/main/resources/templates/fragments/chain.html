@@ -23,7 +23,7 @@
                th:classappend="${current == 'proformaInvoice'} ? 'current'"
                th:href="@{/crm/proforma-invoices/{id}/view(id=${chain.proformaInvoice.id})}">
                 <div class="doc-node-tag">Proforma Invoice</div>
-                <div class="doc-node-title" th:text="${chain.proformaInvoice.invoiceNumber}">YHPI-2026-001</div>
+                <div class="doc-node-title" th:text="${chain.proformaInvoice.invoiceNumber}">YHPI202611001</div>
                 <div class="doc-node-sub"
                      th:text="|${chain.proformaInvoice.invoiceDate} · ${#messages.msg(chain.proformaInvoice.status.code)}|">2026-01-01 · 待生成</div>
             </a>
@@ -38,7 +38,7 @@
                th:classappend="${current == 'salesOrder'} ? 'current'"
                th:href="@{/crm/sales-orders/{id}/view(id=${chain.salesOrder.id})}">
                 <div class="doc-node-tag">订单</div>
-                <div class="doc-node-title" th:text="${chain.salesOrder.orderNo}">YHSO-2026-001</div>
+                <div class="doc-node-title" th:text="${chain.salesOrder.orderNo}">YHSO202611001</div>
                 <div class="doc-node-sub"
                      th:text="|${chain.salesOrder.orderDate} · ${#messages.msg(chain.salesOrder.status.code)}|">2026-01-01 · 草稿</div>
             </a>
@@ -53,7 +53,7 @@
                th:classappend="${current == 'commercialInvoice'} ? 'current'"
                th:href="@{/crm/commercial-invoices/{id}/view(id=${chain.commercialInvoice.id})}">
                 <div class="doc-node-tag">商业发票</div>
-                <div class="doc-node-title" th:text="${chain.commercialInvoice.invoiceNo}">YHINV-2026-001</div>
+                <div class="doc-node-title" th:text="${chain.commercialInvoice.invoiceNo}">YHINV202611001</div>
                 <div class="doc-node-sub"
                      th:text="|${chain.commercialInvoice.invoiceDate} · ${#messages.msg(chain.commercialInvoice.status.code)}|">2026-01-01 · 待生成</div>
             </a>
@@ -68,7 +68,7 @@
                th:classappend="${current == 'packingList'} ? 'current'"
                th:href="@{/crm/packing-lists/{id}/view(id=${chain.packingList.id})}">
                 <div class="doc-node-tag">装箱单</div>
-                <div class="doc-node-title" th:text="${chain.packingList.packingNo}">YHPL-2026-001</div>
+                <div class="doc-node-title" th:text="${chain.packingList.packingNo}">YHPL202611001</div>
                 <div class="doc-node-sub"
                      th:text="|${chain.packingList.packingDate} · ${#messages.msg(chain.packingList.status.code)}|">2026-01-01 · 待生成</div>
             </a>

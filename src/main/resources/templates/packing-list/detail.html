@@ -35,7 +35,7 @@
         <div class="card-body">
             <dl class="row mb-4">
                 <dt class="col-sm-2">装箱单号</dt>
-                <dd class="col-sm-4" th:text="${packingList.packingNo}">YHPL-2026-001</dd>
+                <dd class="col-sm-4" th:text="${packingList.packingNo}">YHPL202611001</dd>
                 <dt class="col-sm-2">装箱日期</dt>
                 <dd class="col-sm-4" th:text="${packingList.packingDate}">2026-01-01</dd>
             </dl>
@@ -127,7 +127,7 @@
                     <td th:text="${v.log} ?: '-'">Automatically generated</td>
                     <td>
                         <a th:href="@{/crm/packing-lists/{id}/versions/{versionId}/download(id=${packingList.id}, versionId=${v.id})}"
-                           th:text="|${packingList.packingNo}-v${v.versionNo}.pdf|">YHPL-2026-001-v1.pdf</a>
+                           th:text="|${packingList.packingNo}-v${v.versionNo}.pdf|">YHPL202611001-v1.pdf</a>
                     </td>
                 </tr>
                 </tbody>

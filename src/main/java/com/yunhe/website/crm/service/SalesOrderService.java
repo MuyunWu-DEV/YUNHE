@@ -74,7 +74,7 @@ public class SalesOrderService {
         order.setCustomer(pi.getCustomer());
         order.setProformaInvoice(pi);
         order.setRootQuotationId(pi.getQuotation().getId());
-        assignOrderNo(order, LocalDate.now().getYear());
+        assignOrderNo(order, LocalDate.now());
         orderRepository.save(order);
         return toDto(order);
     }
@@ -98,12 +98,14 @@ public class SalesOrderService {
         orderRepository.delete(order);
     }
 
-    /** 生成订单号：YHSO-YYYY-00X，序号由序列表原子递增（数据库端并发安全） */
-    private void assignOrderNo(SalesOrder order, int year) {
-        int seq = sequenceStore.next(SalesOrder.NO_PREFIX, year);
+    /** 生成订单号：YHSO-YYYYMM-00X → YHSO202611001，序号按月原子递增（数据库端并发安全） */
+    private void assignOrderNo(SalesOrder order, LocalDate date) {
+        int year = date.getYear();
+        int month = date.getMonthValue();
+        int seq = sequenceStore.next(SalesOrder.NO_PREFIX, year, month);
         order.setOrderYear(year);
         order.setSeq(seq);
-        order.setOrderNo(DocNumberGenerator.generate(SalesOrder.NO_PREFIX, year, seq));
+        order.setOrderNo(DocNumberGenerator.generate(SalesOrder.NO_PREFIX, year, month, seq));
     }
 
     private SalesOrderDto toDto(SalesOrder order) {

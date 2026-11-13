@@ -59,7 +59,7 @@
         <div class="card-body">
             <dl class="row mb-4">
                 <dt class="col-sm-2">发票号</dt>
-                <dd class="col-sm-4" th:text="${invoice.invoiceNumber}">YHPI-2026-001</dd>
+                <dd class="col-sm-4" th:text="${invoice.invoiceNumber}">YHPI202611001</dd>
                 <dt class="col-sm-2">发票日期</dt>
                 <dd class="col-sm-4" th:text="${invoice.invoiceDate}">2026-01-01</dd>
             </dl>
@@ -145,7 +145,7 @@
                     <td th:text="${v.log} ?: '-'">Automatically generated</td>
                     <td>
                         <a th:href="@{/crm/proforma-invoices/{id}/versions/{versionId}/download(id=${invoice.id}, versionId=${v.id})}"
-                           th:text="|${invoice.invoiceNumber}-v${v.versionNo}.pdf|">YHPI-2026-001-v1.pdf</a>
+                           th:text="|${invoice.invoiceNumber}-v${v.versionNo}.pdf|">YHPI202611001-v1.pdf</a>
                     </td>
                 </tr>
                 </tbody>

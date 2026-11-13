@@ -24,6 +24,7 @@ import com.yunhe.website.crm.support.DocNumberGenerator;
 import com.yunhe.website.crm.support.PiPdfRenderer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +85,7 @@ public class ProformaInvoiceService {
         }
         ProformaInvoice invoice = new ProformaInvoice();
         applyForm(invoice, form);
-        assignInvoiceNumber(invoice, form.getInvoiceDate().getYear());
+        assignInvoiceNumber(invoice, form.getInvoiceDate());
         invoiceRepository.save(invoice);
         markQuotationConfirmed(invoice.getQuotation());
         return toDto(invoice);
@@ -278,12 +279,14 @@ public class ProformaInvoiceService {
         updateCustomerFromBuyer(invoice.getCustomer(), details.buyer());
     }
 
-    /** 生成发票号：YHPI-YYYY-00X，序号由序列表原子递增（数据库端并发安全） */
-    private void assignInvoiceNumber(ProformaInvoice invoice, int year) {
-        int seq = sequenceStore.next(ProformaInvoice.NO_PREFIX, year);
+    /** 生成发票号：YHPI-YYYYMM-00X → YHPI202611001，序号按月原子递增（数据库端并发安全） */
+    private void assignInvoiceNumber(ProformaInvoice invoice, LocalDate date) {
+        int year = date.getYear();
+        int month = date.getMonthValue();
+        int seq = sequenceStore.next(ProformaInvoice.NO_PREFIX, year, month);
         invoice.setInvoiceYear(year);
         invoice.setSeq(seq);
-        invoice.setInvoiceNumber(DocNumberGenerator.generate(ProformaInvoice.NO_PREFIX, year, seq));
+        invoice.setInvoiceNumber(DocNumberGenerator.generate(ProformaInvoice.NO_PREFIX, year, month, seq));
     }
 
     private void updateCustomerFromBuyer(Customer customer, ProformaDetails.BuyerInfo buyer) {

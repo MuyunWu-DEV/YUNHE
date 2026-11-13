@@ -72,7 +72,7 @@ class PlPdfRendererTest {
 
         // 装箱单：lines 仅装箱数据，经 quoteLineKey 关联报价单项
         PackingList pl = new PackingList();
-        pl.setPackingNo("YHPL-2026-001");
+        pl.setPackingNo("YHPL202611001");
         pl.setPackingDate(LocalDate.of(2026, 8, 20));
         pl.setMarks("N/M");
         pl.setLines(List.of(
@@ -135,7 +135,7 @@ class PlPdfRendererTest {
 
         // 仅 qi-1 命中；UNMATCHED_KEY 行的大数值（999/9999/99/9.9）应被 TOTAL 排除
         PackingList pl = new PackingList();
-        pl.setPackingNo("YHPL-2026-002");
+        pl.setPackingNo("YHPL202611002");
         pl.setPackingDate(LocalDate.of(2026, 8, 20));
         pl.setMarks("N/M");
         pl.setLines(List.of(

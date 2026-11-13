@@ -25,22 +25,21 @@ import org.hibernate.type.SqlTypes;
 @Getter
 @Setter
 @Entity
-@Table(name = "crm_sales_order",
-        uniqueConstraints = @UniqueConstraint(name = "uk_order_year_seq", columnNames = {"order_year", "seq"}))
+@Table(name = "crm_sales_order")
 public class SalesOrder extends BaseEntity {
 
     /** 单据号前缀 */
     public static final String NO_PREFIX = "YHSO";
 
-    /** 订单号，如 YHSO-2026-001 */
+    /** 订单号，如 YHSO202611001 */
     @Column(name = "order_no", nullable = false, unique = true, length = 50)
     private String orderNo;
 
-    /** 年份（用于按年重置序列号） */
+    /** 年份（单据号中的年份部分） */
     @Column(name = "order_year", nullable = false)
     private int orderYear;
 
-    /** 年内序列号 */
+    /** 月度序列号（单据号中的序号部分） */
     @Column(nullable = false)
     private int seq;
 

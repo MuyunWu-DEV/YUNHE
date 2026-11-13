@@ -66,4 +66,16 @@ public class SequenceStore {
     public int next(String prefix, int year) {
         return next(prefix + "-" + year);
     }
+
+    /**
+     * 便捷重载：按「前缀-年月」自增，用于按月重置的月度编号（如单据号 {@code YHPI-202611}）。
+     *
+     * @param prefix 编号前缀，如 {@code YHPI}
+     * @param year   年份
+     * @param month  月份（1-12）
+     * @return 该前缀在该年月内的自增序号
+     */
+    public int next(String prefix, int year, int month) {
+        return next(prefix + "-" + year + String.format("%02d", month));
+    }
 }

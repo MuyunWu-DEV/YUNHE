@@ -30,22 +30,21 @@ import org.hibernate.type.SqlTypes;
 @Getter
 @Setter
 @Entity
-@Table(name = "crm_packing_list",
-        uniqueConstraints = @UniqueConstraint(name = "uk_pl_year_seq", columnNames = {"packing_year", "seq"}))
+@Table(name = "crm_packing_list")
 public class PackingList extends BaseEntity {
 
     /** 单据号前缀 */
     public static final String NO_PREFIX = "YHPL";
 
-    /** 装箱单号，如 YHPL-2026-001 */
+    /** 装箱单号，如 YHPL202611001 */
     @Column(name = "packing_no", nullable = false, unique = true, length = 50)
     private String packingNo;
 
-    /** 年份（用于按年重置序列号） */
+    /** 年份（单据号中的年份部分） */
     @Column(name = "packing_year", nullable = false)
     private int packingYear;
 
-    /** 年内序列号 */
+    /** 月度序列号（单据号中的序号部分） */
     @Column(nullable = false)
     private int seq;
 

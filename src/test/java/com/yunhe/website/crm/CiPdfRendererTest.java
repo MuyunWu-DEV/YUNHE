@@ -80,7 +80,7 @@ class CiPdfRendererTest {
         pi.setDetails(details);
 
         CommercialInvoice ci = new CommercialInvoice();
-        ci.setInvoiceNo("YHINV-2026-001");
+        ci.setInvoiceNo("YHINV202611001");
         ci.setInvoiceDate(LocalDate.of(2026, 8, 4));
         ci.setDepositPercentage(new BigDecimal("35"));
         ci.setDepositPaymentMethod("T/T in advance");
@@ -126,7 +126,7 @@ class CiPdfRendererTest {
         pi.setDetails(details);
 
         CommercialInvoice ci = new CommercialInvoice();
-        ci.setInvoiceNo("YHINV-2026-010");
+        ci.setInvoiceNo("YHINV202611010");
         ci.setInvoiceDate(LocalDate.of(2026, 8, 12));
         ci.setDepositPercentage(new BigDecimal("30"));
         ci.setDepositPaymentMethod("T/T in advance");

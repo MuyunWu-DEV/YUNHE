@@ -80,7 +80,7 @@ public class CommercialInvoiceService {
         invoice.setCustomer(pi.getCustomer());
         invoice.setProformaInvoice(pi);
         invoice.setRootQuotationId(pi.getQuotation().getId());
-        assignInvoiceNo(invoice, LocalDate.now().getYear());
+        assignInvoiceNo(invoice, LocalDate.now());
         invoiceRepository.save(invoice);
         return toDto(invoice);
     }
@@ -233,11 +233,13 @@ public class CommercialInvoiceService {
         return ciPdfRenderer.render(invoice);
     }
 
-    private void assignInvoiceNo(CommercialInvoice invoice, int year) {
-        int seq = sequenceStore.next(CommercialInvoice.NO_PREFIX, year);
+    private void assignInvoiceNo(CommercialInvoice invoice, LocalDate date) {
+        int year = date.getYear();
+        int month = date.getMonthValue();
+        int seq = sequenceStore.next(CommercialInvoice.NO_PREFIX, year, month);
         invoice.setInvoiceYear(year);
         invoice.setSeq(seq);
-        invoice.setInvoiceNo(DocNumberGenerator.generate(CommercialInvoice.NO_PREFIX, year, seq));
+        invoice.setInvoiceNo(DocNumberGenerator.generate(CommercialInvoice.NO_PREFIX, year, month, seq));
     }
 
     private CommercialInvoiceDto toDto(CommercialInvoice invoice) {

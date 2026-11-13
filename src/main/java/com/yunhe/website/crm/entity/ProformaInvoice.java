@@ -23,22 +23,21 @@ import org.hibernate.type.SqlTypes;
 @Getter
 @Setter
 @Entity
-@Table(name = "crm_proforma_invoice",
-        uniqueConstraints = @UniqueConstraint(name = "uk_invoice_year_seq", columnNames = {"invoice_year", "seq"}))
+@Table(name = "crm_proforma_invoice")
 public class ProformaInvoice extends BaseEntity {
 
     /** 单据号前缀 */
     public static final String NO_PREFIX = "YHPI";
 
-    /** 发票号，如 YHPI-2026-001 */
+    /** 发票号，如 YHPI202611001 */
     @Column(name = "invoice_number", nullable = false, unique = true, length = 50)
     private String invoiceNumber;
 
-    /** 年份（用于按年重置序列号） */
+    /** 年份（单据号中的年份部分） */
     @Column(name = "invoice_year", nullable = false)
     private int invoiceYear;
 
-    /** 年内序列号 */
+    /** 月度序列号（单据号中的序号部分） */
     @Column(nullable = false)
     private int seq;
 

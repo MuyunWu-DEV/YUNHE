@@ -27,7 +27,7 @@
                     <tbody>
                     <tr th:each="inv : ${invoices.content}">
                         <td th:text="${inv.id}">1</td>
-                        <td><strong th:text="${inv.invoiceNumber}">YHPI-2026-001</strong></td>
+                        <td><strong th:text="${inv.invoiceNumber}">YHPI202611001</strong></td>
                         <td th:text="${inv.invoiceDate}">2026-01-01</td>
                         <td th:text="${inv.customer != null ? inv.customer.name + (!#strings.isEmpty(inv.customer.company) ? ' (' + inv.customer.company + ')' : '') : '-'}">客户</td>
                         <td>

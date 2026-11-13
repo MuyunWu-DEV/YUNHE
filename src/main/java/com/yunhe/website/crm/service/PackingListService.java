@@ -92,7 +92,7 @@ public class PackingListService {
         packingList.setRootQuotationId(pi.getQuotation().getId());
         // 由报价单项播种装箱行：每行关联 quoteLineKey，装箱字段留空待用户填写（单一数据源 = 报价单）
         packingList.setLines(seedLinesFromQuotation(pi.getQuotation()));
-        assignPackingNo(packingList, LocalDate.now().getYear());
+        assignPackingNo(packingList, LocalDate.now());
         packingListRepository.save(packingList);
         return toDto(packingList);
     }
@@ -325,11 +325,13 @@ public class PackingListService {
         return lines;
     }
 
-    private void assignPackingNo(PackingList packingList, int year) {
-        int seq = sequenceStore.next(PackingList.NO_PREFIX, year);
+    private void assignPackingNo(PackingList packingList, LocalDate date) {
+        int year = date.getYear();
+        int month = date.getMonthValue();
+        int seq = sequenceStore.next(PackingList.NO_PREFIX, year, month);
         packingList.setPackingYear(year);
         packingList.setSeq(seq);
-        packingList.setPackingNo(DocNumberGenerator.generate(PackingList.NO_PREFIX, year, seq));
+        packingList.setPackingNo(DocNumberGenerator.generate(PackingList.NO_PREFIX, year, month, seq));
     }
 
     private PackingListDto toDto(PackingList packingList) {

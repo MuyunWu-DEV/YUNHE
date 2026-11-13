@@ -27,7 +27,7 @@
                     <tbody>
                     <tr th:each="p : ${packingLists.content}">
                         <td th:text="${p.id}">1</td>
-                        <td th:text="${p.packingNo}">YHPL-2026-001</td>
+                        <td th:text="${p.packingNo}">YHPL202611001</td>
                         <td th:text="${p.packingDate}">2026-01-01</td>
                         <td th:text="${p.customer != null ? p.customer.name + (!#strings.isEmpty(p.customer.company) ? ' (' + p.customer.company + ')' : '') : '-'}">客户</td>
                         <td th:text="${p.numberOfPackages} ?: '-'">-</td>
